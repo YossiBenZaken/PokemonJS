@@ -1,0 +1,338 @@
+import { axiosInstance } from './axios';
+
+export interface CreateCharacterRequest {
+  inlognaam: string;
+  wereld: string;
+  character: string;
+}
+
+export interface CreateCharacterResponse {
+  success: boolean;
+  message: string;
+  data: {
+    user_id: number;
+    username: string;
+    character: string;
+    wereld: string;
+  };
+}
+
+export interface GetAvailableCharactersResponse {
+  success: boolean;
+  data: string[];
+}
+
+export interface GetUserCharacterCountResponse {
+  success: boolean;
+  data: {
+    characterCount: number;
+    maxCharacters: number;
+    needsGold: boolean;
+  };
+}
+
+export interface GetUserCharactersResponse {
+  success: boolean;
+  data: Array<{
+    id: number;
+    user_id: number;
+    username: string;
+    character: string;
+    wereld: string;
+    ultimo_login: string;
+    ultimo_login_hour: string;
+    datum: string;
+    aanmeld_datum: string;
+    rank?: number;
+    banned?: string;
+    admin?: number;
+    premiumaccount?: number;
+    antiguidade?: number;
+    sec_key?: string;
+    chat_key?: string;
+    tickets: number;
+    geluksrad: number;
+  }>;
+}
+
+export interface LoginWithCharacterRequest {
+  user_id: number;
+}
+
+export interface LoginWithCharacterResponse {
+  success: boolean;
+  message: string;
+  data: {
+    user_id: number;
+    username: string;
+    character: string;
+    wereld: string;
+    session_token: string;
+    sec_key: string;
+    chat_key: string;
+    is_premium: boolean;
+    premium_expires: number;
+  };
+}
+
+export interface GetCharacterDetailsResponse {
+  success: boolean;
+  data: {
+    id: number;
+    user_id: number;
+    username: string;
+    character: string;
+    wereld: string;
+    ultimo_login: string;
+    ultimo_login_hour: string;
+    datum: string;
+    aanmeld_datum: string;
+    rank?: number;
+    banned?: string;
+    admin?: number;
+    premiumaccount?: number;
+    antiguidade?: number;
+    sec_key?: string;
+    chat_key?: string;
+  };
+}
+
+export interface StarterPokemon {
+  wild_id: number;
+  naam: string;
+  type1: string;
+  type2?: string;
+  groei: string;
+  attack_base: number;
+  defence_base: number;
+  speed_base: number;
+  spc_attack_base: number;
+  spc_defence_base: number;
+  hp_base: number;
+  aanval_1: string;
+  aanval_2: string;
+  aanval_3: string;
+  aanval_4: string;
+  ability: string;
+}
+
+export interface GetAvailableStarterPokemonResponse {
+  success: boolean;
+  data: StarterPokemon[];
+}
+
+export interface ChooseStarterPokemonRequest {
+  user_id: number;
+  pokemon_id: number;
+}
+
+export interface ChooseStarterPokemonResponse {
+  success: boolean;
+  message: string;
+  data: {
+    pokemon_id: number;
+    pokemon_name: string;
+    character_trait: string;
+    level: number;
+    hp: number;
+    attack: number;
+    defence: number;
+    speed: number;
+    spc_attack: number;
+    spc_defence: number;
+  };
+}
+
+// יצירת דמות חדשה
+export const createCharacter = async (data: CreateCharacterRequest): Promise<CreateCharacterResponse> => {
+  try {
+    const response = await axiosInstance.post('/characters/create', data);
+    return response.data;
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+// קבלת רשימת הדמויות הזמינות
+export const getAvailableCharacters = async (): Promise<GetAvailableCharactersResponse> => {
+  try {
+    const response = await axiosInstance.get('/characters/available');
+    return response.data;
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+// קבלת מספר הדמויות של המשתמש
+export const getUserCharacterCount = async (): Promise<GetUserCharacterCountResponse> => {
+  try {
+    const response = await axiosInstance.get('/characters/count');
+    return response.data;
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+// קבלת רשימת הדמויות של המשתמש
+export const getUserCharacters = async (): Promise<GetUserCharactersResponse> => {
+  try {
+    const response = await axiosInstance.get('/characters/my-characters');
+    return response.data;
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+// כניסה למשחק עם דמות
+export const loginWithCharacter = async (data: LoginWithCharacterRequest): Promise<LoginWithCharacterResponse> => {
+  try {
+    const response = await axiosInstance.post('/characters/login', data);
+    return response.data;
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+// קבלת פרטי דמות ספציפית
+export const getCharacterDetails = async (user_id: number): Promise<GetCharacterDetailsResponse> => {
+  try {
+    const response = await axiosInstance.get(`/characters/details/${user_id}`);
+    return response.data;
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+// קבלת רשימת הפוקימונים הזמינים לבחירה ראשונה
+export const getAvailableStarterPokemon = async (user_id: number): Promise<GetAvailableStarterPokemonResponse> => {
+  try {
+    const response = await axiosInstance.get(`/characters/starter-pokemon/${user_id}`);
+    return response.data;
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+// בחירת פוקימון ראשון
+export const chooseStarterPokemon = async (data: ChooseStarterPokemonRequest): Promise<ChooseStarterPokemonResponse> => {
+  try {
+    const response = await axiosInstance.post('/characters/choose-starter', data);
+    return response.data;
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+// קבלת פרטי פרופיל של משתמש
+export const getUserProfile = async (username: string): Promise<GetUserProfileResponse> => {
+  try {
+    const response = await axiosInstance.get(`/characters/profile/${username}`);
+    return response.data;
+  } catch (error: any) {
+    throw error;
+  }
+};
+
+
+export const getMyPokemons = async(user_id: number): Promise<any> => {
+  try {
+    const response = await axiosInstance.post('/characters/my-pokemons', {
+      user_id
+    });
+    return response.data;
+  } catch (error:any) {
+    throw error;
+  }
+}
+
+// ממשקים לפרופיל
+export interface UserProfile {
+  user_id: number;
+  username: string;
+  character: string;
+  wereld: string;
+  ultimo_login: string;
+  antiguidade: number;
+  clan: string;
+  rang: number;
+  rang_temp: number;
+  silver: number;
+  gold: number;
+  premiumaccount: number;
+  admin: number;
+  online: number;
+  character_num: number;
+  profiel: string;
+  teamzien: number;
+  badgeszien: number;
+  rank: number;
+  aantalpokemon: number;
+  badges: number;
+  gewonnen: number;
+  verloren: number;
+  datum: string;
+  karma: number;
+  email: string;
+  ip_aangemeld: string;
+  ip_ingelogd: string;
+  badge_case: number;
+}
+
+export interface ProfileStats {
+  pokes100: number;
+  top3: number;
+  top2: number;
+  top1: number;
+  inHouse: number;
+}
+
+export interface ProfileFriend {
+  friend_id: number;
+  friend_username: string;
+  date: string;
+}
+
+export interface ProfileHonor {
+  id: number;
+  u_honor: number;
+  date: string;
+  honorer_username: string;
+}
+
+export interface TeamPokemon {
+  id: number;
+  wild_id: number;
+  naam: string;
+  type1: string;
+  type2?: string;
+  level: number;
+  opzak_nummer: number;
+}
+
+export interface RankMedal {
+  medal: string | null;
+  text: string;
+}
+
+export interface ProfileFormatted {
+  date: string;
+  silver: string;
+  gold: string;
+}
+
+export interface GetUserProfileResponse {
+  success: boolean;
+  data: {
+    profile: UserProfile;
+    stats: ProfileStats;
+    friends: ProfileFriend[];
+    honor: ProfileHonor[];
+    teamPokemon: TeamPokemon[];
+    badges: any;
+    onlineStatus: string;
+    onlineIcon: string;
+    rankMedal: RankMedal;
+    rankTempMedal: RankMedal;
+    formatted: ProfileFormatted;
+  };
+}
