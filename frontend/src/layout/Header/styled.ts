@@ -243,7 +243,7 @@ const Silvers = styled("div")(() => ({
     color: "white",
     fontSize: 13,
     fontWeight: "bold",
-    marginLeft: 43,
+    marginRight: 20,
     width: "46%",
   },
 }));
@@ -259,7 +259,7 @@ const Golds = styled("div")(() => ({
     color: "white",
     fontSize: 13,
     fontWeight: "bold",
-    marginLeft: 43,
+    marginRight: 20,
     width: "46%",
   },
 }));
