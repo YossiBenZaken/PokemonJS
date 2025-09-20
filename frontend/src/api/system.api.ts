@@ -22,6 +22,17 @@ export interface GetAssetsResponse {
   };
 }
 
+export interface GetOfficialMessageResponse {
+  success: boolean;
+  data: {
+    id: number,
+    title: string,
+    message: string,
+    date: string,
+    is_read: boolean
+  }[]
+}
+
 export const getOnlineUsers = async (): Promise<GetOnlineUsersResponse> => {
   const { data } = await axiosInstance.get("/system/online");
   return data;
@@ -45,3 +56,12 @@ export const updateTickets = async (
   });
   return data;
 };
+
+export const getOfficialMessage = async (userId: number,messageId?: string): Promise<GetOfficialMessageResponse> => {
+  let url = '/system/official-messages';
+  const {data} = await axiosInstance.post(url, {
+    id: messageId,
+    userId
+  });
+  return data;
+}
