@@ -2,6 +2,7 @@ import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 
 import { BadgeCase } from "./pages/Badges";
 import { ChoosePokemonPage } from "./pages/ChoosePokemon";
+import FishingPage from "./pages/Fishing";
 import { Footer } from "./layout/Footer/Footer";
 import { GameProvider } from "./contexts/GameContext";
 import { Header } from "./layout/Header";
@@ -59,6 +60,14 @@ function App() {
             element={
               <PrivateRoute>
                 <BadgeCase />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/fishing"
+            element={
+              <PrivateRoute>
+                <FishingPage />
               </PrivateRoute>
             }
           />

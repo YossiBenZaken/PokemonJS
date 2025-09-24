@@ -339,14 +339,24 @@ export const sendMessage = async (
   return data.data;
 };
 
-export const getBadges = async (
-  userId: number
-):Promise<any> => {
+export const getBadges = async (userId: number): Promise<any> => {
   const { data } = await axiosInstance.post("/characters/badges", {
-    userId
+    userId,
   });
   return data.data;
 };
+
+export const fish = async (userId: number): Promise<any> => {
+  const { data } = await axiosInstance.post("/characters/fish", {
+    userId,
+  });
+  return data;
+};
+
+export const getFishingLeaders = async(): Promise<any> => {
+  const { data } = await axiosInstance.get("/characters/get-fishing-leaders");
+  return data;
+}
 
 // ממשקים לפרופיל
 export interface UserProfile {

@@ -1,10 +1,12 @@
 import {
   chooseStarterPokemon,
   createCharacter,
+  fish,
   getAvailableCharacters,
   getAvailableStarterPokemon,
   getBadges,
   getCharacterDetails,
+  getFishingLeaders,
   getMessages,
   getUserCharacterCount,
   getUserCharacters,
@@ -64,5 +66,9 @@ router.post('/reply-message', replyMessage);
 router.post('/send-message', sendMessage);
 
 router.post('/badges', getBadges);
+
+router.post('/fish', fish);
+
+router.get('/get-fishing-leaders', getFishingLeaders);
 
 export default router;

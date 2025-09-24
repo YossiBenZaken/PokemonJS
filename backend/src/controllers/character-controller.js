@@ -1050,3 +1050,81 @@ export const getBadges = async (req, res) => {
     });
   }
 };
+
+export const fish = async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+    // בדוק אם השחקן יכול לדוג
+    const [user] = await query("SELECT g.fishing, g.last_fishing, gi.`Fishing rod` FROM gebruikers AS g INNER JOIN gebruikers_item AS gi ON gi.user_id = g.user_id WHERE g.user_id = ?", [userId]);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "שחקן לא נמצא" });
+    }
+
+    if (user["Fishing rod"] === 0) {
+      return res.json({ success: false, message: "אין לך חכת דיג" });
+    }
+
+    const now = Math.floor(Date.now() / 1000);
+    if (user.last_fishing + 60 * 10 > now) {
+      const wait = Math.ceil(((user.last_fishing + 600) - now) / 60);
+      return res.json({ success: false, message: `עליך לחכות עוד ${wait} דקות` });
+    }
+
+    // שליפת פוקימון מים/קרח רנדומלי
+    const [swappah] = await query(
+      "SELECT * FROM pokemon_wild WHERE (type1 IN ('Water','Ice') OR type2 IN ('Water','Ice')) ORDER BY RAND() LIMIT 1"
+    );
+
+    const total = (swappah.hp_base + swappah.attack_base + swappah.defence_base + swappah.speed_base) * 73;
+    const points = Math.floor(Math.random() * total) + 1;
+
+    // עדכון בניקוד ובזמן
+    await query(
+      "UPDATE gebruikers SET fishing = fishing + ?, last_fishing = UNIX_TIMESTAMP() WHERE user_id = ?",
+      [points, userId]
+    );
+
+    res.json({
+      success: true,
+      data: {
+        pokemon: {
+          id: swappah.wild_id,
+          name: swappah.naam,
+        },
+        points,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "שגיאה בדיג", error: err.message });
+  }
+};
+
+export const getFishingLeaders = async (req, res) => {
+  try {
+    const today = await query(
+      "SELECT username, user_id, fishing FROM gebruikers WHERE banned != 'Y' ORDER BY fishing DESC LIMIT 3"
+    );
+
+    const yesterday = await query("SELECT * FROM fishs WHERE id = 1 LIMIT 1");
+    const row = yesterday[0];
+
+    const winners = [];
+    for (let i = 1; i <= 3; i++) {
+      if (row[`fish${i === 1 ? "" : i}`]) {
+        const [user] = await query("SELECT username, user_id FROM gebruikers WHERE user_id = ?", [
+          row[`fish${i === 1 ? "" : i}`],
+        ]);
+        winners.push(user);
+      }
+    }
+
+    res.json({
+      success: true,
+      data: { today, yesterday: winners },
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "שגיאה בשליפת טבלאות", error: err.message });
+  }
+};

@@ -25,6 +25,7 @@ import {
   BellRing,
   BookOpen,
   ChartColumnIncreasing,
+  Fish,
   Home,
   LogOut,
   Map,
@@ -64,7 +65,8 @@ export const Header: React.FC = () => {
     { path: "/items", label: "חפצים", icon: <Package size={20} /> },
     { path: "/house-shop", label: "מוכר הבתים", icon: <Home size={20} /> },
     { path: '/statistics', label: 'סטטיסטיקות', icon: <ChartColumnIncreasing size={20} />},
-    { path: '/badges', label: 'תגים', icon: <Badge size={20} />}
+    { path: '/badges', label: 'תגים', icon: <Badge size={20} />},
+    { path: '/fishing', label: 'דיג', icon: <Fish size={20} />}
   ];
 
   useEffect(() => {
