@@ -3,9 +3,15 @@ import styled, { css, keyframes } from "styled-components";
 import { Link } from "react-router-dom";
 import eventos from '../../assets/images/layout/eventos.png';
 import gold from "../../assets/images/layout/Gold.png";
-import logo from '../../assets/images/layout/Logo/logo4.png'
+import logo1 from '../../assets/images/layout/Logo/logo1.png';
+import logo2 from '../../assets/images/layout/Logo/logo2.png';
+import logo3 from '../../assets/images/layout/Logo/logo3.png';
+import logo4 from '../../assets/images/layout/Logo/logo4.png';
+import logo5 from '../../assets/images/layout/Logo/logo5.png';
 import plus from "../../assets/images/layout/plus.png";
 import silvers from "../../assets/images/layout/silvers.png";
+
+const Logos = [logo1, logo2, logo3, logo4, logo5];
 
 const slideDown = keyframes`
   from {
@@ -291,7 +297,7 @@ const Badges = styled("span")(() => ({
 const HubLogo = styled('div')(() => ({
   width: 401,
   height: 200,
-  background: `url(${logo}) no-repeat center`,
+  background: `url(${Logos[Math.floor(Math.random() * Logos.length)]}) no-repeat center`,
   backgroundSize: 'cover',
 }));
 
