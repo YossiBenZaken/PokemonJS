@@ -1,5 +1,6 @@
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 
+import { BadgeCase } from "./pages/Badges";
 import { ChoosePokemonPage } from "./pages/ChoosePokemon";
 import { Footer } from "./layout/Footer/Footer";
 import { GameProvider } from "./contexts/GameContext";
@@ -50,6 +51,14 @@ function App() {
             element={
               <PrivateRoute>
                 <PokedexPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/badges"
+            element={
+              <PrivateRoute>
+                <BadgeCase />
               </PrivateRoute>
             }
           />

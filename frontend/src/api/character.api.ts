@@ -339,6 +339,15 @@ export const sendMessage = async (
   return data.data;
 };
 
+export const getBadges = async (
+  userId: number
+):Promise<any> => {
+  const { data } = await axiosInstance.post("/characters/badges", {
+    userId
+  });
+  return data.data;
+};
+
 // ממשקים לפרופיל
 export interface UserProfile {
   user_id: number;

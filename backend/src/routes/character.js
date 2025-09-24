@@ -3,6 +3,7 @@ import {
   createCharacter,
   getAvailableCharacters,
   getAvailableStarterPokemon,
+  getBadges,
   getCharacterDetails,
   getMessages,
   getUserCharacterCount,
@@ -61,5 +62,7 @@ router.post('/read-message', readMessage);
 router.post('/reply-message', replyMessage);
 
 router.post('/send-message', sendMessage);
+
+router.post('/badges', getBadges);
 
 export default router;
