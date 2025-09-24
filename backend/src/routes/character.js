@@ -1,10 +1,12 @@
 import {
   chooseStarterPokemon,
   createCharacter,
+  fish,
   getAvailableCharacters,
   getAvailableStarterPokemon,
   getBadges,
   getCharacterDetails,
+  getFishingLeaders,
   getMessages,
   getUserCharacterCount,
   getUserCharacters,
@@ -18,6 +20,7 @@ import {
 
 import express from 'express';
 import { extractAccId } from '../middleware/auth.js';
+import { judgePokemon } from '../controllers/judge-controller.js';
 import { validateCreateCharacter } from '../middleware/validation.js';
 
 const router = express.Router();
@@ -64,5 +67,11 @@ router.post('/reply-message', replyMessage);
 router.post('/send-message', sendMessage);
 
 router.post('/badges', getBadges);
+
+router.post('/fish', fish);
+
+router.get('/get-fishing-leaders', getFishingLeaders);
+
+router.post('/judge', judgePokemon);
 
 export default router;

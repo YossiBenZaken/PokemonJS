@@ -6,6 +6,7 @@ import {
   startTradersCron,
   stopTradersCron,
 } from "./traders-cron.js";
+import { runDayCronManually, startDayCron, stopDayCron } from "./cron-daily.js";
 import {
   runDaycareCronManually,
   startDaycareCron,
@@ -30,6 +31,7 @@ export const startAllCronJobs = () => {
   // Start traders cron job (every 4 hours)
   startTradersCron();
 
+  startDayCron(); // קרון יומי
   // Add other cron jobs here as needed
   // startOtherCron();
 };
@@ -41,6 +43,7 @@ export const stopAllCronJobs = () => {
   stopDaycareCron();
   stopMarketCron();
   stopTradersCron();
+  stopDayCron();
 
   // Stop other cron jobs here
   // stopOtherCron();
@@ -48,6 +51,20 @@ export const stopAllCronJobs = () => {
 
 // Manual cron execution endpoints (for testing or admin use)
 export const setupManualCronRoutes = (app) => {
+  // Manual day cron execution
+  app.post("/admin/cron/day", async (req, res) => {
+    try {
+      const result = await runDayCronManually();
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: "שגיאה בהרצת קרון יומי",
+        error: error.message,
+      });
+    }
+  });
+
   // Manual daycare cron execution
   app.post("/admin/cron/daycare", async (req, res) => {
     try {

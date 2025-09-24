@@ -2,6 +2,7 @@ import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 
 import { BadgeCase } from "./pages/Badges";
 import { ChoosePokemonPage } from "./pages/ChoosePokemon";
+import FishingPage from "./pages/Fishing";
 import { Footer } from "./layout/Footer/Footer";
 import { GameProvider } from "./contexts/GameContext";
 import { Header } from "./layout/Header";
@@ -10,6 +11,7 @@ import { HouseShopPage } from "./pages/HouseShop";
 import Inbox from "./pages/Inbox/Inbox";
 import InboxPage from "./pages/Inbox";
 import ItemsPage from "./pages/Items";
+import { Judge } from "./pages/Judge";
 import LeaderboardsPage from "./pages/Leaderboards";
 import { LoginPage } from "./pages/Login";
 import { MyCharactersPage } from "./pages/MyCharacters";
@@ -59,6 +61,22 @@ function App() {
             element={
               <PrivateRoute>
                 <BadgeCase />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/fishing"
+            element={
+              <PrivateRoute>
+                <FishingPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/judge"
+            element={
+              <PrivateRoute>
+                <Judge />
               </PrivateRoute>
             }
           />

@@ -40,4 +40,5 @@ router.use("/api/traders", tradersRoutes);
 router.use("/api/specialists", specialistsRoutes);
 router.use("/api/notifications", notificationRoutes);
 router.use("/api/leaderboards", leaderboardsRoutes);
+
 export { router };
