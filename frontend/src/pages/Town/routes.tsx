@@ -7,6 +7,7 @@ import FountainPage from "./Fountain";
 import GymsPage from "./Gyms";
 import MarketPage from "./Market";
 import MarketShopPage from "./MarketShop";
+import MovesPage from "./Moves";
 import PokemonCenterPage from "./PokemonCenter";
 import PrivateRoute from "../../components/PrivateRoute";
 import { Route } from "react-router-dom";
@@ -136,6 +137,14 @@ export const TownRoutes = (
       element={
         <PrivateRoute>
           <Specialists />
+        </PrivateRoute>
+      }
+    />
+    <Route
+      path="/moves"
+      element={
+        <PrivateRoute>
+          <MovesPage />
         </PrivateRoute>
       }
     />
