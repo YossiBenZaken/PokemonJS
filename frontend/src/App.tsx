@@ -13,6 +13,7 @@ import { LoginPage } from "./pages/Login";
 import { MyCharactersPage } from "./pages/MyCharacters";
 import { NewCharacterPage } from "./pages/NewCharacter";
 import NewMessage from "./pages/Inbox/NewMessage";
+import Notifications from "./pages/Notifications";
 import OfficialMessages from "./pages/Inbox/OfficialMessages";
 import PrivateRoute from "./components/PrivateRoute";
 import { ProfilePage } from "./pages/Profile";
@@ -59,6 +60,14 @@ function App() {
             }
           />
           <Route
+            path="/events"
+            element={
+              <PrivateRoute>
+                <Notifications />
+              </PrivateRoute>
+            }
+          />
+          <Route
             path="/house-shop"
             element={
               <PrivateRoute>
@@ -98,7 +107,14 @@ function App() {
                 </PrivateRoute>
               }
             />
-            <Route path="new-message" element={<PrivateRoute><NewMessage /></PrivateRoute>} />
+            <Route
+              path="new-message"
+              element={
+                <PrivateRoute>
+                  <NewMessage />
+                </PrivateRoute>
+              }
+            />
           </Route>
           {TownRoutes}
         </Routes>

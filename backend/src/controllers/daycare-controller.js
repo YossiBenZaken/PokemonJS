@@ -397,13 +397,13 @@ export const takePokemon = async (req, res) => {
     if (!daycarePokemon) {
       return res
         .status(404)
-        .json({ success: false, message: "Pokemon não encontrado no jardim" });
+        .json({ success: false, message: "פוקימון לא נמצא בגינה" });
     }
 
     if (daycarePokemon.user_id !== userId) {
       return res
         .status(403)
-        .json({ success: false, message: "Este Pokemon não é seu" });
+        .json({ success: false, message: "הפוקימון הזה לא שלך" });
     }
 
     // Get user info
@@ -415,7 +415,7 @@ export const takePokemon = async (req, res) => {
     if (user.in_hand >= 6) {
       return res
         .status(400)
-        .json({ success: false, message: "Equipe está cheia" });
+        .json({ success: false, message: "הצוות מלא" });
     }
 
     // Calculate cost
@@ -426,7 +426,7 @@ export const takePokemon = async (req, res) => {
     if (user.silver < totalCost) {
       return res.status(400).json({
         success: false,
-        message: "Silver insuficiente",
+        message: "חוסר כסף",
         cost: totalCost,
         userSilver: user.silver,
       });
@@ -462,20 +462,20 @@ export const takePokemon = async (req, res) => {
         INSERT INTO gebeurtenis (datum, ontvanger_id, bericht, gelezen) 
         VALUES (NOW(), ?, ?, '0')
       `,
-        [userId, `${daycarePokemon.naam} subiu de nível!`]
+        [userId, `${daycarePokemon.naam} עלה רמה!`]
       );
     }
 
     return res.json({
       success: true,
-      message: "Pokemon retirado do jardim com sucesso",
+      message: "פוקימון הוסר בהצלחה מהגן",
       levelUps: daycarePokemon.levelup,
       cost: totalCost,
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "Erro ao retirar Pokemon",
+      message: "שגיאה בהסרת פוקימון",
       error: error.message,
     });
   }
