@@ -14,6 +14,7 @@ import pokemonRoutes from "./pokemon.js";
 import specialistsRoutes from "./specialists.js";
 import systemRoutes from "./system.js";
 import tradersRoutes from "./traders.js";
+import travelRoutes from "./travel.js";
 
 const router = express.Router();
 // נתיבי אימות חדשים עם MySQL
@@ -29,6 +30,7 @@ router.use("/api/fountain", fountainRoutes);
 router.use("/api/casino", casinoRoutes);
 router.use("/api/pokemon", pokemonRoutes);
 router.use("/api/moves", movesRoutes);
+router.use("/api/travel", travelRoutes);
 router.use("/api/daycare", dayCareRoutes);
 router.use("/api/bank", bankRoutes);
 router.use("/api/traders", tradersRoutes);
