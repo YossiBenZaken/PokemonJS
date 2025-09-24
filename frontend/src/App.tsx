@@ -9,6 +9,7 @@ import { HouseShopPage } from "./pages/HouseShop";
 import Inbox from "./pages/Inbox/Inbox";
 import InboxPage from "./pages/Inbox";
 import ItemsPage from "./pages/Items";
+import LeaderboardsPage from "./pages/Leaderboards";
 import { LoginPage } from "./pages/Login";
 import { MyCharactersPage } from "./pages/MyCharacters";
 import { NewCharacterPage } from "./pages/NewCharacter";
@@ -32,6 +33,14 @@ function App() {
             element={
               <PrivateRoute>
                 <NewCharacterPage />
+              </PrivateRoute>
+            }
+          />
+          <Route 
+            path="/statistics"
+            element={
+              <PrivateRoute>
+                <LeaderboardsPage />
               </PrivateRoute>
             }
           />

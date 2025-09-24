@@ -23,6 +23,7 @@ import {
 import {
   BellRing,
   BookOpen,
+  ChartColumnIncreasing,
   Home,
   LogOut,
   Map,
@@ -61,6 +62,7 @@ export const Header: React.FC = () => {
     { path: "/town", label: "מחוז", icon: <Map size={20} /> },
     { path: "/items", label: "חפצים", icon: <Package size={20} /> },
     { path: "/house-shop", label: "מוכר הבתים", icon: <Home size={20} /> },
+    { path: '/statistics', label: 'סטטיסטיקות', icon: <ChartColumnIncreasing size={20} />}
   ];
 
   useEffect(() => {
