@@ -1,6 +1,7 @@
 import { query, transaction } from "../config/database.js";
 
 import crypto from "crypto";
+import {date} from '../helpers/date.js'
 
 // יצירת דמות חדשה
 export const createCharacter = async (req, res) => {
@@ -328,7 +329,7 @@ export const loginWithCharacter = async (req, res) => {
       success: true,
       message: "נכנסת למשחק בהצלחה!",
       data: {
-        ...character 
+        ...character,
       },
     });
   } catch (error) {
@@ -670,7 +671,7 @@ export const getUserProfile = async (req, res) => {
     if (!username) {
       return res.status(400).json({
         success: false,
-        message: 'שם משתמש לא תקין'
+        message: "שם משתמש לא תקין",
       });
     }
 
@@ -697,30 +698,35 @@ export const getUserProfile = async (req, res) => {
     if (profileResult.length === 0) {
       return res.status(404).json({
         success: false,
-        message: 'משתמש לא נמצא'
+        message: "משתמש לא נמצא",
       });
     }
 
     const profile = profileResult[0];
 
     // קבלת סטטיסטיקות נוספות
-    const pokes100Query = "SELECT COUNT(*) as count FROM pokemon_speler WHERE user_id = ? AND level = 100";
+    const pokes100Query =
+      "SELECT COUNT(*) as count FROM pokemon_speler WHERE user_id = ? AND level = 100";
     const pokes100Result = await query(pokes100Query, [profile.user_id]);
     const pokes100 = pokes100Result[0].count;
 
-    const top3Query = "SELECT COUNT(*) as count FROM pokemon_speler WHERE user_id = ? AND top3 = '3'";
+    const top3Query =
+      "SELECT COUNT(*) as count FROM pokemon_speler WHERE user_id = ? AND top3 = '3'";
     const top3Result = await query(top3Query, [profile.user_id]);
     const top3 = top3Result[0].count;
 
-    const top2Query = "SELECT COUNT(*) as count FROM pokemon_speler WHERE user_id = ? AND top3 = '2'";
+    const top2Query =
+      "SELECT COUNT(*) as count FROM pokemon_speler WHERE user_id = ? AND top3 = '2'";
     const top2Result = await query(top2Query, [profile.user_id]);
     const top2 = top2Result[0].count;
 
-    const top1Query = "SELECT COUNT(*) as count FROM pokemon_speler WHERE user_id = ? AND top3 = '1'";
+    const top1Query =
+      "SELECT COUNT(*) as count FROM pokemon_speler WHERE user_id = ? AND top3 = '1'";
     const top1Result = await query(top1Query, [profile.user_id]);
     const top1 = top1Result[0].count;
 
-    const inHouseQuery = "SELECT COUNT(*) as count FROM pokemon_speler WHERE user_id = ? AND (opzak = 'nee' OR opzak = 'tra')";
+    const inHouseQuery =
+      "SELECT COUNT(*) as count FROM pokemon_speler WHERE user_id = ? AND (opzak = 'nee' OR opzak = 'tra')";
     const inHouseResult = await query(inHouseQuery, [profile.user_id]);
     const inHouse = inHouseResult[0].count;
 
@@ -744,7 +750,12 @@ export const getUserProfile = async (req, res) => {
       ORDER BY f.date DESC
       LIMIT 8
     `;
-    const friendsResult = await query(friendsQuery, [profile.user_id, profile.user_id, profile.user_id, profile.user_id]);
+    const friendsResult = await query(friendsQuery, [
+      profile.user_id,
+      profile.user_id,
+      profile.user_id,
+      profile.user_id,
+    ]);
 
     // קבלת כבוד
     const honorQuery = `
@@ -785,18 +796,26 @@ export const getUserProfile = async (req, res) => {
     }
 
     // חישוב סטטוס אונליין
-    const isOnline = (profile.online + 900) > Math.floor(Date.now() / 1000);
-    const onlineStatus = isOnline ? 'online' : 'offline';
-    const onlineIcon = isOnline ? '/images/icons/status_online.png' : '/images/icons/status_offline.png';
+    const isOnline = profile.online + 900 > Math.floor(Date.now() / 1000);
+    const onlineStatus = isOnline ? "online" : "offline";
+    const onlineIcon = isOnline
+      ? "/images/icons/status_online.png"
+      : "/images/icons/status_offline.png";
 
     // חישוב מדליות דירוג
     const getRankMedal = (rank) => {
-      if (rank === 1) return { medal: '/images/icons/plaatsnummereen.png', text: '1º' };
-      if (rank === 2) return { medal: '/images/icons/plaatsnummertwee.png', text: '2º' };
-      if (rank === 3) return { medal: '/images/icons/plaatsnummerdrie.png', text: '3º' };
-      if (rank > 3 && rank <= 10) return { medal: '/images/icons/gold_medaille.png', text: `${rank}º` };
-      if (rank > 10 && rank <= 30) return { medal: '/images/icons/silver_medaille.png', text: `${rank}º` };
-      if (rank > 30 && rank <= 50) return { medal: '/images/icons/bronze_medaille.png', text: `${rank}º` };
+      if (rank === 1)
+        return { medal: "/images/icons/plaatsnummereen.png", text: "1º" };
+      if (rank === 2)
+        return { medal: "/images/icons/plaatsnummertwee.png", text: "2º" };
+      if (rank === 3)
+        return { medal: "/images/icons/plaatsnummerdrie.png", text: "3º" };
+      if (rank > 3 && rank <= 10)
+        return { medal: "/images/icons/gold_medaille.png", text: `${rank}º` };
+      if (rank > 10 && rank <= 30)
+        return { medal: "/images/icons/silver_medaille.png", text: `${rank}º` };
+      if (rank > 30 && rank <= 50)
+        return { medal: "/images/icons/bronze_medaille.png", text: `${rank}º` };
       return { medal: null, text: `${rank}º` };
     };
 
@@ -805,14 +824,14 @@ export const getUserProfile = async (req, res) => {
 
     // פורמט תאריכים
     const formatDate = (dateString) => {
-      if (!dateString) return '-';
+      if (!dateString) return "-";
       const date = new Date(dateString);
-      return date.toLocaleDateString('he-IL');
+      return date.toLocaleDateString("he-IL");
     };
 
     // פורמט כסף
     const formatMoney = (amount) => {
-      return new Intl.NumberFormat('he-IL').format(Math.round(amount || 0));
+      return new Intl.NumberFormat("he-IL").format(Math.round(amount || 0));
     };
 
     res.json({
@@ -847,14 +866,14 @@ export const getUserProfile = async (req, res) => {
           email: profile.email,
           ip_aangemeld: profile.ip_aangemeld,
           ip_ingelogd: profile.ip_ingelogd,
-          badge_case: profile.badge_case
+          badge_case: profile.badge_case,
         },
         stats: {
           pokes100,
           top3,
           top2,
           top1,
-          inHouse
+          inHouse,
         },
         friends: friendsResult,
         honor: honorResult,
@@ -867,38 +886,146 @@ export const getUserProfile = async (req, res) => {
         formatted: {
           date: formatDate(profile.datum),
           silver: formatMoney(profile.silver),
-          gold: formatMoney(profile.gold)
-        }
-      }
+          gold: formatMoney(profile.gold),
+        },
+      },
     });
-
   } catch (error) {
-    console.error('שגיאה בקבלת פרטי פרופיל:', error);
+    console.error("שגיאה בקבלת פרטי פרופיל:", error);
     res.status(500).json({
       success: false,
-      message: 'שגיאה פנימית בשרת',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      message: "שגיאה פנימית בשרת",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }
 };
 
-export const myPokemon = async (req,res) => {
+export const myPokemon = async (req, res) => {
   try {
-    const {user_id} = req.body;
-    const myPokemon = await query("SELECT `pw`.`naam`,`pw`.`type1`,`pw`.`type2`,`pw`.`zeldzaamheid`,`pw`.`groei`,`pw`.`aanval_1`,`ps`.`humor_change`,`pw`.`aanval_2`,`pw`.`aanval_3`,`pw`.`aanval_4`,`ps`.* FROM `pokemon_wild` AS `pw` INNER JOIN `pokemon_speler` AS `ps` ON `ps`.`wild_id`=`pw`.`wild_id` WHERE `ps`.`user_id`=? AND `ps`.`opzak`='ja' ORDER BY `ps`.`opzak_nummer` ASC", [user_id])
+    const { user_id } = req.body;
+    const myPokemon = await query(
+      "SELECT `pw`.`naam`,`pw`.`type1`,`pw`.`type2`,`pw`.`zeldzaamheid`,`pw`.`groei`,`pw`.`aanval_1`,`ps`.`humor_change`,`pw`.`aanval_2`,`pw`.`aanval_3`,`pw`.`aanval_4`,`ps`.* FROM `pokemon_wild` AS `pw` INNER JOIN `pokemon_speler` AS `ps` ON `ps`.`wild_id`=`pw`.`wild_id` WHERE `ps`.`user_id`=? AND `ps`.`opzak`='ja' ORDER BY `ps`.`opzak_nummer` ASC",
+      [user_id]
+    );
     res.json({
       success: true,
       data: {
         myPokemon,
-        in_hand: myPokemon.length
-      }
-    })
+        in_hand: myPokemon.length,
+      },
+    });
   } catch (error) {
-    console.error('שגיאה בקבלת פוקימון:', error);
+    console.error("שגיאה בקבלת פוקימון:", error);
     res.status(500).json({
       success: false,
-      message: 'שגיאה פנימית בשרת',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      message: "שגיאה פנימית בשרת",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }
+};
+
+// Inbox Controllers
+export const getMessages = async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+      const messages = await query(
+        `
+        SELECT *
+        FROM conversas
+        WHERE 
+          (trainer_1 = ? AND trainer_1_hidden = 0)
+          OR (trainer_2 = ? AND trainer_2_hidden = 0)
+        ORDER BY STR_TO_DATE(last_message, '%d/%m/%Y %H:%i:%s') DESC
+        `,
+        [userId, userId]
+      );
+
+      for (const [index, { id, trainer_1, trainer_2 }] of messages.entries()) {
+        let other_user = trainer_1;
+        if(trainer_1 === userId) {
+          other_user = trainer_2;
+        }
+        const [otherUserData] = await query("SELECT user_id, username, `character` FROM `gebruikers` WHERE user_id = ?", [other_user]);
+        const [myUser] = await query("SELECT user_id, username, `character` FROM `gebruikers` WHERE user_id = ?", [userId]);
+        if(other_user === trainer_1) {
+          messages[index].trainer_1 = otherUserData;
+          messages[index].trainer_2 = myUser;
+        } else {
+          messages[index].trainer_2 = otherUserData;
+          messages[index].trainer_1 =myUser;
+        }
+        const msgs = await query(
+          `SELECT sender, reciever, message, date,seen FROM conversas_messages WHERE conversa=? ORDER BY id ASC`,
+          [id]
+        );
+        messages[index]['conversations'] = msgs;
+      }
+      res.json({
+        success: true,
+        data: {
+          messages,
+        },
+      });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "שגיאה בקבלת שיחות",
+      error: error.message,
+    });
+  }
+};
+
+export const readMessage = async (req,res) => {
+  const {userId, conversa} = req.body;
+  await query('UPDATE conversas_messages SET seen = 1 WHERE conversa = ? AND reciever = ?', [conversa, userId]);
+  res.status(204).send();
 }
+
+export const replyMessage = async (req,res) => {
+  const {sender,message,conversa, userId} = req.body;
+  if(sender === userId) {
+    const [conversations] = await query("SELECT * FROM `conversas` WHERE id=? AND (trainer_1=? OR trainer_2=?)", [conversa, userId, userId]);
+    let reciever = conversations.trainer_1;
+    if(sender === conversations.trainer_1) {
+      reciever = conversations.trainer_2;
+    }
+    const currentDate = date('d/m/Y H:i:s');
+    await query("INSERT INTO `conversas_messages` (`conversa`, `sender`, `reciever`, `message`, `date`) VALUES (?, ?, ?, ?, ?)",[conversa, userId, reciever, message, currentDate])
+    await query("UPDATE `conversas` SET last_message=? WHERE id=? AND (trainer_1=? OR trainer_2=?)",[currentDate, conversa, userId, userId])
+
+    res.json({
+      success: true,
+      data: currentDate
+    })
+  } else {
+    res.status(400).send();
+  }
+}
+
+export const sendMessage = async (req,res) => {
+  const {subject, player, message, userId} = req.body;
+  const [user] = await query("SELECT user_id FROM `gebruikers` WHERE username = ?", [player]);
+  if(!user) {
+    res.status(400).send();
+    return;
+  }
+
+  if(user.user_id === userId) {
+    res.status(400).json({
+      success: false,
+      data: 'אתה לא יכול לשלוח לעצמך הודעות!'
+    });
+    return;
+  }
+
+  const currentDate = date('d/m/Y H:i:s');
+  var insert =  await query("INSERT INTO `conversas` (`trainer_1`, `trainer_2`, `title`, `last_message`) VALUES (?, ?, ?, ?)", [userId, user.user_id, subject, currentDate]);
+  const id = insert.insertId;
+  await query("INSERT INTO `conversas_messages` (`conversa`, `sender`, `reciever`, `message`, `date`) VALUES (?, ?, ?, ?, ?)",[id, userId, user.user_id, message, currentDate])
+  res.json({
+    success: true,
+    data: id
+  })
+}
+

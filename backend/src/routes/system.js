@@ -1,5 +1,6 @@
 import {
   getAssets,
+  getOfficialMessages,
   getOnlineUsers,
   updateTickets,
 } from "../controllers/system-controllers.js";
@@ -20,5 +21,5 @@ router.post("/heal", healPokemons);
 router.get("/pc/hand", getHandPokemons);
 router.get("/cooldown", getCooldown);
 router.post("/tickets", extractAccId, updateTickets);
-
+router.post("/official-messages", getOfficialMessages);
 export default router;

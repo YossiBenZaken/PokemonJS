@@ -16,13 +16,11 @@ export const getOnlineUsers = async (req, res) => {
     );
     res.json({ success: true, users: result, total: result.length });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "שגיאה בקבלת משתמשים מחוברים",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "שגיאה בקבלת משתמשים מחוברים",
+      error: error.message,
+    });
   }
 };
 
@@ -31,13 +29,11 @@ export const getAssets = async (req, res) => {
     const ranks = await query("SELECT * FROM `rank`");
     res.json({ success: true, data: { ranks } });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "שגיאה בקבלת משאבים",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "שגיאה בקבלת משאבים",
+      error: error.message,
+    });
   }
 };
 
@@ -77,12 +73,61 @@ export const updateTickets = async (req, res) => {
     ]);
     return res.json({ success: true, tickets: next });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "שגיאה בעדכון Tickets",
-        error: error.message,
+    res.status(500).json({
+      success: false,
+      message: "שגיאה בעדכון Tickets",
+      error: error.message,
+    });
+  }
+};
+
+export const getOfficialMessages = async (req, res) => {
+  try {
+    const { id, userId } = req.body;
+    if (id) {
+      const messagesList = await query(
+        "SELECT * FROM `official_message` WHERE id = ? AND `hidden` = 0",
+        [id]
+      );
+      await query(`INSERT INTO official_message_read (id_msg, id_user)
+VALUES (?, ?)
+ON DUPLICATE KEY UPDATE
+  id_user = VALUES(id_user),
+  id_msg = VALUES(id_msg);
+`,[id, userId])
+      res.json({
+        success: true,
+        data: messagesList,
       });
+    } else {
+      const messagesList = await query(
+        `SELECT om.id,
+       om.title,
+       om.message,
+       om.date,
+    CASE 
+        WHEN omr.id_user IS NOT NULL THEN 1 
+        ELSE 0 
+    END AS is_read
+FROM official_message AS om
+LEFT JOIN official_message_read AS omr
+       ON omr.id_msg = om.id
+      AND omr.id_user = ?
+WHERE om.hidden = 0
+  AND (omr.id_user = ? OR omr.id_user IS NULL)
+ORDER BY om.id DESC;`,
+        [userId, userId]
+      );
+      res.json({
+        success: true,
+        data: messagesList,
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "שגיאה בקבלת הודעות רשמיות",
+      error: error.message,
+    });
   }
 };

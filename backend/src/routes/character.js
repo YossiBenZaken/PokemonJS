@@ -4,11 +4,15 @@ import {
   getAvailableCharacters,
   getAvailableStarterPokemon,
   getCharacterDetails,
+  getMessages,
   getUserCharacterCount,
   getUserCharacters,
   getUserProfile,
   loginWithCharacter,
-  myPokemon
+  myPokemon,
+  readMessage,
+  replyMessage,
+  sendMessage
 } from '../controllers/character-controller.js';
 
 import express from 'express';
@@ -49,5 +53,13 @@ router.get('/profile/:username', getUserProfile);
 
 // קבלת הפוקימון
 router.post('/my-pokemons', myPokemon);
+
+router.post('/get-messages', getMessages);
+
+router.post('/read-message', readMessage);
+
+router.post('/reply-message', replyMessage);
+
+router.post('/send-message', sendMessage);
 
 export default router;
