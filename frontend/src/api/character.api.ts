@@ -358,6 +358,22 @@ export const getFishingLeaders = async(): Promise<any> => {
   return data;
 }
 
+export const judgePokemon = async(userId: number,pokemonId: number): Promise<JudgeResult> => {
+  const {data} = await axiosInstance.post('/characters/judge', {
+    userId,
+    pokemonId
+  });
+  return data.data;
+
+}
+
+export type JudgeResult = {
+  pokemon: { id: number; name: string };
+  potential: string;
+  bestStat: { stat: string; value: number };
+  stats: Record<string, number>;
+};
+
 // ממשקים לפרופיל
 export interface UserProfile {
   user_id: number;

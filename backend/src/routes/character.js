@@ -20,6 +20,7 @@ import {
 
 import express from 'express';
 import { extractAccId } from '../middleware/auth.js';
+import { judgePokemon } from '../controllers/judge-controller.js';
 import { validateCreateCharacter } from '../middleware/validation.js';
 
 const router = express.Router();
@@ -70,5 +71,7 @@ router.post('/badges', getBadges);
 router.post('/fish', fish);
 
 router.get('/get-fishing-leaders', getFishingLeaders);
+
+router.post('/judge', judgePokemon);
 
 export default router;
