@@ -3,7 +3,6 @@ import {
   AuthButton,
   AuthLink,
   AuthSection,
-  Badges,
   Golds,
   HeaderContainer,
   HeaderContent,

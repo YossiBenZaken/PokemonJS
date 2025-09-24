@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { fish, getFishingLeaders } from "../../api/character.api";
 
 import Loader from "../../components/Loader";
-import axios from "axios";
 import styled from "styled-components";
 import { useGame } from "../../contexts/GameContext";
 
