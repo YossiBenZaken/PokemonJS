@@ -1029,3 +1029,24 @@ export const sendMessage = async (req,res) => {
   })
 }
 
+export const getBadges = async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+    const [badges] = await query(
+      "SELECT * FROM gebruikers_badges WHERE user_id = ? LIMIT 1",
+      [userId]
+    );
+
+    res.json({
+      success: true,
+      data: badges, // מחזיר את הסטטוס של כל האינסיגניות
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "שגיאה בקבלת אינסיגניות",
+      error: err.message,
+    });
+  }
+};
