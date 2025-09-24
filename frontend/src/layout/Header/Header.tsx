@@ -26,7 +26,6 @@ import {
   LogOut,
   Map,
   Package,
-  Trophy,
   User,
   Users,
 } from "lucide-react";
@@ -76,13 +75,13 @@ export const Header: React.FC = () => {
     };
 
     checkAuth();
-  }, [setSelectedCharacter]);
+  }, [setSelectedCharacter, setIsLoggedIn]);
 
   useEffect(() => {
     getAssets().then((res) => {
       setRanks(res.data.ranks);
     });
-  }, []);
+  }, [setRanks]);
 
   useEffect(() => {
     if (selectedCharacter) {
@@ -169,7 +168,7 @@ export const Header: React.FC = () => {
 
               <HubHudLine style={{ paddingLeft: 10 }}>
                 <Link to={"inbox"}>
-                  <Badges
+                  {/* <Badges
                     style={{
                       float: "left",
                       marginRight: -20,
@@ -179,7 +178,7 @@ export const Header: React.FC = () => {
                     }}
                   >
                     2
-                  </Badges>
+                  </Badges> */}
                   <img src={messsages} alt="messages" />
                 </Link>
               </HubHudLine>

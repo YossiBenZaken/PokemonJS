@@ -6,11 +6,13 @@ import { GameProvider } from "./contexts/GameContext";
 import { Header } from "./layout/Header";
 import { Home } from "./pages/Home";
 import { HouseShopPage } from "./pages/HouseShop";
+import Inbox from "./pages/Inbox/Inbox";
 import InboxPage from "./pages/Inbox";
 import ItemsPage from "./pages/Items";
 import { LoginPage } from "./pages/Login";
 import { MyCharactersPage } from "./pages/MyCharacters";
 import { NewCharacterPage } from "./pages/NewCharacter";
+import NewMessage from "./pages/Inbox/NewMessage";
 import OfficialMessages from "./pages/Inbox/OfficialMessages";
 import PrivateRoute from "./components/PrivateRoute";
 import { ProfilePage } from "./pages/Profile";
@@ -80,14 +82,23 @@ function App() {
               </PrivateRoute>
             }
           >
-            <Route index element={<p>שיחות</p>} />
-            <Route path="official-messages" element={
-              <PrivateRoute>
-                <OfficialMessages />
-              </PrivateRoute>
-            } />
-            <Route path="new-message" element={<p>שיחה חדשה</p>} />
-            <Route path="blocklist" element={<p>חסומים</p>} />
+            <Route
+              index
+              element={
+                <PrivateRoute>
+                  <Inbox />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="official-messages"
+              element={
+                <PrivateRoute>
+                  <OfficialMessages />
+                </PrivateRoute>
+              }
+            />
+            <Route path="new-message" element={<PrivateRoute><NewMessage /></PrivateRoute>} />
           </Route>
           {TownRoutes}
         </Routes>

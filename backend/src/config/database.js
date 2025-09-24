@@ -15,7 +15,14 @@ const dbConfig = {
   queueLimit: 0,
   acquireTimeout: 60000,
   timeout: 60000,
-  reconnect: true
+  reconnect: true,
+  typeCast: (field, next) => {
+    if(field.type === "BIT" && field.length === 1) {
+      const bit = field.buffer();
+      return bit[0] ? 1 : 0
+    }
+    return next();
+  }
 };
 
 // יצירת pool חיבורים

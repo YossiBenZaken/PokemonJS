@@ -1,4 +1,4 @@
-import { axiosInstance } from './axios';
+import { axiosInstance } from "./axios";
 
 export interface CreateCharacterRequest {
   inlognaam: string;
@@ -143,10 +143,46 @@ export interface ChooseStarterPokemonResponse {
   };
 }
 
+export interface MessagesResponse {
+  success: boolean;
+  data: MessagesData;
+}
+
+export interface MessagesData {
+  messages: Message[];
+}
+
+export interface Message {
+  id: number;
+  trainer_1: Trainer;
+  trainer_2: Trainer;
+  title: string;
+  trainer_1_hidden: number;
+  trainer_2_hidden: number;
+  last_message: string;
+  conversations: Conversation[];
+}
+
+export interface Trainer {
+  user_id: number;
+  username: string;
+  character: string;
+}
+
+export interface Conversation {
+  sender: number;
+  reciever: number;
+  message: string;
+  date: string;
+  seen: number;
+}
+
 // יצירת דמות חדשה
-export const createCharacter = async (data: CreateCharacterRequest): Promise<CreateCharacterResponse> => {
+export const createCharacter = async (
+  data: CreateCharacterRequest
+): Promise<CreateCharacterResponse> => {
   try {
-    const response = await axiosInstance.post('/characters/create', data);
+    const response = await axiosInstance.post("/characters/create", data);
     return response.data;
   } catch (error: any) {
     throw error;
@@ -154,39 +190,44 @@ export const createCharacter = async (data: CreateCharacterRequest): Promise<Cre
 };
 
 // קבלת רשימת הדמויות הזמינות
-export const getAvailableCharacters = async (): Promise<GetAvailableCharactersResponse> => {
-  try {
-    const response = await axiosInstance.get('/characters/available');
-    return response.data;
-  } catch (error: any) {
-    throw error;
-  }
-};
+export const getAvailableCharacters =
+  async (): Promise<GetAvailableCharactersResponse> => {
+    try {
+      const response = await axiosInstance.get("/characters/available");
+      return response.data;
+    } catch (error: any) {
+      throw error;
+    }
+  };
 
 // קבלת מספר הדמויות של המשתמש
-export const getUserCharacterCount = async (): Promise<GetUserCharacterCountResponse> => {
-  try {
-    const response = await axiosInstance.get('/characters/count');
-    return response.data;
-  } catch (error: any) {
-    throw error;
-  }
-};
+export const getUserCharacterCount =
+  async (): Promise<GetUserCharacterCountResponse> => {
+    try {
+      const response = await axiosInstance.get("/characters/count");
+      return response.data;
+    } catch (error: any) {
+      throw error;
+    }
+  };
 
 // קבלת רשימת הדמויות של המשתמש
-export const getUserCharacters = async (): Promise<GetUserCharactersResponse> => {
-  try {
-    const response = await axiosInstance.get('/characters/my-characters');
-    return response.data;
-  } catch (error: any) {
-    throw error;
-  }
-};
+export const getUserCharacters =
+  async (): Promise<GetUserCharactersResponse> => {
+    try {
+      const response = await axiosInstance.get("/characters/my-characters");
+      return response.data;
+    } catch (error: any) {
+      throw error;
+    }
+  };
 
 // כניסה למשחק עם דמות
-export const loginWithCharacter = async (data: LoginWithCharacterRequest): Promise<LoginWithCharacterResponse> => {
+export const loginWithCharacter = async (
+  data: LoginWithCharacterRequest
+): Promise<LoginWithCharacterResponse> => {
   try {
-    const response = await axiosInstance.post('/characters/login', data);
+    const response = await axiosInstance.post("/characters/login", data);
     return response.data;
   } catch (error: any) {
     throw error;
@@ -194,7 +235,9 @@ export const loginWithCharacter = async (data: LoginWithCharacterRequest): Promi
 };
 
 // קבלת פרטי דמות ספציפית
-export const getCharacterDetails = async (user_id: number): Promise<GetCharacterDetailsResponse> => {
+export const getCharacterDetails = async (
+  user_id: number
+): Promise<GetCharacterDetailsResponse> => {
   try {
     const response = await axiosInstance.get(`/characters/details/${user_id}`);
     return response.data;
@@ -204,9 +247,13 @@ export const getCharacterDetails = async (user_id: number): Promise<GetCharacter
 };
 
 // קבלת רשימת הפוקימונים הזמינים לבחירה ראשונה
-export const getAvailableStarterPokemon = async (user_id: number): Promise<GetAvailableStarterPokemonResponse> => {
+export const getAvailableStarterPokemon = async (
+  user_id: number
+): Promise<GetAvailableStarterPokemonResponse> => {
   try {
-    const response = await axiosInstance.get(`/characters/starter-pokemon/${user_id}`);
+    const response = await axiosInstance.get(
+      `/characters/starter-pokemon/${user_id}`
+    );
     return response.data;
   } catch (error: any) {
     throw error;
@@ -214,9 +261,14 @@ export const getAvailableStarterPokemon = async (user_id: number): Promise<GetAv
 };
 
 // בחירת פוקימון ראשון
-export const chooseStarterPokemon = async (data: ChooseStarterPokemonRequest): Promise<ChooseStarterPokemonResponse> => {
+export const chooseStarterPokemon = async (
+  data: ChooseStarterPokemonRequest
+): Promise<ChooseStarterPokemonResponse> => {
   try {
-    const response = await axiosInstance.post('/characters/choose-starter', data);
+    const response = await axiosInstance.post(
+      "/characters/choose-starter",
+      data
+    );
     return response.data;
   } catch (error: any) {
     throw error;
@@ -224,7 +276,9 @@ export const chooseStarterPokemon = async (data: ChooseStarterPokemonRequest): P
 };
 
 // קבלת פרטי פרופיל של משתמש
-export const getUserProfile = async (username: string): Promise<GetUserProfileResponse> => {
+export const getUserProfile = async (
+  username: string
+): Promise<GetUserProfileResponse> => {
   try {
     const response = await axiosInstance.get(`/characters/profile/${username}`);
     return response.data;
@@ -233,17 +287,57 @@ export const getUserProfile = async (username: string): Promise<GetUserProfileRe
   }
 };
 
-
-export const getMyPokemons = async(user_id: number): Promise<any> => {
+export const getMyPokemons = async (user_id: number): Promise<any> => {
   try {
-    const response = await axiosInstance.post('/characters/my-pokemons', {
-      user_id
+    const response = await axiosInstance.post("/characters/my-pokemons", {
+      user_id,
     });
     return response.data;
-  } catch (error:any) {
+  } catch (error: any) {
     throw error;
   }
-}
+};
+
+export const getMessages = async (
+  userId: number
+): Promise<MessagesResponse> => {
+  const { data } = await axiosInstance.post("/characters/get-messages", {
+    userId,
+  });
+  return data;
+};
+
+export const readMessage = async (userId: number, conversa: number) => {
+  await axiosInstance.post("/characters/read-message", { userId, conversa });
+};
+
+export const replyMessage = async (
+  sender: number,
+  message: string,
+  conversa: number
+) => {
+  await axiosInstance.post("/characters/reply-message", {
+    sender,
+    userId: sender,
+    message,
+    conversa,
+  });
+};
+
+export const sendMessage = async (
+  userId: number,
+  subject: string,
+  message: string,
+  player: string
+): Promise<number> => {
+  const { data } = await axiosInstance.post("/characters/send-message", {
+    userId,
+    message,
+    subject,
+    player,
+  });
+  return data.data;
+};
 
 // ממשקים לפרופיל
 export interface UserProfile {

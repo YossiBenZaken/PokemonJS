@@ -69,10 +69,6 @@ const OPTIONS_LINK = [
     Link: "new-message",
     Text: "שיחה חדשה",
   },
-  {
-    Link: "blocklist",
-    Text: "חסום",
-  },
 ];
 
 const InboxPage: React.FC = () => {
