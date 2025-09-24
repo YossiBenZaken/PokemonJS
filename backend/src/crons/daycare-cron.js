@@ -81,7 +81,7 @@ const handleEggGeneration = async () => {
         
         await query(`
           INSERT INTO gebeurtenis (datum, ontvanger_id, bericht, gelezen) 
-          VALUES (NOW(), ?, 'Você não é Premium! Seu ovo foi perdido no jardim de infância.', '0')
+          VALUES (NOW(), ?, 'אתה לא פרימיום! הביצה שלך אבדה בגן.', '0')
         `, [user.user_id]);
         
         continue;

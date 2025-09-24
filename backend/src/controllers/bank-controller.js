@@ -176,7 +176,7 @@ export const transferToPlayer = async (req, res) => {
 
     // Create notification for receiver
     const currencyIcon = currency === 'silver' ? 'silver' : 'gold';
-    const eventMessage = `<img src="/images/icons/blue.png" width="16" height="16" /> <a href="./profile&player=${sender.username}">${sender.username}</a> te enviou <img src="/images/icons/${currencyIcon}.png" title="${currency}" width="16" height="16"> ${transferAmount.toLocaleString()} ${currency}.`;
+    const eventMessage = `<img src="/images/icons/blue.png" width="16" height="16" /> <a href="./profile&player=${sender.username}">${sender.username}</a> שלח לך <img src="/images/icons/${currencyIcon}.png" title="${currency}" width="16" height="16"> ${transferAmount.toLocaleString()} ${currency}.`;
     
     await query(`
       INSERT INTO gebeurtenis (datum, ontvanger_id, bericht, gelezen) 

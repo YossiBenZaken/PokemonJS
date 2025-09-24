@@ -21,13 +21,14 @@ import {
   UserMenuItem,
 } from "./styled";
 import {
+  BellRing,
   BookOpen,
   Home,
   LogOut,
   Map,
   Package,
   User,
-  Users,
+  Users
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import React, { useEffect, useState } from "react";
@@ -208,6 +209,15 @@ export const Header: React.FC = () => {
                     >
                       <Users size={16} />
                       <span>השחקנים שלי</span>
+                    </UserMenuItem>
+                    <UserMenuItem
+                      onClick={() => {
+                        navigate("/events");
+                        handleClose();
+                      }}
+                    >
+                      <BellRing size={16} />
+                      <span>התראות</span>
                     </UserMenuItem>
                     <UserMenuItem>
                       <BookOpen size={16} />
