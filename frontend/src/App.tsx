@@ -16,6 +16,7 @@ import { NewCharacterPage } from "./pages/NewCharacter";
 import NewMessage from "./pages/Inbox/NewMessage";
 import Notifications from "./pages/Notifications";
 import OfficialMessages from "./pages/Inbox/OfficialMessages";
+import PokedexPage from "./pages/Pokedex";
 import PrivateRoute from "./components/PrivateRoute";
 import { ProfilePage } from "./pages/Profile";
 import { TownRoutes } from "./pages/Town/routes";
@@ -36,11 +37,19 @@ function App() {
               </PrivateRoute>
             }
           />
-          <Route 
+          <Route
             path="/statistics"
             element={
               <PrivateRoute>
                 <LeaderboardsPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/pokedex"
+            element={
+              <PrivateRoute>
+                <PokedexPage />
               </PrivateRoute>
             }
           />
