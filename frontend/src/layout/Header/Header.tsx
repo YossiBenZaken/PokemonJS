@@ -24,6 +24,7 @@ import {
   BellRing,
   BookOpen,
   ChartColumnIncreasing,
+  Computer,
   Fish,
   Gavel,
   Home,
@@ -66,6 +67,7 @@ export const Header: React.FC = () => {
   } = useGame();
   const navigationItems = [
     { path: "/", label: "בית", icon: <Home size={20} /> },
+    { path: "/box", label: "הפוקימונים", icon: <Computer size={20} /> },
     { path: "/town", label: "מחוז", icon: <Map size={20} /> },
     { path: "/items", label: "חפצים", icon: <Package size={20} /> },
     { path: "/house-shop", label: "מוכר הבתים", icon: <Home size={20} /> },
