@@ -8,17 +8,15 @@ import { GameProvider } from "./contexts/GameContext";
 import { Header } from "./layout/Header";
 import { Home } from "./pages/Home";
 import { HouseShopPage } from "./pages/HouseShop";
-import Inbox from "./pages/Inbox/Inbox";
-import InboxPage from "./pages/Inbox";
+import { InboxRoutes } from "./pages/Inbox/routes";
+import InformationPage from "./pages/Information";
 import ItemsPage from "./pages/Items";
 import { Judge } from "./pages/Judge";
 import LeaderboardsPage from "./pages/Leaderboards";
 import { LoginPage } from "./pages/Login";
 import { MyCharactersPage } from "./pages/MyCharacters";
 import { NewCharacterPage } from "./pages/NewCharacter";
-import NewMessage from "./pages/Inbox/NewMessage";
 import Notifications from "./pages/Notifications";
-import OfficialMessages from "./pages/Inbox/OfficialMessages";
 import PokedexPage from "./pages/Pokedex";
 import PrivateRoute from "./components/PrivateRoute";
 import { ProfilePage } from "./pages/Profile";
@@ -128,39 +126,9 @@ function App() {
               </PrivateRoute>
             }
           />
-          <Route
-            path="/inbox"
-            element={
-              <PrivateRoute>
-                <InboxPage />
-              </PrivateRoute>
-            }
-          >
-            <Route
-              index
-              element={
-                <PrivateRoute>
-                  <Inbox />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="official-messages"
-              element={
-                <PrivateRoute>
-                  <OfficialMessages />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="new-message"
-              element={
-                <PrivateRoute>
-                  <NewMessage />
-                </PrivateRoute>
-              }
-            />
-          </Route>
+          <Route path="/information" element={<InformationPage />} />
+
+          {InboxRoutes}
           {TownRoutes}
         </Routes>
         <Footer />

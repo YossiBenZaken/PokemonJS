@@ -1,7 +1,14 @@
 export interface Item {
   id: number;
   naam: string;
-  soort: 'balls' | 'items' | 'special items' | 'potions' | 'stones' | 'tm' | 'hm';
+  soort:
+    | "balls"
+    | "items"
+    | "special items"
+    | "potions"
+    | "stones"
+    | "tm"
+    | "hm";
   omschrijving_he: string;
   omschrijving_en: string;
   silver: number;
@@ -44,17 +51,31 @@ export interface ItemCategory {
 }
 
 export const ITEM_CATEGORIES: ItemCategory[] = [
-  { key: 'balls', label: 'פוקידורים', path: 'balls' },
-  { key: 'items', label: 'פריטים', path: 'items' },
-  { key: 'special items', label: 'פריטים מיוחדים', path: 'spc_items' },
-  { key: 'potions', label: 'תרופות', path: 'potions' },
-  { key: 'stones', label: 'אבנים', path: 'stones' },
-  { key: 'hm', label: "HM - מכונות חבויות", path: 'hm' },
-  { key: 'tm', label: "TM - מכונות הוראה", path: 'tm' }
+  { key: "balls", label: "פוקידורים", path: "balls" },
+  { key: "items", label: "פריטים", path: "items" },
+  { key: "special items", label: "פריטים מיוחדים", path: "spc_items" },
+  { key: "potions", label: "תרופות", path: "potions" },
+  { key: "stones", label: "אבנים", path: "stones" },
+  { key: "hm", label: "HM - מכונות חבויות", path: "hm" },
+  { key: "tm", label: "TM - מכונות הוראה", path: "tm" },
 ];
 
 export interface ItemWithQuantity extends Item {
   quantity: number;
   sellPrice: number;
-  currency: 'silver' | 'gold' | 'tickets';
+  currency: "silver" | "gold" | "tickets";
+}
+
+export interface ItemInfo {
+  id: number;
+  soort: string;
+  beschikbaar: number;
+  pokemonid: number;
+  naam: string;
+  silver: number;
+  gold: number;
+  omschrijving_en: string;
+  roleta: string;
+  desconto: string;
+  equip: number;
 }
