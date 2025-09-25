@@ -1,8 +1,10 @@
 import React, { ReactNode, createContext, useContext, useState } from "react";
 
+import { Ability } from "../models/ability.model";
 import { Attack } from "../models/attack.model";
 import { Character } from "../pages/MyCharacters";
 import Cookies from "js-cookie";
+import { ItemInfo } from "../models/item.model";
 import { Karakter } from "../models/karakter.model";
 import { Rank } from "../models/rank.model";
 
@@ -35,8 +37,16 @@ interface GameContextType {
 
   attacks: Attack[];
 
+  abilities: Ability[];
+
+  setAbilities: (data: Ability[]) => void;
+
+  itemInfo: ItemInfo[];
+
+  setItemInfo: (data: ItemInfo[]) => void;
+
   setRanks: (data: Rank[]) => void;
-  
+
   setKarakters: (data: Karakter[]) => void;
 
   setAttacks: (data: Attack[]) => void;
@@ -86,6 +96,10 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
 
   const [attacks, setAttacks] = useState<Attack[]>([]);
 
+  const [abilities, setAbilities] = useState<Ability[]>([]);
+
+  const [itemInfo, setItemInfo] = useState<ItemInfo[]>([]);
+
   // כניסה למשחק עם דמות
   const loginWithCharacter = (character: Character) => {
     setSelectedCharacter(character);
@@ -128,7 +142,11 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
     karakters,
     setKarakters,
     attacks,
-    setAttacks
+    setAttacks,
+    abilities,
+    setAbilities,
+    itemInfo,
+    setItemInfo,
   };
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;

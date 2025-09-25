@@ -27,6 +27,7 @@ import {
   Fish,
   Gavel,
   Home,
+  Info,
   LogOut,
   Map,
   Package,
@@ -59,7 +60,9 @@ export const Header: React.FC = () => {
     myPokemons,
     setMyPokemons,
     setKarakters,
-    setAttacks
+    setAttacks,
+    setAbilities,
+    setItemInfo
   } = useGame();
   const navigationItems = [
     { path: "/", label: "בית", icon: <Home size={20} /> },
@@ -70,6 +73,7 @@ export const Header: React.FC = () => {
     { path: '/badges', label: 'תגים', icon: <Badge size={20} />},
     { path: '/fishing', label: 'דיג', icon: <Fish size={20} />},
     { path: '/judge', label: 'שפוט', icon: <Gavel size={20} />},
+    { path: '/information', label: 'מידע', icon: <Info size={20} />}
   ];
 
   useEffect(() => {
@@ -92,8 +96,10 @@ export const Header: React.FC = () => {
       setRanks(res.data.ranks);
       setKarakters(res.data.karakters);
       setAttacks(res.data.attacks);
+      setAbilities(res.data.abilities);
+      setItemInfo(res.data.itemInfo);
     });
-  }, [setRanks]);
+  }, [setAbilities, setAttacks, setItemInfo, setKarakters, setRanks]);
 
   useEffect(() => {
     if (selectedCharacter) {

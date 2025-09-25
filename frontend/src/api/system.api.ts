@@ -1,4 +1,6 @@
+import { Ability } from "../models/ability.model";
 import { Attack } from "../models/attack.model";
+import { ItemInfo } from "../models/item.model";
 import { Karakter } from "../models/karakter.model";
 import { axiosInstance } from "./axios";
 
@@ -23,6 +25,8 @@ export interface GetAssetsResponse {
     ranks: any[];
     karakters: Karakter[];
     attacks: Attack[];
+    abilities: Ability[];
+    itemInfo: ItemInfo[];
   };
 }
 

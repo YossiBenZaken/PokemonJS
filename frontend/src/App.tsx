@@ -9,7 +9,7 @@ import { Header } from "./layout/Header";
 import { Home } from "./pages/Home";
 import { HouseShopPage } from "./pages/HouseShop";
 import { InboxRoutes } from "./pages/Inbox/routes";
-import { InformationRoutes } from "./pages/Information/routes";
+import InformationPage from "./pages/Information";
 import ItemsPage from "./pages/Items";
 import { Judge } from "./pages/Judge";
 import LeaderboardsPage from "./pages/Leaderboards";
@@ -126,7 +126,8 @@ function App() {
               </PrivateRoute>
             }
           />
-          {InformationRoutes}
+          <Route path="/information" element={<InformationPage />} />
+
           {InboxRoutes}
           {TownRoutes}
         </Routes>

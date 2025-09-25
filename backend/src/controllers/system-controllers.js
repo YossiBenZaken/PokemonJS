@@ -31,7 +31,9 @@ export const getAssets = async (req, res) => {
       "SELECT * FROM `karakters` ORDER BY `karakter_naam` ASC"
     );
     const attacks = await query("SELECT * FROM aanval ORDER BY naam ASC");
-    res.json({ success: true, data: { ranks, karakters, attacks } });
+    const abilities = await query("SELECT * FROM `abilities` ORDER BY `name` ASC");
+    const itemInfo = await query("SELECT * FROM `markt` WHERE `soort`!='pokemon' AND `soort`!='tm' AND `soort`!='hm' ORDER BY `soort` ASC")
+    res.json({ success: true, data: { ranks, karakters, attacks, abilities, itemInfo } });
   } catch (error) {
     res.status(500).json({
       success: false,
