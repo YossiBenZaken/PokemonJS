@@ -27,7 +27,8 @@ export const getOnlineUsers = async (req, res) => {
 export const getAssets = async (req, res) => {
   try {
     const ranks = await query("SELECT * FROM `rank`");
-    res.json({ success: true, data: { ranks } });
+    const karakters = await query("SELECT * FROM `karakters` ORDER BY `karakter_naam` ASC")
+    res.json({ success: true, data: { ranks,karakters } });
   } catch (error) {
     res.status(500).json({
       success: false,

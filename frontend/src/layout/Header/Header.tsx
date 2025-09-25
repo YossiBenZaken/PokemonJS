@@ -58,6 +58,7 @@ export const Header: React.FC = () => {
     setRanks,
     myPokemons,
     setMyPokemons,
+    setKarakters
   } = useGame();
   const navigationItems = [
     { path: "/", label: "בית", icon: <Home size={20} /> },
@@ -88,6 +89,7 @@ export const Header: React.FC = () => {
   useEffect(() => {
     getAssets().then((res) => {
       setRanks(res.data.ranks);
+      setKarakters(res.data.karakters);
     });
   }, [setRanks]);
 

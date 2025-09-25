@@ -1,3 +1,4 @@
+import { Karakter } from "../models/karakter.model";
 import { axiosInstance } from "./axios";
 
 export interface OnlineUser {
@@ -19,6 +20,7 @@ export interface GetAssetsResponse {
   success: boolean;
   data: {
     ranks: any[];
+    karakters: Karakter[];
   };
 }
 

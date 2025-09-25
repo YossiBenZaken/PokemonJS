@@ -1,7 +1,9 @@
-import React, { ReactNode, createContext, useContext, useState } from 'react';
+import React, { ReactNode, createContext, useContext, useState } from "react";
 
-import { Character } from '../pages/MyCharacters';
+import { Character } from "../pages/MyCharacters";
 import Cookies from "js-cookie";
+import { Karakter } from "../models/karakter.model";
+import { Rank } from "../models/rank.model";
 
 interface GameSession {
   user_id: number;
@@ -18,34 +20,38 @@ interface GameSession {
 interface GameContextType {
   // פרטי הדמות שנבחרה לשחק
   selectedCharacter: Character | null;
-  
+
   // פרטי המשחק הנוכחי (אחרי כניסה למשחק)
   gameSession: GameSession | null;
 
   isLoggedIn: boolean;
 
-  ranks: any[];
+  ranks: Rank[];
 
   myPokemons: any[];
 
-  setRanks: (data: any[]) => void;
+  karakters: Karakter[];
+
+  setRanks: (data: Rank[]) => void;
   
+  setKarakters: (data: Karakter[]) => void;
+
   setIsLoggedIn: (isLoggedIn: boolean) => void;
-  
+
   // פונקציות לניהול המצב
   setSelectedCharacter: (character: Character | null) => void;
-  
+
   setGameSession: (session: GameSession | null) => void;
-  
+
   // פונקציה לכניסה למשחק עם דמות
   loginWithCharacter: (character: Character) => void;
-  
+
   // פונקציה ליציאה מהמשחק
   logoutFromGame: () => void;
-  
+
   // פונקציה לבדיקה אם המשתמש במשחק
   isInGame: () => boolean;
-  
+
   // פונקציה לבדיקה אם יש דמות נבחרת
   hasSelectedCharacter: () => boolean;
 
@@ -59,16 +65,19 @@ interface GameProviderProps {
 }
 
 export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
-  const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
-  
+  const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(
+    null
+  );
+
   const [gameSession, setGameSession] = useState<GameSession | null>(null);
 
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
 
-  const [ranks, setRanks] = useState<any[]>([]);
+  const [ranks, setRanks] = useState<Rank[]>([]);
 
   const [myPokemons, setMyPokemons] = useState<any[]>([]);
 
+  const [karakters, setKarakters] = useState<Karakter[]>([]);
 
   // כניסה למשחק עם דמות
   const loginWithCharacter = (character: Character) => {
@@ -81,7 +90,7 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
     setGameSession(null);
     Cookies.remove("access_token");
     // מחיקת הנתונים מ-localStorage
-    localStorage.removeItem('game_session');
+    localStorage.removeItem("game_session");
   };
 
   // בדיקה אם המשתמש במשחק
@@ -108,21 +117,19 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
     ranks,
     setRanks,
     setMyPokemons,
-    myPokemons
+    myPokemons,
+    karakters,
+    setKarakters
   };
 
-  return (
-    <GameContext.Provider value={value}>
-      {children}
-    </GameContext.Provider>
-  );
+  return <GameContext.Provider value={value}>{children}</GameContext.Provider>;
 };
 
 // Hook לשימוש ב-Context
 export const useGame = (): GameContextType => {
   const context = useContext(GameContext);
   if (context === undefined) {
-    throw new Error('useGame must be used within a GameProvider');
+    throw new Error("useGame must be used within a GameProvider");
   }
   return context;
 };
