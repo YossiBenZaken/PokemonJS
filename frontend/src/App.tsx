@@ -17,6 +17,7 @@ import { LoginPage } from "./pages/Login";
 import { MyCharactersPage } from "./pages/MyCharacters";
 import { NewCharacterPage } from "./pages/NewCharacter";
 import Notifications from "./pages/Notifications";
+import PokeBox from "./pages/PokeBox";
 import PokedexPage from "./pages/Pokedex";
 import PrivateRoute from "./components/PrivateRoute";
 import { ProfilePage } from "./pages/Profile";
@@ -51,6 +52,14 @@ function App() {
             element={
               <PrivateRoute>
                 <PokedexPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/box"
+            element={
+              <PrivateRoute>
+                <PokeBox />
               </PrivateRoute>
             }
           />

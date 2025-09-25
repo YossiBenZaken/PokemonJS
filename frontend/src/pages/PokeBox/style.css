@@ -1,0 +1,94 @@
+.simple2 {
+    background-image: url('../../assets/images/box/Simple2.png');
+}
+.forest {
+    background-image: url('../../assets/images/box/Forest.png');
+}
+.forest2 {
+    background-image: url('../../assets/images/box/Forest2.png');
+    background-repeat: repeat;
+    background-size: auto;
+}
+.city {
+    background-image: url('../../assets/images/box/City.png');
+}
+.city2 {
+    background-image: url('../../assets/images/box/City2.png');
+    background-repeat: repeat;
+    background-size: auto;
+}
+.desert {
+    background-image: url('../../assets/images/box/Desert.png');
+}
+.desert2 {
+    background-image: url('../../assets/images/box/Desert2.png');
+    background-repeat: repeat;
+    background-size: auto;
+}
+.savanna {
+    background-image: url('../../assets/images/box/Savanna.png');
+}
+.savanna2 {
+    background-image: url('../../assets/images/box/Savanna2.png');
+    background-repeat: repeat;
+    background-size: auto;
+}
+.crag {
+    background-image: url('../../assets/images/box/Crag.png');
+}
+.crag2 {
+    background-image: url('../../assets/images/box/Crag2.png');
+    background-repeat: repeat;
+    background-size: auto;
+}
+.volcano {
+    background-image: url('../../assets/images/box/Volcano.png');
+}
+.volcano2 {
+    background-image: url('../../assets/images/box/Volcano2.png');
+    background-repeat: repeat;
+    background-size: auto;
+}
+.snow {
+    background-image: url('../../assets/images/box/Snow.png');
+}
+.snow2 {
+    background-image: url('../../assets/images/box/Snow2.png');
+    background-repeat: repeat;
+    background-size: auto;
+}
+.cave {
+    background-image: url('../../assets/images/box/Cave.png');
+}
+.cave2 {
+    background-image: url('../../assets/images/box/Cave2.png');
+    background-repeat: repeat;
+    background-size: auto;
+}
+.beach {
+    background-image: url('../../assets/images/box/Beach.png');
+}
+.beach2 {
+    background-image: url('../../assets/images/box/Beach2.png');
+    background-repeat: repeat;
+    background-size: auto;
+}
+.seafloor {
+    background-image: url('../../assets/images/box/Seafloor.png');
+}
+.seafloor2 {
+    background-image: url('../../assets/images/box/Seafloor2.png');
+    background-repeat: repeat;
+    background-size: auto;
+}
+.river {
+    background-image: url('../../assets/images/box/River.png');
+}
+.river2 {
+    background-image: url('../../assets/images/box/River2.png');
+    background-repeat: repeat;
+    background-size: auto;
+}
+.sky {
+    background-image: url('../../assets/images/box/Sky.png');
+}
