@@ -27,8 +27,11 @@ export const getOnlineUsers = async (req, res) => {
 export const getAssets = async (req, res) => {
   try {
     const ranks = await query("SELECT * FROM `rank`");
-    const karakters = await query("SELECT * FROM `karakters` ORDER BY `karakter_naam` ASC")
-    res.json({ success: true, data: { ranks,karakters } });
+    const karakters = await query(
+      "SELECT * FROM `karakters` ORDER BY `karakter_naam` ASC"
+    );
+    const attacks = await query("SELECT * FROM aanval ORDER BY naam ASC");
+    res.json({ success: true, data: { ranks, karakters, attacks } });
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -90,12 +93,15 @@ export const getOfficialMessages = async (req, res) => {
         "SELECT * FROM `official_message` WHERE id = ? AND `hidden` = 0",
         [id]
       );
-      await query(`INSERT INTO official_message_read (id_msg, id_user)
+      await query(
+        `INSERT INTO official_message_read (id_msg, id_user)
 VALUES (?, ?)
 ON DUPLICATE KEY UPDATE
   id_user = VALUES(id_user),
   id_msg = VALUES(id_msg);
-`,[id, userId])
+`,
+        [id, userId]
+      );
       res.json({
         success: true,
         data: messagesList,

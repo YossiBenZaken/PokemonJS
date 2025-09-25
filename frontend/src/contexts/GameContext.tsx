@@ -1,5 +1,6 @@
 import React, { ReactNode, createContext, useContext, useState } from "react";
 
+import { Attack } from "../models/attack.model";
 import { Character } from "../pages/MyCharacters";
 import Cookies from "js-cookie";
 import { Karakter } from "../models/karakter.model";
@@ -32,9 +33,13 @@ interface GameContextType {
 
   karakters: Karakter[];
 
+  attacks: Attack[];
+
   setRanks: (data: Rank[]) => void;
   
   setKarakters: (data: Karakter[]) => void;
+
+  setAttacks: (data: Attack[]) => void;
 
   setIsLoggedIn: (isLoggedIn: boolean) => void;
 
@@ -79,6 +84,8 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
 
   const [karakters, setKarakters] = useState<Karakter[]>([]);
 
+  const [attacks, setAttacks] = useState<Attack[]>([]);
+
   // כניסה למשחק עם דמות
   const loginWithCharacter = (character: Character) => {
     setSelectedCharacter(character);
@@ -119,7 +126,9 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
     setMyPokemons,
     myPokemons,
     karakters,
-    setKarakters
+    setKarakters,
+    attacks,
+    setAttacks
   };
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;

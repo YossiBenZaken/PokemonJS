@@ -1,3 +1,4 @@
+import { Attack } from "../models/attack.model";
 import { Karakter } from "../models/karakter.model";
 import { axiosInstance } from "./axios";
 
@@ -21,6 +22,7 @@ export interface GetAssetsResponse {
   data: {
     ranks: any[];
     karakters: Karakter[];
+    attacks: Attack[];
   };
 }
 

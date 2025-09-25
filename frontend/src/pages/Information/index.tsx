@@ -3,7 +3,7 @@ import React from "react";
 import styled from "styled-components";
 
 const Container = styled.div`
-  max-width: 1200px;
+  max-width: 100%;
   margin: 0 auto;
   padding: 20px;
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
