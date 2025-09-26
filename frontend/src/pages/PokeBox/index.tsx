@@ -19,6 +19,7 @@ import {
 } from "../../api/pokebox.api";
 import React, { useCallback, useEffect, useState } from "react";
 
+import PokemonSellModal from "./PokemonSellModal";
 import { useGame } from "../../contexts/GameContext";
 
 const backgroundsMap: Record<string, string> = {
@@ -68,6 +69,7 @@ const PokeBox: React.FC = () => {
   const [boxName, setBoxName] = useState("");
   const [boxBackground, setBoxBackground] = useState("");
   const [draggedPokemon, setDraggedPokemon] = useState<Pokemon | null>(null);
+  const [showPokemonSellInfo, setShowPokemonSellInfo] = useState(false);
 
   // Load box info and Pokemon
   const loadBoxInfo = useCallback(async () => {
@@ -144,33 +146,6 @@ const PokeBox: React.FC = () => {
       setMessage({
         type: "error",
         text: error.response?.data?.message || "שגיאה בהעברת פוקימון",
-      });
-    }
-  };
-
-  const handleSellPokemon = async (pokemon: Pokemon) => {
-    if (!selectedCharacter) return;
-
-    const confirmed = window.confirm(
-      `האם אתה בטוח שברצונך למכור את ${getPokemonDisplayName(pokemon)}?`
-    );
-    if (!confirmed) return;
-
-    try {
-      const response = await sellPokemon({
-        userId: selectedCharacter.user_id,
-        pokemonId: pokemon.id,
-      });
-
-      if (response.success) {
-        setMessage({ type: "success", text: response.message });
-        await loadBoxInfo();
-        await loadBoxPokemons();
-      }
-    } catch (error: any) {
-      setMessage({
-        type: "error",
-        text: error.response?.data?.message || "שגיאה במכירת פוקימון",
       });
     }
   };
@@ -327,7 +302,8 @@ const PokeBox: React.FC = () => {
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                handleSellPokemon(pokemon);
+                setSelectedPokemon(pokemon);
+                setShowPokemonSellInfo(true);
               }}
               className="text-white hover:text-yellow-300 transition-colors"
             >
@@ -590,6 +566,19 @@ const PokeBox: React.FC = () => {
           </div>
         </div>
       </div>
+      {showPokemonSellInfo && selectedPokemon && (
+        <PokemonSellModal
+          pokemonId={selectedPokemon?.id!}
+          isOpen
+          onClose={() => {
+            setShowPokemonSellInfo(false);
+          }}
+          onSuccess={async () => {
+            await loadBoxInfo();
+            await loadBoxPokemons();
+          }}
+        />
+      )}
 
       {/* Pokemon Details Modal */}
       {showPokemonDetails && selectedPokemon && (
