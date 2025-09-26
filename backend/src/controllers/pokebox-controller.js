@@ -430,7 +430,6 @@ export const getPokemonSellInfo = async (req, res) => {
 // Sell Pokemon with different methods
 export const sellPokemon = async (req, res) => {
   try {
-    console.log(req.body);
     const { userId, pokemonId, method, silvers, golds = 0, negotiable = false, trainer } = req.body;
 
     // Validate method
