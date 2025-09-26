@@ -76,8 +76,8 @@ export interface BoxPokemonsResponse {
 export interface MovePokemonRequest {
   userId: number;
   pokemonId: number;
-  from: 'team' | 'box';
-  to: 'team' | 'box';
+  from: "team" | "box";
+  to: "team" | "box";
   toSlot?: number;
 }
 
@@ -101,12 +101,16 @@ export interface ConfigureBoxResponse {
 export interface SellPokemonRequest {
   userId: number;
   pokemonId: number;
+  method: "auction" | "direct" | "private";
+  silvers: number;
+  golds: number;
+  negotiable: boolean;
+  trainer: string | undefined;
 }
 
 export interface SellPokemonResponse {
   success: boolean;
   message: string;
-  silverEarned?: number;
 }
 
 export interface ReleasePokemonRequest {
@@ -119,61 +123,103 @@ export interface ReleasePokemonResponse {
   message: string;
 }
 
+interface PokemonSellInfoResponse {
+  success: boolean;
+  data: PokemonSellInfo;
+  message?: string;
+  error?: string;
+}
+export interface PokemonSellInfo {
+  pokemon: Pokemon;
+  limits: {
+    allowed: number;
+    current: number;
+  };
+}
+
 // API functions
-export const getBoxInfo = async (userId: number, boxNumber: number = 1): Promise<BoxInfoResponse> => {
-  const { data } = await axiosInstance.get(`/pokebox/info/${userId}/${boxNumber}`);
+export const getBoxInfo = async (
+  userId: number,
+  boxNumber: number = 1
+): Promise<BoxInfoResponse> => {
+  const { data } = await axiosInstance.get(
+    `/pokebox/info/${userId}/${boxNumber}`
+  );
   return data;
 };
 
-export const getBoxPokemons = async (userId: number, boxNumber: number = 1): Promise<BoxPokemonsResponse> => {
-  const { data } = await axiosInstance.get(`/pokebox/pokemons/${userId}/${boxNumber}`);
+export const getBoxPokemons = async (
+  userId: number,
+  boxNumber: number = 1
+): Promise<BoxPokemonsResponse> => {
+  const { data } = await axiosInstance.get(
+    `/pokebox/pokemons/${userId}/${boxNumber}`
+  );
   return data;
 };
 
-export const movePokemon = async (request: MovePokemonRequest): Promise<MovePokemonResponse> => {
+export const movePokemon = async (
+  request: MovePokemonRequest
+): Promise<MovePokemonResponse> => {
   const { data } = await axiosInstance.post("/pokebox/move", request);
   return data;
 };
 
-export const configureBox = async (request: ConfigureBoxRequest): Promise<ConfigureBoxResponse> => {
+export const configureBox = async (
+  request: ConfigureBoxRequest
+): Promise<ConfigureBoxResponse> => {
   const { data } = await axiosInstance.post("/pokebox/configure", request);
   return data;
 };
 
-export const sellPokemon = async (request: SellPokemonRequest): Promise<SellPokemonResponse> => {
+export const sellPokemon = async (
+  request: SellPokemonRequest
+): Promise<SellPokemonResponse> => {
   const { data } = await axiosInstance.post("/pokebox/sell", request);
   return data;
 };
 
-export const releasePokemon = async (request: ReleasePokemonRequest): Promise<ReleasePokemonResponse> => {
+export const releasePokemon = async (
+  request: ReleasePokemonRequest
+): Promise<ReleasePokemonResponse> => {
   const { data } = await axiosInstance.post("/pokebox/release", request);
+  return data;
+};
+
+export const getPokemonSellInfo = async (
+  request: ReleasePokemonRequest
+): Promise<PokemonSellInfoResponse> => {
+  const { data } = await axiosInstance.post("/pokebox/sell-info", request);
   return data;
 };
 
 // Helper functions
 export const getHouseDisplayName = (houseType: string): string => {
   const houses: Record<string, string> = {
-    'doos': 'קופסה',
-    'shuis': 'בית קטן',
-    'nhuis': 'בית רגיל',
-    'villa': 'וילה גדולה'
+    doos: "קופסה",
+    shuis: "בית קטן",
+    nhuis: "בית רגיל",
+    villa: "וילה גדולה",
   };
-  return houses[houseType] || 'לא ידוע';
+  return houses[houseType] || "לא ידוע";
 };
 
 export const getHouseUpgradeMessage = (houseType: string): string => {
-  if (houseType === 'villa') {
-    return 'יש לך את הבית הכי גדול!';
+  if (houseType === "villa") {
+    return "יש לך את הבית הכי גדול!";
   }
-  return 'אם הקופסה מתמלאת, קנה כאן בית גדול יותר!';
+  return "אם הקופסה מתמלאת, קנה כאן בית גדול יותר!";
 };
 
-export const getPokemonImageUrl = (pokemon: Pokemon, baseUrl: string): string => {
+export const getPokemonImageUrl = (
+  pokemon: Pokemon,
+  baseUrl: string
+): string => {
   if (pokemon.ei === 1) {
     return `${baseUrl}/images/icons/egg.gif`;
   }
-  
-  const type = pokemon.shiny === 1 ? 'shiny' : 'pokemon';
+
+  const type = pokemon.shiny === 1 ? "shiny" : "pokemon";
   return `${baseUrl}/images/${type}/icon/${pokemon.wild_id}.gif`;
 };
 
@@ -183,45 +229,47 @@ export const getPokemonDisplayName = (pokemon: Pokemon): string => {
 
 export const getPokemonTypeColor = (type1: string, type2?: string): string => {
   const typeColors: Record<string, string> = {
-    'Normal': '#A8A878',
-    'Fire': '#F08030',
-    'Water': '#6890F0',
-    'Electric': '#F8D030',
-    'Grass': '#78C850',
-    'Ice': '#98D8D8',
-    'Fighting': '#C03028',
-    'Poison': '#A040A0',
-    'Ground': '#E0C068',
-    'Flying': '#A890F0',
-    'Psychic': '#F85888',
-    'Bug': '#A8B820',
-    'Rock': '#B8A038',
-    'Ghost': '#705898',
-    'Dragon': '#7038F8',
-    'Dark': '#705848',
-    'Steel': '#B8B8D0',
-    'Fairy': '#EE99AC'
+    Normal: "#A8A878",
+    Fire: "#F08030",
+    Water: "#6890F0",
+    Electric: "#F8D030",
+    Grass: "#78C850",
+    Ice: "#98D8D8",
+    Fighting: "#C03028",
+    Poison: "#A040A0",
+    Ground: "#E0C068",
+    Flying: "#A890F0",
+    Psychic: "#F85888",
+    Bug: "#A8B820",
+    Rock: "#B8A038",
+    Ghost: "#705898",
+    Dragon: "#7038F8",
+    Dark: "#705848",
+    Steel: "#B8B8D0",
+    Fairy: "#EE99AC",
   };
-  
-  return typeColors[type1] || '#68A090';
+
+  return typeColors[type1] || "#68A090";
 };
 
 export const getTopMedalIcon = (topLevel: string, baseUrl: string): string => {
   const medals: Record<string, string> = {
-    '1': 'medal1.png',
-    '2': 'medal2.png',
-    '3': 'medal3.png'
+    "1": "medal1.png",
+    "2": "medal2.png",
+    "3": "medal3.png",
   };
-  
+
   const medalFile = medals[topLevel];
-  return medalFile ? `${baseUrl}/images/icons/${medalFile}` : '';
+  return medalFile ? `${baseUrl}/images/icons/${medalFile}` : "";
 };
 
 export const formatPokemonTooltip = (pokemon: Pokemon): string => {
   const displayName = getPokemonDisplayName(pokemon);
-  const types = pokemon.type2 ? `${pokemon.type1}/${pokemon.type2}` : pokemon.type1;
-  const shinyText = pokemon.shiny === 1 ? ' (שיני)' : '';
-  const eggText = pokemon.ei === 1 ? ' (ביצה)' : '';
-  
+  const types = pokemon.type2
+    ? `${pokemon.type1}/${pokemon.type2}`
+    : pokemon.type1;
+  const shinyText = pokemon.shiny === 1 ? " (שיני)" : "";
+  const eggText = pokemon.ei === 1 ? " (ביצה)" : "";
+
   return `${displayName} - רמה ${pokemon.level} - ${types}${shinyText}${eggText}`;
 };

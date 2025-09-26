@@ -2,6 +2,7 @@ import {
   configureBox,
   getBoxInfo,
   getBoxPokemons,
+  getPokemonSellInfo,
   movePokemon,
   releasePokemon,
   sellPokemon
@@ -26,6 +27,8 @@ router.post("/configure", extractAccId, configureBox);
 
 // Sell Pokemon from box
 router.post("/sell", extractAccId, sellPokemon);
+
+router.post("/sell-info", extractAccId, getPokemonSellInfo);
 
 // Release Pokemon (set free)
 router.post("/release", extractAccId, releasePokemon);
