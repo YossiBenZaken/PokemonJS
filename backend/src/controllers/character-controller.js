@@ -1,7 +1,8 @@
 import { query, transaction } from "../config/database.js";
 
 import crypto from "crypto";
-import {date} from '../helpers/date.js'
+import { date } from "../helpers/date.js";
+import jwt from "jsonwebtoken";
 
 // יצירת דמות חדשה
 export const createCharacter = async (req, res) => {
@@ -324,6 +325,21 @@ export const loginWithCharacter = async (req, res) => {
       .createHash("md5")
       .update(`${user_id},${character.username}`)
       .digest("hex");
+
+    // יצירת JWT token
+    const token = jwt.sign(
+      {
+        ...req.user,
+        user_id
+      },
+      process.env.JWT_SECRET || "default_secret",
+    );
+
+    res.cookie("access_token", token, {
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 ימים
+      httpOnly: false,
+      secure: process.env.NODE_ENV === "production",
+    });
 
     res.json({
       success: true,
@@ -929,8 +945,8 @@ export const getMessages = async (req, res) => {
   try {
     const { userId } = req.body;
 
-      const messages = await query(
-        `
+    const messages = await query(
+      `
         SELECT *
         FROM conversas
         WHERE 
@@ -938,35 +954,41 @@ export const getMessages = async (req, res) => {
           OR (trainer_2 = ? AND trainer_2_hidden = 0)
         ORDER BY STR_TO_DATE(last_message, '%d/%m/%Y %H:%i:%s') DESC
         `,
-        [userId, userId]
-      );
+      [userId, userId]
+    );
 
-      for (const [index, { id, trainer_1, trainer_2 }] of messages.entries()) {
-        let other_user = trainer_1;
-        if(trainer_1 === userId) {
-          other_user = trainer_2;
-        }
-        const [otherUserData] = await query("SELECT user_id, username, `character` FROM `gebruikers` WHERE user_id = ?", [other_user]);
-        const [myUser] = await query("SELECT user_id, username, `character` FROM `gebruikers` WHERE user_id = ?", [userId]);
-        if(other_user === trainer_1) {
-          messages[index].trainer_1 = otherUserData;
-          messages[index].trainer_2 = myUser;
-        } else {
-          messages[index].trainer_2 = otherUserData;
-          messages[index].trainer_1 =myUser;
-        }
-        const msgs = await query(
-          `SELECT sender, reciever, message, date,seen FROM conversas_messages WHERE conversa=? ORDER BY id ASC`,
-          [id]
-        );
-        messages[index]['conversations'] = msgs;
+    for (const [index, { id, trainer_1, trainer_2 }] of messages.entries()) {
+      let other_user = trainer_1;
+      if (trainer_1 === userId) {
+        other_user = trainer_2;
       }
-      res.json({
-        success: true,
-        data: {
-          messages,
-        },
-      });
+      const [otherUserData] = await query(
+        "SELECT user_id, username, `character` FROM `gebruikers` WHERE user_id = ?",
+        [other_user]
+      );
+      const [myUser] = await query(
+        "SELECT user_id, username, `character` FROM `gebruikers` WHERE user_id = ?",
+        [userId]
+      );
+      if (other_user === trainer_1) {
+        messages[index].trainer_1 = otherUserData;
+        messages[index].trainer_2 = myUser;
+      } else {
+        messages[index].trainer_2 = otherUserData;
+        messages[index].trainer_1 = myUser;
+      }
+      const msgs = await query(
+        `SELECT sender, reciever, message, date,seen FROM conversas_messages WHERE conversa=? ORDER BY id ASC`,
+        [id]
+      );
+      messages[index]["conversations"] = msgs;
+    }
+    res.json({
+      success: true,
+      data: {
+        messages,
+      },
+    });
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -976,58 +998,79 @@ export const getMessages = async (req, res) => {
   }
 };
 
-export const readMessage = async (req,res) => {
-  const {userId, conversa} = req.body;
-  await query('UPDATE conversas_messages SET seen = 1 WHERE conversa = ? AND reciever = ?', [conversa, userId]);
+export const readMessage = async (req, res) => {
+  const { userId, conversa } = req.body;
+  await query(
+    "UPDATE conversas_messages SET seen = 1 WHERE conversa = ? AND reciever = ?",
+    [conversa, userId]
+  );
   res.status(204).send();
-}
+};
 
-export const replyMessage = async (req,res) => {
-  const {sender,message,conversa, userId} = req.body;
-  if(sender === userId) {
-    const [conversations] = await query("SELECT * FROM `conversas` WHERE id=? AND (trainer_1=? OR trainer_2=?)", [conversa, userId, userId]);
+export const replyMessage = async (req, res) => {
+  const { sender, message, conversa, userId } = req.body;
+  if (sender === userId) {
+    const [conversations] = await query(
+      "SELECT * FROM `conversas` WHERE id=? AND (trainer_1=? OR trainer_2=?)",
+      [conversa, userId, userId]
+    );
     let reciever = conversations.trainer_1;
-    if(sender === conversations.trainer_1) {
+    if (sender === conversations.trainer_1) {
       reciever = conversations.trainer_2;
     }
-    const currentDate = date('d/m/Y H:i:s');
-    await query("INSERT INTO `conversas_messages` (`conversa`, `sender`, `reciever`, `message`, `date`) VALUES (?, ?, ?, ?, ?)",[conversa, userId, reciever, message, currentDate])
-    await query("UPDATE `conversas` SET last_message=? WHERE id=? AND (trainer_1=? OR trainer_2=?)",[currentDate, conversa, userId, userId])
+    const currentDate = date("d/m/Y H:i:s");
+    await query(
+      "INSERT INTO `conversas_messages` (`conversa`, `sender`, `reciever`, `message`, `date`) VALUES (?, ?, ?, ?, ?)",
+      [conversa, userId, reciever, message, currentDate]
+    );
+    await query(
+      "UPDATE `conversas` SET last_message=? WHERE id=? AND (trainer_1=? OR trainer_2=?)",
+      [currentDate, conversa, userId, userId]
+    );
 
     res.json({
       success: true,
-      data: currentDate
-    })
+      data: currentDate,
+    });
   } else {
     res.status(400).send();
   }
-}
+};
 
-export const sendMessage = async (req,res) => {
-  const {subject, player, message, userId} = req.body;
-  const [user] = await query("SELECT user_id FROM `gebruikers` WHERE username = ?", [player]);
-  if(!user) {
+export const sendMessage = async (req, res) => {
+  const { subject, player, message, userId } = req.body;
+  const [user] = await query(
+    "SELECT user_id FROM `gebruikers` WHERE username = ?",
+    [player]
+  );
+  if (!user) {
     res.status(400).send();
     return;
   }
 
-  if(user.user_id === userId) {
+  if (user.user_id === userId) {
     res.status(400).json({
       success: false,
-      data: 'אתה לא יכול לשלוח לעצמך הודעות!'
+      data: "אתה לא יכול לשלוח לעצמך הודעות!",
     });
     return;
   }
 
-  const currentDate = date('d/m/Y H:i:s');
-  var insert =  await query("INSERT INTO `conversas` (`trainer_1`, `trainer_2`, `title`, `last_message`) VALUES (?, ?, ?, ?)", [userId, user.user_id, subject, currentDate]);
+  const currentDate = date("d/m/Y H:i:s");
+  var insert = await query(
+    "INSERT INTO `conversas` (`trainer_1`, `trainer_2`, `title`, `last_message`) VALUES (?, ?, ?, ?)",
+    [userId, user.user_id, subject, currentDate]
+  );
   const id = insert.insertId;
-  await query("INSERT INTO `conversas_messages` (`conversa`, `sender`, `reciever`, `message`, `date`) VALUES (?, ?, ?, ?, ?)",[id, userId, user.user_id, message, currentDate])
+  await query(
+    "INSERT INTO `conversas_messages` (`conversa`, `sender`, `reciever`, `message`, `date`) VALUES (?, ?, ?, ?, ?)",
+    [id, userId, user.user_id, message, currentDate]
+  );
   res.json({
     success: true,
-    data: id
-  })
-}
+    data: id,
+  });
+};
 
 export const getBadges = async (req, res) => {
   try {
@@ -1056,7 +1099,10 @@ export const fish = async (req, res) => {
     const { userId } = req.body;
 
     // בדוק אם השחקן יכול לדוג
-    const [user] = await query("SELECT g.fishing, g.last_fishing, gi.`Fishing rod` FROM gebruikers AS g INNER JOIN gebruikers_item AS gi ON gi.user_id = g.user_id WHERE g.user_id = ?", [userId]);
+    const [user] = await query(
+      "SELECT g.fishing, g.last_fishing, gi.`Fishing rod` FROM gebruikers AS g INNER JOIN gebruikers_item AS gi ON gi.user_id = g.user_id WHERE g.user_id = ?",
+      [userId]
+    );
 
     if (!user) {
       return res.status(404).json({ success: false, message: "שחקן לא נמצא" });
@@ -1068,8 +1114,11 @@ export const fish = async (req, res) => {
 
     const now = Math.floor(Date.now() / 1000);
     if (user.last_fishing + 60 * 10 > now) {
-      const wait = Math.ceil(((user.last_fishing + 600) - now) / 60);
-      return res.json({ success: false, message: `עליך לחכות עוד ${wait} דקות` });
+      const wait = Math.ceil((user.last_fishing + 600 - now) / 60);
+      return res.json({
+        success: false,
+        message: `עליך לחכות עוד ${wait} דקות`,
+      });
     }
 
     // שליפת פוקימון מים/קרח רנדומלי
@@ -1077,7 +1126,12 @@ export const fish = async (req, res) => {
       "SELECT * FROM pokemon_wild WHERE (type1 IN ('Water','Ice') OR type2 IN ('Water','Ice')) ORDER BY RAND() LIMIT 1"
     );
 
-    const total = (swappah.hp_base + swappah.attack_base + swappah.defence_base + swappah.speed_base) * 73;
+    const total =
+      (swappah.hp_base +
+        swappah.attack_base +
+        swappah.defence_base +
+        swappah.speed_base) *
+      73;
     const points = Math.floor(Math.random() * total) + 1;
 
     // עדכון בניקוד ובזמן
@@ -1097,7 +1151,9 @@ export const fish = async (req, res) => {
       },
     });
   } catch (err) {
-    res.status(500).json({ success: false, message: "שגיאה בדיג", error: err.message });
+    res
+      .status(500)
+      .json({ success: false, message: "שגיאה בדיג", error: err.message });
   }
 };
 
@@ -1113,9 +1169,10 @@ export const getFishingLeaders = async (req, res) => {
     const winners = [];
     for (let i = 1; i <= 3; i++) {
       if (row[`fish${i === 1 ? "" : i}`]) {
-        const [user] = await query("SELECT username, user_id FROM gebruikers WHERE user_id = ?", [
-          row[`fish${i === 1 ? "" : i}`],
-        ]);
+        const [user] = await query(
+          "SELECT username, user_id FROM gebruikers WHERE user_id = ?",
+          [row[`fish${i === 1 ? "" : i}`]]
+        );
         winners.push(user);
       }
     }
@@ -1125,6 +1182,12 @@ export const getFishingLeaders = async (req, res) => {
       data: { today, yesterday: winners },
     });
   } catch (err) {
-    res.status(500).json({ success: false, message: "שגיאה בשליפת טבלאות", error: err.message });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "שגיאה בשליפת טבלאות",
+        error: err.message,
+      });
   }
 };

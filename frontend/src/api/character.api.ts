@@ -1,3 +1,4 @@
+import { UserItem } from "../models/item.model";
 import { axiosInstance } from "./axios";
 
 export interface CreateCharacterRequest {
@@ -52,6 +53,7 @@ export interface GetUserCharactersResponse {
     chat_key?: string;
     tickets: number;
     geluksrad: number;
+    items: UserItem;
   }>;
 }
 

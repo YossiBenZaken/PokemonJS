@@ -2,7 +2,6 @@ import jwt from "jsonwebtoken";
 
 // middleware חדש לחילוץ acc_id מה-token
 export const extractAccId = (req, res, next) => {
-  const { userId } = req.query;
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
 
@@ -20,16 +19,8 @@ export const extractAccId = (req, res, next) => {
     );
     // מכניס את ה-acc_id ל-req.user
     req.user = {
-      acc_id: decoded.acc_id || decoded.userId, // תומך בשני הפורמטים
       ...decoded,
     };
-    if(userId) {
-      req.user = {
-        ...req.user,
-        userId,
-        id: userId
-      }
-    }
     next();
   } catch (error) {
     if (error.name === "TokenExpiredError") {

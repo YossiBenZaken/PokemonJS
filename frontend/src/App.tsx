@@ -1,6 +1,7 @@
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 
 import { BadgeCase } from "./pages/Badges";
+import { BattleProvider } from "./contexts/BattleContext";
 import { ChoosePokemonPage } from "./pages/ChoosePokemon";
 import FishingPage from "./pages/Fishing";
 import { Footer } from "./layout/Footer/Footer";
@@ -22,126 +23,129 @@ import PokedexPage from "./pages/Pokedex";
 import PrivateRoute from "./components/PrivateRoute";
 import { ProfilePage } from "./pages/Profile";
 import { TownRoutes } from "./pages/Town/routes";
+import TrainerAttack from "./pages/Attack/TrainerAttack";
 
 function App() {
   return (
     <GameProvider>
-      <Router>
-        <Header />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route
-            path="/new-character"
-            element={
-              <PrivateRoute>
-                <NewCharacterPage />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/statistics"
-            element={
-              <PrivateRoute>
-                <LeaderboardsPage />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/pokedex"
-            element={
-              <PrivateRoute>
-                <PokedexPage />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/box"
-            element={
-              <PrivateRoute>
-                <PokeBox />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/badges"
-            element={
-              <PrivateRoute>
-                <BadgeCase />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/fishing"
-            element={
-              <PrivateRoute>
-                <FishingPage />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/judge"
-            element={
-              <PrivateRoute>
-                <Judge />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/my-characters"
-            element={
-              <PrivateRoute>
-                <MyCharactersPage />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/choose-pokemon"
-            element={
-              <PrivateRoute>
-                <ChoosePokemonPage />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/profile/:username"
-            element={
-              <PrivateRoute>
-                <ProfilePage />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/events"
-            element={
-              <PrivateRoute>
-                <Notifications />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/house-shop"
-            element={
-              <PrivateRoute>
-                <HouseShopPage />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/items"
-            element={
-              <PrivateRoute>
-                <ItemsPage />
-              </PrivateRoute>
-            }
-          />
-          <Route path="/information" element={<InformationPage />} />
-
-          {InboxRoutes}
-          {TownRoutes}
-        </Routes>
-        <Footer />
-      </Router>
+      <BattleProvider>
+        <Router>
+          <Header />
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route
+              path="/new-character"
+              element={
+                <PrivateRoute>
+                  <NewCharacterPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/statistics"
+              element={
+                <PrivateRoute>
+                  <LeaderboardsPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/pokedex"
+              element={
+                <PrivateRoute>
+                  <PokedexPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/box"
+              element={
+                <PrivateRoute>
+                  <PokeBox />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/badges"
+              element={
+                <PrivateRoute>
+                  <BadgeCase />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/fishing"
+              element={
+                <PrivateRoute>
+                  <FishingPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/judge"
+              element={
+                <PrivateRoute>
+                  <Judge />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/my-characters"
+              element={
+                <PrivateRoute>
+                  <MyCharactersPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/choose-pokemon"
+              element={
+                <PrivateRoute>
+                  <ChoosePokemonPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/profile/:username"
+              element={
+                <PrivateRoute>
+                  <ProfilePage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/events"
+              element={
+                <PrivateRoute>
+                  <Notifications />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/house-shop"
+              element={
+                <PrivateRoute>
+                  <HouseShopPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/items"
+              element={
+                <PrivateRoute>
+                  <ItemsPage />
+                </PrivateRoute>
+              }
+            />
+            <Route path="/information" element={<InformationPage />} />
+            <Route path="/attack/trainer" element={<TrainerAttack />} />
+            {InboxRoutes}
+            {TownRoutes}
+          </Routes>
+          <Footer />
+        </Router>
+      </BattleProvider>
     </GameProvider>
   );
 }

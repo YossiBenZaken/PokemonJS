@@ -6,13 +6,13 @@ const getUserItems = async (req, res) => {
     const userId = req.query.user_id;
 
     // קבלת פריטים רגילים
-    const userItems = await DB.query(
+    const [userItems] = await DB.query(
       "SELECT * FROM gebruikers_item WHERE user_id = ?",
       [userId]
     );
 
     // קבלת TM/HM
-    const userTMHM = await DB.query(
+    const [userTMHM] = await DB.query(
       "SELECT * FROM gebruikers_tmhm WHERE user_id = ?",
       [userId]
     );

@@ -27,13 +27,33 @@ export interface PostChallengeResponse {
   success: boolean;
   message?: string;
   redirect?: string;
+  data: PostChallengeData;
+}
+
+export interface PostChallengeData {
+  computer_id: number;
+  computer_wildid: number;
+  computer: string;
+  computer_speed: number;
+  pokemon_speed: number;
+  pokemon: string;
+  pokemonid: number;
+  begin: string;
+  trainer: {
+    aanvalLogId: number;
+    begin_zien: boolean;
+  };
 }
 
 /**
  * Get all gyms available for the current user.
  */
-export const getGyms = async (userId: number | undefined): Promise<GetGymsResponse> => {
-  const { data } = await axiosInstance.post<GetGymsResponse>("/gyms", {userId});
+export const getGyms = async (
+  userId: number | undefined
+): Promise<GetGymsResponse> => {
+  const { data } = await axiosInstance.post<GetGymsResponse>("/gyms", {
+    userId,
+  });
   return data;
 };
 
@@ -49,7 +69,7 @@ export const postChallenge = async (
     "/gyms/challenge",
     {
       gymLeader,
-      userId
+      userId,
     }
   );
   return data;

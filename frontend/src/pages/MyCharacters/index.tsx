@@ -41,6 +41,8 @@ import { ArrowLeft, Ban, Crown, Play, Plus, Shield, Star } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { getUserCharacters, loginWithCharacter } from "../../api/character.api";
 
+import { UserItem } from "../../models/item.model";
+import { itemsApi } from "../../api/items.api";
 import { useGame } from "../../contexts/GameContext";
 import { useNavigate } from "react-router-dom";
 
@@ -69,7 +71,9 @@ export interface Character {
   gold?: number;
   tickets: number;
   geluksrad: number;
+  items: UserItem;
 }
+
 
 export const MyCharactersPage: React.FC = () => {
   const navigate = useNavigate();
@@ -87,8 +91,13 @@ export const MyCharactersPage: React.FC = () => {
 
   useEffect(() => {
     if (characters.length > 0) {
-      setSelectedCharacter(characters[0]);
-      setCurrentIndex(0);
+      itemsApi.getUserItems(characters[0].user_id.toString()).then((items)=>{
+        setSelectedCharacter({
+          ...characters[0],
+          items: items.gebruikers_item
+        });
+        setCurrentIndex(0);
+      })
     }
   }, [characters]);
 
