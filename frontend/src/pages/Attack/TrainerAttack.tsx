@@ -34,7 +34,9 @@ import {
   BattleResponse,
   ComputerInfo,
   PokemonInfo,
+  TrainerChangePokemonResponse,
   trainerAttack,
+  trainerChangePokemonApi,
 } from "../../api/battle.api";
 import React, { useCallback, useEffect, useState } from "react";
 
@@ -42,18 +44,9 @@ import { ItemData } from "../../models/item.model";
 import { useBattle } from "../../contexts/BattleContext";
 import { useGame } from "../../contexts/GameContext";
 
-interface BattleState {
-  spelerAttack: boolean;
-  spelerWissel: boolean;
-  trainerZmove: boolean;
-  currentWeather: string[];
-  attackTimer?: NodeJS.Timeout;
-  nextTurnTimer?: NodeJS.Timeout;
-  currentAtk: string;
-}
-
 const TrainerAttack: React.FC = () => {
-  const { attackLog, challengeData, computerInfo, pokemonInfo } = useBattle();
+  const { attackLog, computerInfo, pokemonInfo, battleState, dispatchBattle } =
+    useBattle();
   const { attacks, myPokemons, selectedCharacter, itemInfo } = useGame();
 
   const [showPotionsScreen, setShowPotionsScreen] = useState<boolean>(false);
@@ -62,22 +55,6 @@ const TrainerAttack: React.FC = () => {
   const [showBag, setShowBag] = useState<boolean>(false);
   const [selectedPotion, setSelectedPotion] = useState("");
   const [battleMessage, setBattleMessage] = useState("");
-
-  const [battleState, setBattleState] = useState<BattleState>({
-    spelerAttack: false,
-    spelerWissel: false,
-    trainerZmove: attackLog?.zmove === 1 || false,
-    currentWeather: [
-      "harsh_sunlight",
-      "extremely_harsh_sunlight",
-      "rain",
-      "heavy_rain",
-      "sandstorm",
-      "hail",
-      "mysterious_air_current",
-    ],
-    currentAtk: "",
-  });
 
   const potions = itemInfo.filter((item) => item.soort === "potions");
 
@@ -137,7 +114,8 @@ const TrainerAttack: React.FC = () => {
           message = `Error: ${attackLog.laatste_aanval}`;
       }
 
-      setBattleState((prev) => ({ ...prev, spelerAttack, spelerWissel }));
+      dispatchBattle({ type: "SET_SPELER_ATTACK", value: spelerAttack });
+      dispatchBattle({ type: "SET_SPELER_WISSEL", value: spelerWissel });
       setBattleMessage(message);
 
       // Handle weather
@@ -155,338 +133,139 @@ const TrainerAttack: React.FC = () => {
 
     initializeBattleState();
   }, [attackLog, computerInfo, pokemonInfo]);
-
-  const parseBattleResponse = (response: string): BattleResponse => {
-    const parts = response.split(" | ");
-    return {
-      message: parts[0] || "",
-      nextTurn: parts[1] === "1",
-      hp: parseInt(parts[2]) || 0,
-      maxHp: parseInt(parts[3]) || 0,
-      who: parts[4] as "pokemon" | "computer",
-      knockedOut: parts[5] === "1",
-      battleFinished: parts[6] === "1",
-      damage: parts[7] || "0",
-      computerId: parts[8],
-      pokemonPosition: parts[9],
-      expGained: parts[10],
-      levelGained: parts[11],
-      playerHp: parts[17],
-      attackType: parts[18],
-      pokemonEffect: parts[19],
-      computerEffect: parts[20],
-      transform: parts[21],
-      weather: parts[22],
-    };
-  };
-
+  
   // Attack status handler (from PHP attack_status function)
-  const attackStatus = useCallback(
-    (responseText: string | BattleResponse) => {
-      const response =
-        typeof responseText === "string"
-          ? parseBattleResponse(responseText)
-          : responseText;
+  const attackStatus = useCallback((response: BattleResponse) => {
+    // Calculate animation time based on damage
+    const damage = parseInt(response.damage);
+    let time = 250;
+    if (damage < 25) time = 1000;
+    else if (damage < 50) time = 1200;
+    else if (damage < 100) time = 1300;
+    else if (damage < 150) time = 1500;
+    else if (damage < 200) time = 1700;
+    else if (damage < 250) time = 2000;
+    else if (damage >= 250) time = 2200;
 
-      // Calculate animation time based on damage
-      const damage = parseInt(response.damage);
-      let time = 250;
-      if (damage < 25) time = 1000;
-      else if (damage < 50) time = 1200;
-      else if (damage < 100) time = 1300;
-      else if (damage < 150) time = 1500;
-      else if (damage < 200) time = 1700;
-      else if (damage < 250) time = 2000;
-      else if (damage >= 250) time = 2200;
+    // Handle weather
+    if (
+      response.weather &&
+      battleState.currentWeather.includes(response.weather)
+    ) {
+      document
+        .getElementById("weather")
+        ?.classList.add("weather", response.weather);
+    } else {
+      document.getElementById("weather")?.classList.remove("weather");
+    }
 
-      // Handle weather
-      if (
-        response.weather &&
-        battleState.currentWeather.includes(response.weather)
-      ) {
-        document
-          .getElementById("weather")
-          ?.classList.add("weather", response.weather);
-      } else {
-        document.getElementById("weather")?.classList.remove("weather");
-      }
+    // Z-Move fade out
+    setTimeout(() => {
+      const zmoveEl = document.getElementById("zmove");
+      if (zmoveEl) zmoveEl.style.display = "none";
+    }, 3000);
 
-      // Z-Move fade out
-      setTimeout(() => {
-        const zmoveEl = document.getElementById("zmove");
-        if (zmoveEl) zmoveEl.style.display = "none";
-      }, 3000);
+    // Attack animation GIF
+    if (response.attackType) {
+      let gifSuffix = "";
+      let gifAttack = "_blank";
 
-      // Attack animation GIF
-      if (response.attackType) {
-        let gifSuffix = "";
-        let gifAttack = "_blank";
-
-        const attackTypeMap: Record<string, string> = {
-          Fire: "burn",
-          Water: "wave",
-          Electric: "electric",
-          Dark: "dark",
-          Steel: "steel",
-          Psychic: "psychic",
-          Poison: "poison",
-          Normal: "normal",
-          Ice: "ice",
-          Grass: "grass",
-          Ground: "ground",
-          Ghost: "ghost",
-          Flying: "flying",
-          Fighting: "fighting",
-          Fairy: "fairy",
-          Dragon: "dragon",
-          Bug: "bug",
-          Rock: "rock",
-        };
-
-        gifAttack = attackTypeMap[response.attackType] || "_blank";
-
-        if (gifAttack !== "_blank" && response.who === "computer") {
-          gifSuffix = "_y";
-        }
-
-        // Update attack GIF
-        const gifImg = document.querySelector(
-          "#gif_attack img"
-        ) as HTMLImageElement;
-        if (gifImg && response.attackType !== "Fire") {
-          if (
-            ["Recover", "Roost"].includes(battleState.currentAtk) &&
-            response.who === "computer"
-          ) {
-            gifImg.src = `/images/attacks/${gifAttack}.gif`;
-          } else {
-            gifImg.src = `/images/attacks/${gifAttack}${gifSuffix}.gif`;
-          }
-        }
-      }
-
-      // Pokemon animations
-      const allowAnim = true;
-      if (response.who === "computer") {
-        const imgPokemon = document.getElementById("img_pokemon");
-        const imgTrainer = document.getElementById("img_trainer");
-
-        if (["Quick Attack", "Fly"].includes(battleState.currentAtk)) {
-          imgPokemon?.classList.add("quick_atk");
-        } else if (battleState.currentAtk === "Earthquake") {
-          document.getElementById("weather")?.classList.add("shake");
-        } else if (battleState.currentAtk === "Explode") {
-          imgPokemon?.classList.add("explode");
-        }
-
-        if (allowAnim && imgTrainer) {
-          imgTrainer.classList.add("shake");
-        }
-      }
-
-      // Show damage and HP updates
-      if (response.who === "computer") {
-        // Computer took damage
-        const dameEl = document.getElementById("dame");
-        if (dameEl) {
-          dameEl.style.display = "block";
-          dameEl.innerHTML = response.damage;
-        }
-
-        // Update player Pokemon HP display if it was affected
-        if (response.playerHp) {
-          const hpDisplay = document.getElementById("hpPokemon");
-          if (hpDisplay) {
-            if (parseInt(response.playerHp) === 0) {
-              hpDisplay.innerHTML = "";
-              setBattleState((prev) => ({ ...prev, spelerWissel: true }));
-            } else {
-              hpDisplay.innerHTML = `${response.playerHp}/${response.maxHp}`;
-            }
-          }
-        }
-      } else {
-        // Player Pokemon took damage
-        const dame2El = document.getElementById("dame2");
-        if (dame2El) {
-          dame2El.style.display = "block";
-          dame2El.innerHTML = response.damage;
-        }
-      }
-
-      // Set timer for phase 2
-      const timer = setTimeout(() => attackStatus2(responseText), time);
-      setBattleState((prev) => ({ ...prev, attackTimer: timer }));
-    },
-    [battleState]
-  );
-
-  // Attack status phase 2 (from PHP attack_status_2 function)
-  const attackStatus2 = useCallback(
-    (responseText: string | BattleResponse) => {
-      const response = typeof responseText === 'string' ?  parseBattleResponse(responseText) : responseText;
-
-      // Clear attack timer
-      if (battleState.attackTimer) {
-        clearTimeout(battleState.attackTimer);
-      }
-
-      // Hide animations
-      ["hit", "hit2", "dame", "dame2"].forEach((id) => {
-        const el = document.getElementById(id);
-        if (el) el.style.display = "none";
-      });
-
-      setBattleMessage(response.message);
-
-      // Handle status effects
-      const handleStatusEffect = (
-        effectName: string | undefined,
-        targetId: string
-      ) => {
-        const effectEl = document.getElementById(targetId);
-        if (!effectName || effectName === "") {
-          if (effectEl) effectEl.style.display = "none";
-        } else {
-          if (effectEl) {
-            const img = effectEl.querySelector("img") as HTMLImageElement;
-            if (img) {
-              img.src = `/images/effects/${effectName}.png`;
-              img.alt = effectName;
-              img.title = effectName;
-            }
-            effectEl.style.display = "block";
-          }
-        }
+      const attackTypeMap: Record<string, string> = {
+        Fire: "burn",
+        Water: "wave",
+        Electric: "electric",
+        Dark: "dark",
+        Steel: "steel",
+        Psychic: "psychic",
+        Poison: "poison",
+        Normal: "normal",
+        Ice: "ice",
+        Grass: "grass",
+        Ground: "ground",
+        Ghost: "ghost",
+        Flying: "flying",
+        Fighting: "fighting",
+        Fairy: "fairy",
+        Dragon: "dragon",
+        Bug: "bug",
+        Rock: "rock",
       };
 
-      handleStatusEffect(response.pokemonEffect, "pokemon_effect");
-      handleStatusEffect(response.computerEffect, "computer_effect");
+      gifAttack = attackTypeMap[response.attackType] || "_blank";
 
-      // Handle HP updates and progress bars
-      if (response.who === "pokemon") {
-        const lifePercent = Math.round((response.hp / response.maxHp) * 100);
+      if (gifAttack !== "_blank" && response.who === "computer") {
+        gifSuffix = "_y";
+      }
 
-        // Update HP bar
-        const hpBar = document.getElementById("pokemon_life") as HTMLElement;
-        if (hpBar) hpBar.style.width = `${lifePercent}%`;
-
-        // Update Pokemon selection display
-        const pokemonDisplay = document.querySelector(
-          `div[id='change_pokemon'][name='${response.pokemonPosition}']`
-        );
-        if (pokemonDisplay) {
-          const progressBar = pokemonDisplay.querySelector(
-            ".progress"
-          ) as HTMLElement;
-          if (progressBar) progressBar.style.width = `${lifePercent}%`;
-
-          pokemonDisplay.setAttribute(
-            "data-original-title",
-            `${pokemonInfo?.naam} HP: ${response.hp}/${response.maxHp}`
-          );
+      // Update attack GIF
+      const gifImg = document.querySelector(
+        "#gif_attack img"
+      ) as HTMLImageElement;
+      if (gifImg && response.attackType !== "Fire") {
+        if (
+          ["Recover", "Roost"].includes(battleState.currentAtk) &&
+          response.who === "computer"
+        ) {
+          gifImg.src = `/images/attacks/${gifAttack}.gif`;
+        } else {
+          gifImg.src = `/images/attacks/${gifAttack}${gifSuffix}.gif`;
         }
+      }
+    }
 
-        // Update HP display
+    // Pokemon animations
+    const allowAnim = true;
+    if (response.who === "computer") {
+      const imgPokemon = document.getElementById("img_pokemon");
+      const imgTrainer = document.getElementById("img_trainer");
+
+      if (["Quick Attack", "Fly"].includes(battleState.currentAtk)) {
+        imgPokemon?.classList.add("quick_atk");
+      } else if (battleState.currentAtk === "Earthquake") {
+        document.getElementById("weather")?.classList.add("shake");
+      } else if (battleState.currentAtk === "Explode") {
+        imgPokemon?.classList.add("explode");
+      }
+
+      if (allowAnim && imgTrainer) {
+        imgTrainer.classList.add("shake");
+      }
+    }
+
+    // Show damage and HP updates
+    if (response.who === "computer") {
+      // Computer took damage
+      const dameEl = document.getElementById("dame");
+      if (dameEl) {
+        dameEl.style.display = "block";
+        dameEl.innerHTML = response.damage;
+      }
+
+      // Update player Pokemon HP display if it was affected
+      if (response.playerHp) {
         const hpDisplay = document.getElementById("hpPokemon");
         if (hpDisplay) {
-          hpDisplay.innerHTML = `${response.hp}/${response.maxHp}`;
-        }
-      }
-
-      // Handle Pokemon transformations/switches
-      if (response.transform && response.transform !== "0") {
-        const transformData = response.transform.split(",");
-
-        if (response.who === "pokemon") {
-          // Player Pokemon transformed
-          const hpDisplay = document.getElementById("hpPokemon");
-          if (hpDisplay) {
-            hpDisplay.innerHTML = `${response.hp}/${response.maxHp}`;
-          }
-
-          // Update attack buttons
-          for (let i = 0; i < 4; i++) {
-            const button = document.querySelector(
-              `button:nth-of-type(${i + 1})`
-            ) as HTMLButtonElement;
-            if (button && transformData[i + 2]) {
-              button.innerHTML = transformData[i + 2];
-            }
-          }
-
-          // Update Pokemon image
-          const map = transformData[5] === "1" ? "shiny" : "pokemon";
-          const pokemonImg = document.getElementById(
-            "img_pokemon"
-          ) as HTMLImageElement;
-          if (pokemonImg) {
-            pokemonImg.src = `/images/${map}/back/${transformData[0]}.gif`;
-          }
-        } else {
-          // Computer Pokemon transformed
-          const map = transformData[5] === "1" ? "shiny" : "pokemon";
-          const computerImg = document.getElementById(
-            "img_computer"
-          ) as HTMLImageElement;
-          if (computerImg) {
-            computerImg.src = `/images/${map}/${transformData[0]}.gif`;
-          }
-        }
-      }
-
-      // Handle battle flow
-      if (response.who === "pokemon") {
-        if (response.battleFinished) {
-          setTimeout(() => showEndScreen(), 5000);
-        } else if (response.hp <= 0) {
-          setBattleState((prev) => ({ ...prev, spelerWissel: true }));
-        } else {
-          setBattleState((prev) => ({
-            ...prev,
-            spelerAttack: true,
-            spelerWissel: true,
-          }));
-        }
-      } else if (response.who === "computer") {
-        setBattleState((prev) => ({
-          ...prev,
-          spelerAttack: false,
-          spelerWissel: false,
-        }));
-
-        if (response.hp <= 0) {
-          // Handle experience gain
-          if (response.expGained && response.levelGained) {
-            // expChange(response.expGained, response.levelGained);
-          }
-
-          if (!response.battleFinished) {
-            const timer = setTimeout(() => trainerChange(), 3000);
-            setBattleState((prev) => ({ ...prev, nextTurnTimer: timer }));
+          if (parseInt(response.playerHp) === 0) {
+            hpDisplay.innerHTML = "";
+            dispatchBattle({ type: "SET_SPELER_WISSEL", value: true });
           } else {
-            // Mark trainer Pokemon as defeated
-            const trainerEl = document.getElementById(
-              `trainer_${response.computerId}`
-            );
-            if (trainerEl) {
-              (trainerEl as HTMLImageElement).src =
-                "/images/icons/pokeball_black.gif";
-            }
-            setTimeout(() => showEndScreen(), 5000);
+            hpDisplay.innerHTML = `${response.playerHp}/${response.maxHp}`;
           }
-        } else if (response.nextTurn) {
-          setTimeout(() => computerAttack(), 3000);
         }
       }
-
-      // Check if player Pokemon needs switching
-      if (response.playerHp === "0") {
-        setBattleState((prev) => ({ ...prev, spelerWissel: true }));
+    } else {
+      // Player Pokemon took damage
+      const dame2El = document.getElementById("dame2");
+      if (dame2El) {
+        dame2El.style.display = "block";
+        dame2El.innerHTML = response.damage;
       }
-    },
-    [battleState, pokemonInfo]
-  );
+    }
+
+    // Set timer for phase 2
+    const timer = setTimeout(() => attackStatus2(response), time);
+    dispatchBattle({ type: "SET_ATTACK_TIMER", timer });
+  }, []);
 
   // Computer attack function (from PHP computer_attack)
   const computerAttack = useCallback(async () => {
@@ -512,7 +291,7 @@ const TrainerAttack: React.FC = () => {
         setBattleMessage("Computer attack failed!");
       }
     }
-  }, [battleState.spelerAttack, attackLog, attackStatus]);
+  }, [battleState.spelerAttack, attackLog]);
 
   // Trainer change Pokemon function
   const trainerChange = useCallback(async () => {
@@ -525,82 +304,18 @@ const TrainerAttack: React.FC = () => {
       });
 
       try {
-        const response = await fetch(
-          `/api/attack/trainer/trainer-change-pokemon.php?pokemon_info_name=${pokemonInfo.naam}&computer_info_name=${computerInfo.naam}&aanval_log_id=${attackLog.id}`,
-          { method: "GET" }
+        const response = await trainerChangePokemonApi(
+          pokemonInfo.naam,
+          computerInfo.naam,
+          attackLog.id,
+          selectedCharacter?.user_id
         );
-        const responseText = await response.text();
-        trainerChangePokemon(responseText);
+        trainerChangePokemon(response);
       } catch (error) {
         console.error("Trainer change failed:", error);
       }
     }
   }, [battleState.spelerAttack, attackLog, pokemonInfo, computerInfo]);
-
-  // Trainer change Pokemon response handler
-  const trainerChangePokemon = useCallback(
-    (responseText: string) => {
-      const parts = responseText.split(" | ");
-      const [message, trainerName, , maxHp, hp, trainerId, wildId, effect] =
-        parts;
-
-      setBattleMessage(message);
-
-      // Update trainer name display
-      const trainerNameEl = document.getElementById("trainer_naam");
-      if (trainerNameEl) trainerNameEl.innerHTML = trainerName;
-
-      // Update trainer Pokemon image
-      const trainerImg = document.getElementById(
-        "img_trainer"
-      ) as HTMLImageElement;
-      if (trainerImg) {
-        trainerImg.src = `/images/pokemon/${wildId}.gif`;
-      }
-      // Handle status effect
-      const computerEffectEl = document.getElementById("computer_effect");
-      if (!effect || effect === "") {
-        if (computerEffectEl) computerEffectEl.style.display = "none";
-      } else {
-        const img = computerEffectEl?.querySelector("img") as HTMLImageElement;
-        if (img) {
-          img.src = `/images/effects/${effect}.png`;
-          img.alt = effect;
-          img.title = effect;
-        }
-        if (computerEffectEl) computerEffectEl.style.display = "block";
-      }
-
-      // Update HP bar
-      const computerLifePercent = Math.round(
-        (parseInt(hp) / parseInt(maxHp)) * 100
-      );
-      const computerLifeEl = document.getElementById("computer_life");
-      if (computerLifeEl) {
-        computerLifeEl.style.width = `${computerLifePercent}%`;
-      }
-
-      // Mark old Pokemon as defeated
-      const oldTrainerEl = document.getElementById(`trainer_${trainerId}`);
-      if (oldTrainerEl) {
-        (oldTrainerEl as HTMLImageElement).src =
-          "/images/icons/pokeball_black.gif";
-        oldTrainerEl.title = "Defeated";
-      }
-
-      // Continue battle flow
-      if (parts[4] === "1") {
-        setTimeout(() => computerAttack(), 3000);
-      } else {
-        setBattleState((prev) => ({
-          ...prev,
-          spelerAttack: true,
-          spelerWissel: true,
-        }));
-      }
-    },
-    [computerAttack]
-  );
 
   // Show end screen function
   const showEndScreen = useCallback(async () => {
@@ -669,15 +384,252 @@ const TrainerAttack: React.FC = () => {
     }
   }, [attackLog]);
 
+  // Attack status phase 2 (from PHP attack_status_2 function)
+  const attackStatus2 = useCallback(
+    (response: BattleResponse) => {
+
+      // Clear attack timer
+      if (battleState.attackTimer) {
+        clearTimeout(battleState.attackTimer);
+      }
+
+      // Hide animations
+      ["hit", "hit2", "dame", "dame2"].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = "none";
+      });
+
+      setBattleMessage(response.message);
+
+      // Handle status effects
+      const handleStatusEffect = (
+        effectName: string | undefined,
+        targetId: string
+      ) => {
+        const effectEl = document.getElementById(targetId);
+        if (!effectName || effectName === "") {
+          if (effectEl) effectEl.style.display = "none";
+        } else {
+          if (effectEl) {
+            const img = effectEl.querySelector("img") as HTMLImageElement;
+            if (img) {
+              img.src = `/images/effects/${effectName}.png`;
+              img.alt = effectName;
+              img.title = effectName;
+            }
+            effectEl.style.display = "block";
+          }
+        }
+      };
+
+      handleStatusEffect(response.pokemonEffect, "pokemon_effect");
+      handleStatusEffect(response.computerEffect, "computer_effect");
+
+      // Handle HP updates and progress bars
+      if (response.who === "pokemon") {
+        const lifePercent = Math.round((response.hp / response.maxHp) * 100);
+
+        // Update HP bar
+        const hpBar = document.getElementById("pokemon_life") as HTMLElement;
+        if (hpBar) hpBar.style.width = `${lifePercent}%`;
+
+        // Update Pokemon selection display
+        const pokemonDisplay = document.querySelector(
+          `div[id='change_pokemon'][name='${response.pokemonPosition}']`
+        );
+        if (pokemonDisplay) {
+          const progressBar = pokemonDisplay.querySelector(
+            ".progress"
+          ) as HTMLElement;
+          if (progressBar) progressBar.style.width = `${lifePercent}%`;
+
+          pokemonDisplay.setAttribute(
+            "data-original-title",
+            `${pokemonInfo?.naam} HP: ${response.hp}/${response.maxHp}`
+          );
+        }
+
+        // Update HP display
+        const hpDisplay = document.getElementById("hpPokemon");
+        if (hpDisplay) {
+          hpDisplay.innerHTML = `${response.hp}/${response.maxHp}`;
+        }
+      } else {
+        const lifePercent = Math.round((response.hp / response.maxHp) * 100);
+        // Update HP bar
+        const hpBar = document.getElementById("computer_life") as HTMLElement;
+        if (hpBar) hpBar.style.width = `${lifePercent}%`;
+      }
+
+      // Handle Pokemon transformations/switches
+      if (response.transform && response.transform !== "0") {
+        const transformData = response.transform.split(",");
+
+        if (response.who === "pokemon") {
+          // Player Pokemon transformed
+          const hpDisplay = document.getElementById("hpPokemon");
+          if (hpDisplay) {
+            hpDisplay.innerHTML = `${response.hp}/${response.maxHp}`;
+          }
+
+          // Update attack buttons
+          for (let i = 0; i < 4; i++) {
+            const button = document.querySelector(
+              `button:nth-of-type(${i + 1})`
+            ) as HTMLButtonElement;
+            if (button && transformData[i + 2]) {
+              button.innerHTML = transformData[i + 2];
+            }
+          }
+
+          // Update Pokemon image
+          const map = transformData[5] === "1" ? "shiny" : "pokemon";
+          const pokemonImg = document.getElementById(
+            "img_pokemon"
+          ) as HTMLImageElement;
+          if (pokemonImg) {
+            pokemonImg.src = `/images/${map}/back/${transformData[0]}.gif`;
+          }
+        } else {
+          // Computer Pokemon transformed
+          const map = transformData[5] === "1" ? "shiny" : "pokemon";
+          const computerImg = document.getElementById(
+            "img_computer"
+          ) as HTMLImageElement;
+          if (computerImg) {
+            computerImg.src = `/images/${map}/${transformData[0]}.gif`;
+          }
+        }
+      }
+
+      // Handle battle flow
+      if (response.who === "pokemon") {
+        if (response.battleFinished) {
+          setTimeout(() => showEndScreen(), 5000);
+        } else if (response.hp <= 0) {
+          dispatchBattle({ type: "SET_SPELER_WISSEL", value: true });
+        } else {
+          dispatchBattle({ type: "SET_SPELER_ATTACK", value: true });
+          dispatchBattle({ type: "SET_SPELER_WISSEL", value: true });
+        }
+      } else if (response.who === "computer") {
+        dispatchBattle({ type: "SET_SPELER_ATTACK", value: false });
+        dispatchBattle({ type: "SET_SPELER_WISSEL", value: false });
+
+        if (response.hp <= 0) {
+          // Handle experience gain
+          if (response.expGained && response.levelGained) {
+            // expChange(response.expGained, response.levelGained);
+          }
+
+          if (!response.battleFinished) {
+            const timer = setTimeout(() => trainerChange(), 3000);
+            dispatchBattle({ type: "SET_NEXT_TURN_TIMER", timer });
+          } else {
+            // Mark trainer Pokemon as defeated
+            const trainerEl = document.getElementById(
+              `trainer_${response.computerId}`
+            );
+            if (trainerEl) {
+              (trainerEl as HTMLImageElement).src =
+                "/images/icons/pokeball_black.gif";
+            }
+            setTimeout(() => showEndScreen(), 5000);
+          }
+        } else if (response.nextTurn) {
+          setTimeout(() => computerAttack(), 3000);
+        }
+      }
+
+      // Check if player Pokemon needs switching
+      if (response.playerHp === "0") {
+        dispatchBattle({ type: "SET_SPELER_WISSEL", value: true });
+      }
+    },
+    [
+      battleState.attackTimer,
+      dispatchBattle,
+      pokemonInfo?.naam,
+      showEndScreen,
+      trainerChange,
+    ]
+  );
+
+  // Trainer change Pokemon response handler
+  const trainerChangePokemon = useCallback(
+    (response: TrainerChangePokemonResponse) => {
+      const {
+        message,
+        trainerName,
+        maxHp,
+        hp,
+        trainerId,
+        wildId,
+        effect,
+        refresh,
+      } = response;
+
+      setBattleMessage(message);
+
+      // Update trainer name display
+      const trainerNameEl = document.getElementById("trainer_naam");
+      if (trainerNameEl) trainerNameEl.innerHTML = trainerName;
+
+      // Update trainer Pokemon image
+      const trainerImg = document.getElementById(
+        "img_trainer"
+      ) as HTMLImageElement;
+      if (trainerImg) {
+        trainerImg.src = `/images/pokemon/${wildId}.gif`;
+      }
+      // Handle status effect
+      const computerEffectEl = document.getElementById("computer_effect");
+      if (!effect || effect === "") {
+        if (computerEffectEl) computerEffectEl.style.display = "none";
+      } else {
+        const img = computerEffectEl?.querySelector("img") as HTMLImageElement;
+        if (img) {
+          img.src = `/images/effects/${effect}.png`;
+          img.alt = effect;
+          img.title = effect;
+        }
+        if (computerEffectEl) computerEffectEl.style.display = "block";
+      }
+
+      // Update HP bar
+      const computerLifePercent = Math.round(
+        (hp / maxHp) * 100
+      );
+      const computerLifeEl = document.getElementById("computer_life");
+      if (computerLifeEl) {
+        computerLifeEl.style.width = `${computerLifePercent}%`;
+      }
+
+      // Mark old Pokemon as defeated
+      const oldTrainerEl = document.getElementById(`trainer_${trainerId}`);
+      if (oldTrainerEl) {
+        (oldTrainerEl as HTMLImageElement).src =
+          "/images/icons/pokeball_black.gif";
+        oldTrainerEl.title = "Defeated";
+      }
+
+      // Continue battle flow
+      if (refresh === 1) {
+        setTimeout(() => computerAttack(), 3000);
+      } else {
+        dispatchBattle({ type: "SET_SPELER_ATTACK", value: true });
+        dispatchBattle({ type: "SET_SPELER_WISSEL", value: true });
+      }
+    },
+    [dispatchBattle]
+  );
+
   const handleAttackClick = useCallback(
     async (attackName: string, isZMove = false) => {
       if (!battleState.spelerAttack || !attackLog || !pokemonInfo) return;
 
-      setBattleState((prev) => ({
-        ...prev,
-        spelerAttack: false,
-        currentAtk: attackName,
-      }));
+      dispatchBattle({ type: "SET_SPELER_ATTACK", value: false });
+      dispatchBattle({ type: "SET_ATTACK", attack: attackName });
 
       // Show hit animation
       const hitEl = document.getElementById("hit");
@@ -710,18 +662,17 @@ const TrainerAttack: React.FC = () => {
           if (zMoveBtn) {
             zMoveBtn.style.display = "none";
           }
-
-          setBattleState((prev) => ({ ...prev, trainerZmove: true }));
+          dispatchBattle({ type: "SET_TRAINER_ZMOVE", value: true });
         }
 
         attackStatus(response);
       } catch (error) {
         console.error("Attack failed:", error);
         setBattleMessage("Attack failed!");
-        setBattleState((prev) => ({ ...prev, spelerAttack: true }));
+        dispatchBattle({ type: "SET_SPELER_ATTACK", value: true });
       }
     },
-    [battleState.spelerAttack, attackLog, pokemonInfo, attackStatus]
+    [battleState.spelerAttack, attackLog, pokemonInfo, dispatchBattle]
   );
 
   // Handle Pokemon change
@@ -865,22 +816,16 @@ const TrainerAttack: React.FC = () => {
 
         // Set battle state for next phase
         if (parts[2] === "1") {
-          setBattleState((prev) => ({
-            ...prev,
-            spelerAttack: false,
-            spelerWissel: false,
-          }));
+          dispatchBattle({ type: "SET_SPELER_ATTACK", value: false });
+          dispatchBattle({ type: "SET_SPELER_WISSEL", value: false });
           setTimeout(() => computerAttack(), 3000);
         } else {
-          setBattleState((prev) => ({
-            ...prev,
-            spelerAttack: true,
-            spelerWissel: true,
-          }));
+          dispatchBattle({ type: "SET_SPELER_ATTACK", value: true });
+          dispatchBattle({ type: "SET_SPELER_WISSEL", value: true });
         }
       }
     },
-    [computerAttack, battleState.trainerZmove]
+    [battleState.trainerZmove, dispatchBattle]
   );
 
   // Handle item use
@@ -972,16 +917,13 @@ const TrainerAttack: React.FC = () => {
 
         // Computer's turn if needed
         if (parts[1] === "1") {
-          setBattleState((prev) => ({
-            ...prev,
-            spelerAttack: false,
-            spelerWissel: false,
-          }));
+          dispatchBattle({ type: "SET_SPELER_ATTACK", value: false });
+          dispatchBattle({ type: "SET_SPELER_WISSEL", value: false });
           setTimeout(() => computerAttack(), 3000);
         }
       }
     },
-    [computerAttack]
+    [dispatchBattle]
   );
 
   // Handle run attempt
@@ -1016,15 +958,12 @@ const TrainerAttack: React.FC = () => {
         }, 3000);
       } else {
         // Failed to run, computer's turn
-        setBattleState((prev) => ({
-          ...prev,
-          spelerAttack: false,
-          spelerWissel: false,
-        }));
+        dispatchBattle({ type: "SET_SPELER_ATTACK", value: false });
+        dispatchBattle({ type: "SET_SPELER_WISSEL", value: false });
         setTimeout(() => computerAttack(), 3000);
       }
     },
-    [computerAttack]
+    [dispatchBattle]
   );
 
   const handleSelectAttack = () => {
@@ -1096,7 +1035,7 @@ const TrainerAttack: React.FC = () => {
           }}
         />
       </GifAttack>
-      <Weather>
+      <Weather id="weather">
         <img id="zmove" />
         <TableDuelArena>
           <tbody>
@@ -1121,6 +1060,7 @@ const TrainerAttack: React.FC = () => {
                     <HpWrapper>
                       <HpRed>
                         <Progress
+                          id="computer_life"
                           style={{
                             width: `${calculatePercent(computerInfo!)}%`,
                           }}
@@ -1173,6 +1113,7 @@ const TrainerAttack: React.FC = () => {
                   <img src={require("../../assets/images/hit.png")} alt="Hit" />
                 </div>
                 <OpponentPokemonImage
+                id="img_trainer"
                   src={require(`../../assets/images/${computerInfo?.map}/${computerInfo?.wild_id}.gif`)}
                   alt={computerInfo?.naam_goed}
                 />
@@ -1185,6 +1126,7 @@ const TrainerAttack: React.FC = () => {
                   <img src={require("../../assets/images/hit.png")} alt="Hit" />
                 </div>
                 <PokemonImage
+                id="img_pokemon"
                   src={require(`../../assets/images/${pokemonInfo?.map}/back/${pokemonInfo?.wild_id}.gif`)}
                   alt={pokemonInfo?.naam_goed}
                 />
@@ -1213,7 +1155,7 @@ const TrainerAttack: React.FC = () => {
                             height: 14,
                           }}
                         />
-                        {` ${pokemonInfo?.level} `}
+                        <span id='pokemon_level'>{` ${pokemonInfo?.level} `}</span>
                         <div
                           id="hpPokemon"
                           style={{
@@ -1230,6 +1172,7 @@ const TrainerAttack: React.FC = () => {
                     <HpWrapper>
                       <HpRed>
                         <Progress
+                        id="pokemon_life"
                           style={{ width: "100%" }}
                           data-original-title={`${pokemonInfo?.leven}/${pokemonInfo?.levenmax}`}
                         />
@@ -1251,6 +1194,7 @@ const TrainerAttack: React.FC = () => {
                     <ExpWrapper>
                       <HpRed>
                         <ExpProgress
+                        id="pokemon_exp"
                           style={{
                             width: `${calculatePercent(pokemonInfo!)}%`,
                           }}
@@ -1469,10 +1413,14 @@ const TrainerAttack: React.FC = () => {
                   background:
                     "url(/images/layout/battle/text-content.png) no-repeat",
                   backgroundSize: "100% 100%",
-                  padding: 12
+                  padding: 12,
                 }}
               >
-                <div style={{ width: "99%" }} id="message" dangerouslySetInnerHTML={{ __html: battleMessage }} />
+                <div
+                  style={{ width: "99%" }}
+                  id="message"
+                  dangerouslySetInnerHTML={{ __html: battleMessage }}
+                />
               </td>
             </tr>
           </tbody>

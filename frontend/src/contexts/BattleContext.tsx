@@ -1,5 +1,6 @@
 import { AanvalLog, ComputerInfo, PokemonInfo } from "../api/battle.api";
-import React, { ReactNode, createContext, useContext, useState } from "react";
+import { BattleState, battleReducer, initialBattleState } from "../reducers/BattleReducer";
+import React, { ReactNode, createContext, useContext, useReducer, useState } from "react";
 
 import { PostChallengeData } from "../api/gyms.api";
 
@@ -15,6 +16,9 @@ interface BattleContextType {
 
   attackLog: AanvalLog | undefined;
   setAttackLog: (data: AanvalLog) => void;
+
+  battleState: BattleState;
+  dispatchBattle: React.Dispatch<any>
 }
 
 const BattleContext = createContext<BattleContextType | undefined>(undefined);
@@ -32,6 +36,8 @@ export const BattleProvider: React.FC<BattleProviderProps> = ({ children }) => {
   const [pokemonInfo, setPokemonInfo] = useState<PokemonInfo>();
   const [attackLog, setAttackLog] = useState<AanvalLog>();
 
+  const [battleState, dispatchBattle] = useReducer(battleReducer, initialBattleState);
+
   const value: BattleContextType = {
     challengeData,
     setChallengeData,
@@ -40,7 +46,9 @@ export const BattleProvider: React.FC<BattleProviderProps> = ({ children }) => {
     pokemonInfo,
     setPokemonInfo,
     attackLog,
-    setAttackLog
+    setAttackLog,
+    battleState,
+    dispatchBattle
   };
 
   return (

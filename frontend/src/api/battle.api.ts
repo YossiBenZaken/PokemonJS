@@ -205,7 +205,20 @@ export interface BattleResponse {
   weather?: string;
 }
 
-export const initBattle = async (aanval_log_id: number): Promise<{
+export interface TrainerChangePokemonResponse {
+  message: string;
+  trainerName: string;
+  hp: number;
+  maxHp: number;
+  refresh: number;
+  trainerId: string;
+  wildId: number;
+  effect: string;
+}
+
+export const initBattle = async (
+  aanval_log_id: number
+): Promise<{
   computer_info: ComputerInfo;
   pokemon_info: PokemonInfo;
   aanval_log: AanvalLog;
@@ -215,17 +228,40 @@ export const initBattle = async (aanval_log_id: number): Promise<{
     pokemon_info: PokemonInfo;
     aanval_log: AanvalLog;
   }>("/battle/init", {
-    aanval_log_id
+    aanval_log_id,
   });
   return data;
 };
 
-export const trainerAttack = async (attack_name: string | undefined, wie: string, aanval_log_id: number, zmove: boolean = false): Promise<BattleResponse> => {
-  const { data } = await axiosInstance.post<BattleResponse>("/battle/trainer-attack", {
-    attack_name,
-    wie,
+export const trainerAttack = async (
+  attack_name: string | undefined,
+  wie: string,
+  aanval_log_id: number,
+  zmove: boolean = false
+): Promise<BattleResponse> => {
+  const { data } = await axiosInstance.post<BattleResponse>(
+    "/battle/trainer-attack",
+    {
+      attack_name,
+      wie,
+      aanval_log_id,
+      zmove: zmove ? "y" : "",
+    }
+  );
+  return data;
+};
+
+export const trainerChangePokemonApi = async (
+  pokemon_info_name: string,
+  computer_info_name: string,
+  aanval_log_id: number,
+  userId: number | undefined
+): Promise<TrainerChangePokemonResponse> => {
+  const { data } = await axiosInstance.post<TrainerChangePokemonResponse>("/battle/trainer-change-pokemon", {
+    pokemon_info_name,
+    computer_info_name,
     aanval_log_id,
-    zmove: zmove ? 'y' : ''
+    userId,
   });
   return data;
 };

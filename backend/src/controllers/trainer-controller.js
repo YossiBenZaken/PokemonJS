@@ -551,10 +551,9 @@ const getBattleData = async (battleLogId) => {
 // Main attack handler
 export const doTrainerAttack = async (req, res) => {
   try {
-    const { attack_name, wie, aanval_log_id, zmove } = req.body;
+    let { attack_name, wie, aanval_log_id, zmove } = req.body;
     const userId = req.user?.user_id; // Assuming auth middleware sets this
-    console.log(userId);
-    if (!attack_name || !wie || !aanval_log_id) {
+    if (!wie || !aanval_log_id) {
       return res.status(400).send("Missing required parameters");
     }
 
@@ -568,7 +567,6 @@ export const doTrainerAttack = async (req, res) => {
     }
 
     const { battleLog, playerPokemon, computerPokemon } = battleData;
-    console.log(battleData);
 
     // Security check
     if (battleLog.user_id !== userId) {
@@ -1160,10 +1158,7 @@ export const doTrainerAttack = async (req, res) => {
         } else {
           fightEnd = 0;
           message = `${playerPokemon.naam_goed} used ${attackInfo.naam}! ${computerPokemon.naam_goed} fainted! ${battleLog.trainer} will choose another Pokemon!`;
-          await query(
-            'UPDATE aanval_log SET laatste_aanval = "trainer_wissel" WHERE id = ?',
-            [battleLogId]
-          );
+          attackStatus.lastAttack = 'trainer_wissel';
         }
 
         // Award experience
@@ -1540,5 +1535,112 @@ const validateBattleState = (battleLog, userId) => {
     battleLog.laatste_aanval === "end_screen"
   ) {
     throw new Error("Battle has already ended!");
+  }
+};
+
+// Trainer change Pokemon handler
+export const trainerChangePokemon = async (req, res) => {
+  try {
+    const { pokemon_info_name, computer_info_name, aanval_log_id,userId } = req.body;
+    
+    if (!pokemon_info_name || !computer_info_name || !aanval_log_id) {
+      return res.status(400).send('Missing required parameters');
+    }
+    
+    const battleLogId = parseInt(aanval_log_id);
+    
+    // Get battle log
+    const [battleLog] = await query(
+      'SELECT * FROM aanval_log WHERE id = ?',
+      [battleLogId]
+    );
+    
+    if (!battleLog) {
+      return res.status(404).send('Battle not found');
+    }
+    
+    // Security check
+    if (battleLog.user_id !== userId) {
+      return res.status(403).send('Unauthorized');
+    }
+    
+    // Get current player Pokemon data
+    const [playerPokemon] = await query(`
+      SELECT pw.*, ps.*, psg.*
+      FROM pokemon_wild pw
+      INNER JOIN pokemon_speler ps ON pw.wild_id = ps.wild_id
+      INNER JOIN pokemon_speler_gevecht psg ON ps.id = psg.id
+      WHERE psg.id = ?
+    `, [battleLog.pokemonid]);
+    
+    if (!playerPokemon) {
+      return res.status(404).send('Player Pokemon not found');
+    }
+    
+    let message = '';
+    let refresh = 0;
+    let lastMove = '';
+    
+    // Check if trainer needs to change Pokemon
+    if (battleLog.laatste_aanval === 'trainer_wissel') {
+      // Get a random alive computer Pokemon
+      const [newComputer] = await query(`
+        SELECT pw.naam, pw.wild_id, pwg.id, pwg.levenmax, pwg.leven, pwg.speed, pwg.effect
+        FROM pokemon_wild pw
+        INNER JOIN pokemon_wild_gevecht pwg ON pw.wild_id = pwg.wildid
+        WHERE pwg.aanval_log_id = ? AND pwg.leven > 0
+        ORDER BY RAND()
+        LIMIT 1
+      `, [battleLogId]);
+      
+      if (!newComputer) {
+        return res.status(400).send('No available computer Pokemon');
+      }
+      
+      // Apply computer name formatting (simplified)
+      const computerNameGood = newComputer.naam; // In real implementation, use computer_naam function
+      
+      message = `${battleLog.trainer} brought out ${computerNameGood}!<br/>`;
+      
+      // Determine turn order based on speed
+      if (playerPokemon.speed > newComputer.speed) {
+        message += 'Your turn!';
+        lastMove = 'computer';
+        refresh = 0;
+      } else {
+        message += `${computerNameGood} will attack!`;
+        lastMove = 'pokemon';
+        refresh = 1;
+      }
+      
+      // Update battle log with new computer Pokemon
+      await query(
+        'UPDATE aanval_log SET laatste_aanval = ?, tegenstanderid = ? WHERE id = ?',
+        [lastMove, newComputer.id, battleLogId]
+      );
+      
+      updatePokedex(newComputer.wild_id,'zien', userId)
+      
+      // Response format: message | computerName | computerHP | computerMaxHP | refresh | oldComputerId | wildId | effect
+      const response = {
+        message,
+        trainerName: newComputer.naam,
+        hp: newComputer.leven,
+        maxHp: newComputer.levenmax,
+        refresh,
+        trainerId:battleLog.tegenstanderid, // old computer ID
+        wildId: newComputer.wild_id,
+        effect: newComputer.effect || ''
+      }
+      
+      res.json(response);
+      
+    } else {
+      res.status(400).send('Error: 5001 - Invalid battle state for trainer change');
+    }
+    
+  } catch (error) {
+    console.error('Trainer change Pokemon error:', error);
+    res.status(500).send('Trainer change system error');
   }
 };
