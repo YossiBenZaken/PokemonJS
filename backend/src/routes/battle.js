@@ -1,4 +1,4 @@
-import { doTrainerAttack, finishTrainerBattle, trainerChangePokemon } from "../controllers/trainer-controller.js";
+import { attackChangePokemon, doTrainerAttack, finishTrainerBattle, trainerChangePokemon } from "../controllers/trainer-controller.js";
 
 import { InitBattle } from "../controllers/battle-controller.js";
 import express from 'express';
@@ -10,4 +10,5 @@ router.post('/init', InitBattle);
 router.post('/trainer-attack', extractAccId, doTrainerAttack)
 router.post('/trainer-change-pokemon', extractAccId, trainerChangePokemon);
 router.post('/trainer-finish', extractAccId, finishTrainerBattle);
+router.post('/attack-change-pokemon', attackChangePokemon);
 export default router;

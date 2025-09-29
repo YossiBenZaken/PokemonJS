@@ -785,10 +785,12 @@ export const doTrainerAttack = async (req, res) => {
     // Z-Move validation
     if (isZMove) {
       if (battleLog.zmove === 0) {
-        // Validate Z-Move (simplified)
-        await query("UPDATE aanval_log SET zmove = 1 WHERE id = ?", [
-          battleLogId,
-        ]);
+        zmove = (await ZMoves.move(attackInfo))[0];
+        if(zmove == attack_name) {
+          await query("UPDATE aanval_log SET zmove = 1 WHERE id = ?", [
+            battleLogId,
+          ]);
+        }
       } else {
         return res.status(400).send("You cannot use Z-MOVES in this battle!");
       }
@@ -870,7 +872,8 @@ export const doTrainerAttack = async (req, res) => {
             message = `${attackerInfo.naam_goed} is confused!`;
           }
           break;
-        default: newEffect = "";
+        default:
+          newEffect = "";
       }
 
       if (attackContinue === 0) {
@@ -1240,147 +1243,6 @@ const getEffectDuration = (effectName) => {
       return 0;
   }
 };
-
-// Weather system handler
-class WeatherSystem {
-  constructor(battleLog) {
-    this.battleLog = battleLog;
-    this.weatherTypes = [
-      "harsh_sunlight",
-      "extremely_harsh_sunlight",
-      "rain",
-      "heavy_rain",
-      "sandstorm",
-      "hail",
-      "mysterious_air_current",
-    ];
-  }
-
-  isActive() {
-    return (
-      this.battleLog.weather &&
-      this.weatherTypes.includes(this.battleLog.weather) &&
-      this.battleLog.weather_turns > 0
-    );
-  }
-
-  async processTurn() {
-    if (!this.isActive()) return "";
-
-    let message = "";
-
-    // Decrease weather turns
-    if (this.battleLog.weather_turns > 0) {
-      await query(
-        "UPDATE aanval_log SET weather_turns = weather_turns - 1 WHERE id = ?",
-        [this.battleLog.id]
-      );
-
-      // Check if weather ends
-      if (this.battleLog.weather_turns <= 1) {
-        await query(
-          "UPDATE aanval_log SET weather = NULL, weather_turns = 0 WHERE id = ?",
-          [this.battleLog.id]
-        );
-
-        message += this.getWeatherEndMessage();
-      } else {
-        message += this.getWeatherActiveMessage();
-      }
-    }
-
-    return message;
-  }
-
-  async createWeather(attackerInfo, opponentInfo, attackInfo) {
-    const weatherMap = {
-      "Sunny Day": { weather: "harsh_sunlight", turns: 5 },
-      "Rain Dance": { weather: "rain", turns: 5 },
-      Sandstorm: { weather: "sandstorm", turns: 5 },
-      Hail: { weather: "hail", turns: 5 },
-    };
-
-    const weatherData = weatherMap[attackInfo.naam];
-    if (weatherData) {
-      await query(
-        "UPDATE aanval_log SET weather = ?, weather_turns = ? WHERE id = ?",
-        [weatherData.weather, weatherData.turns, this.battleLog.id]
-      );
-    }
-  }
-
-  getWeatherActiveMessage() {
-    switch (this.battleLog.weather) {
-      case "harsh_sunlight":
-        return "<br/>The sunlight is strong!";
-      case "rain":
-        return "<br/>Rain continues to fall!";
-      case "sandstorm":
-        return "<br/>The sandstorm rages!";
-      case "hail":
-        return "<br/>Hail continues to fall!";
-      default:
-        return "";
-    }
-  }
-
-  getWeatherEndMessage() {
-    switch (this.battleLog.weather) {
-      case "harsh_sunlight":
-        return "<br/>The sunlight faded!";
-      case "rain":
-        return "<br/>The rain stopped!";
-      case "sandstorm":
-        return "<br/>The sandstorm subsided!";
-      case "hail":
-        return "<br/>The hail stopped!";
-      default:
-        return "<br/>Weather cleared up!";
-    }
-  }
-
-  async applyWeatherDamage(pokemon, isPlayer = true) {
-    if (!this.isActive()) return "";
-
-    const tableName = isPlayer
-      ? "pokemon_speler_gevecht"
-      : "pokemon_wild_gevecht";
-    let message = "";
-    let damage = 0;
-
-    switch (this.battleLog.weather) {
-      case "sandstorm":
-        // Sandstorm damages non-Rock/Ground/Steel types
-        if (
-          !["Rock", "Ground", "Steel"].includes(pokemon.type1) &&
-          !["Rock", "Ground", "Steel"].includes(pokemon.type2)
-        ) {
-          damage = Math.round(pokemon.levenmax / 16);
-        }
-        break;
-      case "hail":
-        // Hail damages non-Ice types
-        if (pokemon.type1 !== "Ice" && pokemon.type2 !== "Ice") {
-          damage = Math.round(pokemon.levenmax / 16);
-        }
-        break;
-    }
-
-    if (damage > 0) {
-      const newHP = Math.max(0, pokemon.leven - damage);
-      await query(`UPDATE ${tableName} SET leven = ? WHERE id = ?`, [
-        newHP,
-        pokemon.id,
-      ]);
-
-      message = `<br/>${pokemon.naam_goed} was hurt by the ${this.battleLog.weather}!`;
-    }
-
-    return message;
-  }
-}
-
-
 
 // Trainer change Pokemon handler
 export const trainerChangePokemon = async (req, res) => {
@@ -1757,7 +1619,7 @@ export const finishTrainerBattle = async (req, res) => {
         badge,
         reward,
         hm,
-        victory
+        victory,
       },
     });
   } catch (err) {
@@ -1767,3 +1629,562 @@ export const finishTrainerBattle = async (req, res) => {
       .json({ success: false, message: "שגיאת שרת", error: err.message });
   }
 };
+
+/**
+ * שינוי פוקימון
+ */
+export const attackChangePokemon = async (req, res) => {
+  const { opzak_nummer, aanval_log_id } = req.body;
+  const userId = req.user?.user_id;
+  let good = 0;
+  let refresh = 0;
+  let message = "";
+  const { battleLog, computerPokemon } = await getBattleData(aanval_log_id);
+  // Security check
+  if (battleLog.user_id !== userId) {
+    return res.status(403).send("Unauthorized");
+  }
+
+  const existsPokemons = await query(
+    "SELECT `id` FROM `pokemon_speler` WHERE `user_id`=? AND `opzak`='ja' AND `opzak_nummer`=?",
+    [userId, opzak_nummer]
+  );
+  if (existsPokemons.length > 0) {
+    const [changePokemon] = await query(
+      "SELECT * FROM pokemon_wild INNER JOIN pokemon_speler ON pokemon_speler.wild_id = pokemon_wild.wild_id INNER JOIN pokemon_speler_gevecht ON pokemon_speler.id = pokemon_speler_gevecht.id WHERE pokemon_speler.user_id=? AND pokemon_speler.opzak='ja' AND pokemon_speler.opzak_nummer=?",
+      [userId, opzak_nummer]
+    );
+    //Are you hit by block and you're pokemon still alive.
+    if (changePokemon.leven > 0 && battleLog["effect_speler"] == "Block")
+      message = "אי אפשר לשנות את הפוקימון שלך!";
+    //Is the new pokemon an egg
+    else if (changePokemon.ei == 1) message = "אי אפשר לבחור ביצה!";
+    //Is the new pokemon alive
+    else if (changePokemon.leven < 1)
+      message = `${changePokemon.naam} חלש מדי כדי להיכנס לקרב.`;
+    //You've caught the computer
+    else if (battleLog["laatste_aanval"] == "gevongen")
+      message = `אתה לכדת ${computerPokemon} בהצלחה. הקרב הסתיים.`;
+    //The fight is ended
+    else if (battleLog["laatste_aanval"] == "klaar")
+      message = `The fight is ended with ${computerPokemon.naam_goed}`;
+    //Check if it is not your turn
+    else if (battleLog["laatste_aanval"] == "pokemon") {
+      message = `זה לא תורך זה התור של ${computerPokemon.naam_goed}`;
+      refresh = 1;
+    }
+    //Check if you can do something
+    else if (
+      ["computer", "wissel", "speler_wissel", "spelereersteaanval"].includes(
+        battleLog["laatste_aanval"]
+      )
+    ) {
+      //Change Pokemon Was A Success
+      good = 1;
+      let lastMove;
+      //Check Who can begin
+      if (computerPokemon.speed > changePokemon.speed) {
+        message = `Switching Pok&eacute;mon. ${changePokemon.naam} is attacking..`;
+        lastMove = "pokemon";
+        refresh = 1;
+      } else {
+        message = "You've switched Pok&eacute;mon, you can attack now";
+        lastMove = "computer";
+      }
+
+      //Check if New pokemon is used before
+      const usedId = battleLog["gebruikt_id"].split(",");
+      let used;
+      if (usedId.includes(changePokemon.id)) {
+        used = battleLog["gebruikt_id"];
+      } else {
+        used = `${battleLog["gebruikt_id"]},${changePokemon.id},`;
+      }
+      await query(
+        "UPDATE `aanval_log` SET `laatste_aanval`=? ,`aanval_bezig_speler`='', `pokemonid`=?, `gebruikt_id`=? WHERE `id`=?",
+        [lastMove, changePokemon.id, used, battleLog.id]
+      );
+
+      const attack1 = await atk(changePokemon.aanval_1, changePokemon.soort);
+      const attack2 = await atk(changePokemon.aanval_2, changePokemon.soort);
+      const attack3 = await atk(changePokemon.aanval_3, changePokemon.soort);
+      const attack4 = await atk(changePokemon.aanval_4, changePokemon.soort);
+
+      const zmove = false;
+      const tz = false;
+
+      // check zmove
+      if(await ZMoves.valid(changePokemon)[0]) {
+        zmove = (await ZMoves.move(changePokemon))[0];
+        tz = await atk(zmove, changePokemon.soort);
+      }
+
+      return res.json({
+        success: true,
+        data: {
+          message,
+          good,
+          refresh,
+          changePokemon,
+          opzak_nummer,
+          attack1,
+          attack2,
+          attack3,
+          attack4,
+          zmove,
+          tz,
+        },
+      });
+    } else {
+      return res.json({
+        success: false,
+        message: "שגיאה, משהו השתבש",
+      });
+    }
+  } else {
+    return res.json({
+      success: false,
+      message: "שגיאה, משהו השתבש",
+    });
+  }
+};
+
+export async function atk(atkName, poke = null) {
+  // שליפת המתקפה
+  const [rows] = await query("SELECT * FROM aanval WHERE naam = ?", [
+    atkName,
+  ]);
+  let arr = rows;
+
+  if (poke) {
+    const pokeAbility = await ability(poke.ability);
+    poke.ability = pokeAbility?.name;
+
+    const [pokeWildRows] = await query(
+      "SELECT type1 FROM pokemon_wild WHERE wild_id = ?",
+      [poke.wild_id]
+    );
+    poke.type1 = pokeWildRows[0]?.type1;
+
+    // Z-Moves
+    if (arr.is_zmoves === 1 && typeof zMoves !== "undefined") {
+      const zinfo = await ZMoves.move(poke);
+      if (Array.isArray(zinfo) && zinfo.length === 3) {
+        arr.sterkte = zinfo[1];
+        arr.soort = zinfo[2];
+      }
+    }
+
+    // Normal → שינוי סוג לפי יכולת
+    if (arr.soort === "Normal") {
+      switch (poke.ability) {
+        case "Refrigerate":
+          arr.soort = "Ice";
+          break;
+        case "Pixilate":
+          arr.soort = "Fairy";
+          break;
+        case "Aerilate":
+          arr.soort = "Flying";
+          break;
+        case "Galvanize":
+          arr.soort = "Electric";
+          break;
+      }
+    }
+
+    // עוד התאמות לפי יכולת
+    if (poke.ability === "Normalize") {
+      arr.soort = "Normal";
+    } else if (poke.ability === "Liquid Voice" && based(atkName) === "sound") {
+      arr.soort = "Water";
+    } else if (poke.ability === "Parental Bond") {
+      arr.aantalkeer = "1-2";
+    } else if (poke.ability === "Speed Boost") {
+      arr.effect_kans = "100";
+      arr.effect_naam = "Speed_up_2";
+    } else if (poke.ability === "Poison Touch" && arr.makes_contact === 1) {
+      arr.effect_kans = "30";
+      arr.effect_naam = "Poison";
+    } else if (poke.ability === "Skill Link" && arr.aantalkeer !== "1") {
+      arr.aantalkeer = "2-5";
+    }
+
+    // Hidden Power & Special moves
+    if (atkName === "Hidden Power") {
+      arr.soort = hiddenPower(
+        poke.hp_iv,
+        poke.attack_iv,
+        poke.defence_iv,
+        poke.speed_iv,
+        poke["spc.attack_iv"],
+        poke["spc.defence_iv"]
+      );
+    } else if (
+      ["Judgment", "Multi-Attack", "Revelation Dance"].includes(atkName)
+    ) {
+      arr.soort = poke.type1;
+    } else if (atkName === "Techno Blast") {
+      const a = ["Fire", "Ice", "Water", "Electric"];
+      const b = ["Burn Drive", "Chill Drive", "Douse Drive", "Shock Drive"];
+      if (b.includes(poke.item)) {
+        arr.soort = a[b.indexOf(poke.item)];
+      }
+    }
+
+    // Items adjustments
+    if (poke.item === "Scope Lens" && arr.critical === 0) {
+      if (Math.floor(Math.random() * 7) === 6) arr.critical = 1;
+    } else if (poke.item === "Wide Lens") {
+      const percent = Math.floor(arr.mis * 0.15);
+      arr.mis -= percent;
+    } else if (poke.item === "Lucky Punch" && poke.wild_id === "113") {
+      if (arr.critical === 0 && Math.floor(Math.random() * 5) === 4)
+        arr.critical = 1;
+    } else if (poke.item === "Stick" && poke.wild_id === "83") {
+      if (arr.critical === 0 && Math.floor(Math.random() * 5) === 4)
+        arr.critical = 1;
+    }
+  }
+
+  return arr;
+}
+
+export async function ability(id) {
+  const [rows] = await query("SELECT * FROM abilities WHERE id=?", [id]);
+  if (!rows) return null;
+  return rows;
+}
+
+export function hiddenPower(
+  hpIv,
+  attackIv,
+  defenceIv,
+  speedIv,
+  spAttackIv,
+  spDefenceIv
+) {
+  const p = [hpIv, attackIv, defenceIv, speedIv, spAttackIv, spDefenceIv];
+
+  const h = Math.round(
+    ((p[0] + p[1] * 2 + p[2] * 4 + p[3] * 8 + p[4] * 16 + p[5] * 32) * 15) /
+      63 /
+      31.5
+  );
+
+  const typeArr = [
+    "Fighting",
+    "Flying",
+    "Poison",
+    "Ground",
+    "Rock",
+    "Bug",
+    "Ghost",
+    "Steel",
+    "Fire",
+    "Water",
+    "Grass",
+    "Electric",
+    "Psychic",
+    "Ice",
+    "Dragon",
+    "Dark",
+  ];
+
+  return typeArr[h];
+}
+
+/**
+ * מחזיר את סוג המהלך (bite, dance, sound וכו') לפי שם ההתקפה
+ * @param {string} atk
+ * @returns {"normal" | "bite" | "aura, pulse" | "ball, bomb" | "dance" | "powder, spore" | "punch" | "sound"}
+ */
+export function based(atk) {
+  let a = "normal";
+
+  if (
+    [
+      "Bite",
+      "Crunch",
+      "Fire Fang",
+      "Hyper Fang",
+      "Ice Fang",
+      "Poison Fang",
+      "Psychic Fangs",
+      "Thunder Fang",
+    ].includes(atk)
+  ) {
+    a = "bite";
+  } else if (
+    [
+      "Aura Sphere",
+      "Dark Pulse",
+      "Heal Pulse",
+      "Origin Pulse",
+      "Water Pulse",
+    ].includes(atk)
+  ) {
+    a = "aura, pulse";
+  } else if (
+    [
+      "Acid Spray",
+      "Aura Sphere",
+      "Barrage",
+      "Beak Blast",
+      "Bullet Seed",
+      "Egg Bomb",
+      "Electro Ball",
+      "Energy Ball",
+      "Focus Blast",
+      "Gyro Ball",
+      "Ice Ball",
+      "Magnet Bomb",
+      "Mist Ball",
+      "Mud Bomb",
+      "Octazooka",
+      "Pollen Puff",
+      "Rock Blast",
+      "Rock Wrecker",
+      "Searing Shot",
+      "Seed Bomb",
+      "Shadow Ball",
+      "Sludge Bomb",
+      "Weather Ball",
+      "Zap Cannon",
+    ].includes(atk)
+  ) {
+    a = "ball, bomb";
+  } else if (
+    [
+      "Dragon Dance",
+      "Feather Dance",
+      "Fiery Dance",
+      "Lunar Dance",
+      "Petal Dance",
+      "Quiver Dance",
+      "Revelation Dance",
+      "Swords Dance",
+      "Teeter Dance",
+    ].includes(atk)
+  ) {
+    a = "dance";
+  } else if (
+    [
+      "Cotton Spore",
+      "Poison Powder",
+      "Powder",
+      "Rage Powder",
+      "Sleep Powder",
+      "Spore",
+      "Stun Spore",
+    ].includes(atk)
+  ) {
+    a = "powder, spore";
+  } else if (
+    [
+      "Bullet Punch",
+      "Comet Punch",
+      "Dizzy Punch",
+      "Drain Punch",
+      "Dynamic Punch",
+      "Fire Punch",
+      "Focus Punch",
+      "Hammer Arm",
+      "Ice Hammer",
+      "Ice Punch",
+      "Mach Punch",
+      "Mega Punch",
+      "Meteor Mash",
+      "Power-Up Punch",
+      "Shadow Punch",
+      "Sky Uppercut",
+      "Thunder Punch",
+    ].includes(atk)
+  ) {
+    a = "punch";
+  } else if (
+    [
+      "Boomburst",
+      "Bug Buzz",
+      "Chatter",
+      "Clanging Scales",
+      "Confide",
+      "Disarming Voice",
+      "Echoed Voice",
+      "Grass Whistle",
+      "Growl",
+      "Heal Bell",
+      "Hyper Voice",
+      "Metal Sound",
+      "Noble Roar",
+      "Parting Shot",
+      "Perish Song",
+      "Relic Song",
+      "Roar",
+      "Round",
+      "Screech",
+      "Shadow Panic",
+      "Sing",
+      "Snarl",
+      "Snore",
+      "Sparkling Aria",
+      "Supersonic",
+      "Uproar",
+      "Clangorous Soulblaze",
+    ].includes(atk)
+  ) {
+    a = "sound";
+  }
+
+  return a;
+}
+
+
+export async function pokemonEquip(id, item) {
+  id = String(id);
+
+  if (["Burn Drive", "Chill Drive", "Douse Drive", "Shock Drive"].includes(item)) {
+    if (id !== "649") return false;
+  } else if (item === "Dragon Scale" && id !== "117") {
+    return false;
+  } else if (item === "Metal Coat" && !["95", "123"].includes(id)) {
+    return false;
+  } else if (item === "Kings Rock" && !["79", "61"].includes(id)) {
+    return false;
+  } else if (item === "Whipped Dream" && id !== "684") {
+    return false;
+  } else if (item === "Dubious Disc" && id !== "233") {
+    return false;
+  } else if (item === "Up-Grade" && id !== "137") {
+    return false;
+  } else if (item === "Sachet" && id !== "682") {
+    return false;
+  } else if (item === "Reaper Cloth" && id !== "356") {
+    return false;
+  } else if (item === "Protector" && id !== "112") {
+    return false;
+  } else if (item === "Electirizer" && !["125", "737"].includes(id)) {
+    return false;
+  } else if (item === "Magmarizer" && id !== "467") {
+    return false;
+  } else if (item === "Razor Claw" && id !== "215") {
+    return false;
+  } else if (item === "Razor Fang" && id !== "207") {
+    return false;
+  } else if (
+    item === "Light Ball" &&
+    !["25", "923", "967", "968", "966", "965"].includes(id)
+  ) {
+    return false;
+  } else if (item === "Thick Club" && !["104", "105"].includes(id)) {
+    return false;
+  } else if (item === "Lucky Punch" && id !== "113") {
+    return false;
+  } else if (item === "Stick" && id !== "83") {
+    return false;
+  } else if (item === "Soul Dew" && !["381", "842", "841", "380"].includes(id)) {
+    return false;
+  } else if (item.includes(" Z")) {
+    const rows = await query(
+      "SELECT pokemons FROM zaanval_relacionados WHERE item = ?",
+      [item]
+    );
+
+    if (rows.length === 1) {
+      const { pokemons } = rows[0];
+
+      if (pokemons && pokemons.trim() !== "") {
+        const allowed = pokemons.split(",").map(String);
+        if (!allowed.includes(id)) return false;
+      } else {
+        // מקרה חריג – חריגה לפי PHP
+        if (["902", "917", "919"].includes(id)) return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+export class ZMoves {
+  /**
+   * בדיקה אם הפוקימון יכול להשתמש ב־Z-Move
+   * @param {any} poke
+   * @returns {[boolean, string?, string?]} [isValid, zMoveName, baseMove?]
+   */
+  static async valid(poke) {
+    if (!poke) return [false];
+
+    const item = poke.item;
+    const validEquip = await pokemonEquip(poke.wild_id, item);
+
+    if (!validEquip) return [false];
+
+    const zaanval_relacionados = await query(
+      "SELECT * FROM zaanval_relacionados WHERE item = ?",
+      [item]
+    );
+
+    if (zaanval_relacionados.length === 0) return [false];
+    const row = zaanval_relacionados[0];
+
+    // טוענים את כל ההתקפות של הפוקימון
+    const atk1 = await atk(poke.aanval_1);
+    const atk2 = await atk(poke.aanval_2);
+    const atk3 = await atk(poke.aanval_3);
+    const atk4 = await atk(poke.aanval_4);
+
+    if (row.typed === 1) {
+      const atkType = (await atk(row.naam)).soort;
+      const atkArr = [atk1.soort, atk2.soort, atk3.soort, atk4.soort];
+
+      if (atkArr.includes(atkType)) {
+        const key = atkArr.indexOf(atkType);
+        const atkArr2 = [atk1.naam, atk2.naam, atk3.naam, atk4.naam];
+        return [true, row.naam, atkArr2[key]];
+      }
+    } else {
+      const atkArr = [atk1.naam, atk2.naam, atk3.naam, atk4.naam];
+      if (atkArr.includes(row.required_move)) {
+        return [true, row.naam];
+      }
+    }
+
+    return [false];
+  }
+
+  /**
+   * החזרת Z-Move מותאם לפי הפוקימון
+   * @param {any} poke
+   * @returns {[string, number?, string?]} [name, power?, type?]
+   */
+  static async move(poke) {
+    const valid = await this.valid(poke);
+
+    if (!valid[0]) return;
+
+    const name = valid[1];
+
+    // אם יש 3 ערכים → יש התאמה לפי סוג
+    if (valid.length === 3) {
+      const baseAtk = await atk(valid[2]);
+      const power = baseAtk.sterkte;
+      let pow = 200; // ברירת מחדל הכי חזק
+
+      if (power >= 0 && power <= 55) pow = 100;
+      else if (power >= 60 && power <= 65) pow = 120;
+      else if (power >= 70 && power <= 75) pow = 140;
+      else if (power >= 80 && power <= 85) pow = 160;
+      else if (power >= 90 && power <= 95) pow = 175;
+      else if (power === 100) pow = 180;
+      else if (power === 110) pow = 185;
+      else if (power >= 120 && power <= 125) pow = 190;
+      else if (power === 130) pow = 195;
+
+      const type = baseAtk.soort;
+      return [name, pow, type];
+    } else {
+      return [name];
+    }
+  }
+}
