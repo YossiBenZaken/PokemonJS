@@ -1,4 +1,4 @@
-import { doTrainerAttack, trainerChangePokemon } from "../controllers/trainer-controller.js";
+import { doTrainerAttack, finishTrainerBattle, trainerChangePokemon } from "../controllers/trainer-controller.js";
 
 import { InitBattle } from "../controllers/battle-controller.js";
 import express from 'express';
@@ -9,4 +9,5 @@ const router = express.Router();
 router.post('/init', InitBattle);
 router.post('/trainer-attack', extractAccId, doTrainerAttack)
 router.post('/trainer-change-pokemon', extractAccId, trainerChangePokemon);
+router.post('/trainer-finish', extractAccId, finishTrainerBattle);
 export default router;

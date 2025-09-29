@@ -216,6 +216,13 @@ export interface TrainerChangePokemonResponse {
   effect: string;
 }
 
+export interface TrainerFinishResponse {
+  victory: boolean;
+  reward: number;
+  hm: string;
+  badge?: string;
+}
+
 export const initBattle = async (
   aanval_log_id: number
 ): Promise<{
@@ -265,3 +272,8 @@ export const trainerChangePokemonApi = async (
   });
   return data;
 };
+
+export const trainerFinish = async(aanval_log_id: number): Promise<TrainerFinishResponse> => {
+  const {data} = await axiosInstance.post<TrainerFinishResponse>('/battle/trainer-finish', {aanval_log_id});
+  return data;
+}

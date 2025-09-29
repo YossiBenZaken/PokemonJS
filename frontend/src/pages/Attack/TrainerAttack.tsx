@@ -37,17 +37,20 @@ import {
   TrainerChangePokemonResponse,
   trainerAttack,
   trainerChangePokemonApi,
+  trainerFinish,
 } from "../../api/battle.api";
 import React, { useCallback, useEffect, useState } from "react";
 
 import { ItemData } from "../../models/item.model";
 import { useBattle } from "../../contexts/BattleContext";
 import { useGame } from "../../contexts/GameContext";
+import { useNavigate } from "react-router-dom";
 
 const TrainerAttack: React.FC = () => {
   const { attackLog, computerInfo, pokemonInfo, battleState, dispatchBattle } =
     useBattle();
   const { attacks, myPokemons, selectedCharacter, itemInfo } = useGame();
+  const navigate = useNavigate();
 
   const [showPotionsScreen, setShowPotionsScreen] = useState<boolean>(false);
   const [showAttacks, setShowAttacks] = useState<boolean>(true);
@@ -322,12 +325,7 @@ const TrainerAttack: React.FC = () => {
     if (!attackLog) return;
 
     try {
-      const response = await fetch(
-        `/api/attack/trainer/trainer-finish.php?aanval_log_id=${attackLog.id}`,
-        { method: "GET" }
-      );
-      const responseText = await response.text();
-      const parts = responseText.split(" | ");
+      const response = await trainerFinish(attackLog.id);
 
       // Hide hit indicators
       ["hit", "hit2"].forEach((id) => {
@@ -335,27 +333,25 @@ const TrainerAttack: React.FC = () => {
         if (el) el.style.display = "none";
       });
 
-      if (parts[4] === "1") {
+      if (response.victory) {
         // Player won
         let message = "";
-        if (parts[0] === "") {
-          message = `You defeated ${attackLog.trainer}! You gained ${parts[1]} Silvers.`;
-        } else if (parts[2] === "1") {
-          message = `You defeated ${attackLog.trainer}! You gained a Master Ball and ${parts[1]} Silvers.`;
-        } else {
-          message = `You defeated ${attackLog.trainer}! You earned the ${parts[0]} badge and ${parts[1]} Silvers.`;
+        if (response.badge === "") {
+          message = `You defeated ${attackLog.trainer}! You gained ${response.reward} Silvers.`;
+        }else {
+          message = `You defeated ${attackLog.trainer}! You earned the ${response.badge} badge and ${response.reward} Silvers.`;
         }
 
         setBattleMessage(message);
 
         // Show badge if earned
-        if (parts[0] && !parts[0].includes("Elite")) {
+        if (response.badge && !response.badge.includes("Elite")) {
           const zmoveEl = document.getElementById("zmove");
           if (zmoveEl) {
             zmoveEl.style.display = "none";
             (
               zmoveEl as HTMLImageElement
-            ).src = `/images/badges/pixel/${parts[0]}.png`;
+            ).src = `/images/badges/pixel/${response.badge}.png`;
             zmoveEl.style.marginLeft = "81%";
             zmoveEl.style.display = "block";
           }
@@ -363,8 +359,8 @@ const TrainerAttack: React.FC = () => {
       } else {
         // Player lost
         let message = `${attackLog.trainer} defeated you!`;
-        if (parseInt(parts[1]) > 0) {
-          message += ` You lost ${parts[1]} Silvers.`;
+        if (response.reward > 0) {
+          message += ` You lost ${response.reward} Silvers.`;
         }
         message += " Better luck next time!";
         setBattleMessage(message);
@@ -376,13 +372,12 @@ const TrainerAttack: React.FC = () => {
 
       // Redirect after delay
       setTimeout(() => {
-        // Redirect logic here - replace with actual navigation
-        window.location.href = "./trainers";
+        navigate('/');
       }, 7500);
     } catch (error) {
       console.error("End screen failed:", error);
     }
-  }, [attackLog]);
+  }, [attackLog, navigate]);
 
   // Attack status phase 2 (from PHP attack_status_2 function)
   const attackStatus2 = useCallback(

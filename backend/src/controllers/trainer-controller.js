@@ -1,5 +1,4 @@
-import { InitBattle, getBattleInfo } from "./battle-controller.js";
-
+import { getBattleInfo } from "./battle-controller.js";
 import { query } from "../config/database.js";
 
 export const startTrainerBattle = async (req) => {
@@ -769,8 +768,8 @@ export const doTrainerAttack = async (req, res) => {
         pokemonPosition: 0,
         expGained: 0,
         levelGained: 0,
-        recoilDamage:0,
-        recLeft:0,
+        recoilDamage: 0,
+        recLeft: 0,
         playerMaxHp: 0,
         whoPlayer: "",
         steps: "",
@@ -871,6 +870,7 @@ export const doTrainerAttack = async (req, res) => {
             message = `${attackerInfo.naam_goed} is confused!`;
           }
           break;
+        default: newEffect = "";
       }
 
       if (attackContinue === 0) {
@@ -1129,17 +1129,11 @@ export const doTrainerAttack = async (req, res) => {
 
         if (alivePokemon[0].count <= 1) {
           message = `${computerPokemon.naam_goed} used ${attackInfo.naam}! ${playerPokemon.naam_goed} fainted! You lose!`;
-          await query(
-            'UPDATE aanval_log SET laatste_aanval = "end_screen" WHERE id = ?',
-            [battleLogId]
-          );
+          attackStatus.lastAttack = "end_screen";
         } else {
           fightEnd = 0;
           message = `${computerPokemon.naam_goed} used ${attackInfo.naam}! ${playerPokemon.naam_goed} fainted! Choose another Pokemon!`;
-          await query(
-            'UPDATE aanval_log SET laatste_aanval = "speler_wissel" WHERE id = ?',
-            [battleLogId]
-          );
+          attackStatus.lastAttack = "speler_wissel";
         }
       } else if (attackStatus.lastAttack === "pokemon") {
         // Computer Pokemon fainted
@@ -1151,14 +1145,11 @@ export const doTrainerAttack = async (req, res) => {
         if (aliveComputers[0].count <= 1) {
           fightEnd = 1;
           message = `${playerPokemon.naam_goed} used ${attackInfo.naam}! ${computerPokemon.naam_goed} fainted! You win!`;
-          await query(
-            'UPDATE aanval_log SET laatste_aanval = "end_screen" WHERE id = ?',
-            [battleLogId]
-          );
+          attackStatus.lastAttack = "end_screen";
         } else {
           fightEnd = 0;
           message = `${playerPokemon.naam_goed} used ${attackInfo.naam}! ${computerPokemon.naam_goed} fainted! ${battleLog.trainer} will choose another Pokemon!`;
-          attackStatus.lastAttack = 'trainer_wissel';
+          attackStatus.lastAttack = "trainer_wissel";
         }
 
         // Award experience
@@ -1224,7 +1215,6 @@ export const doTrainerAttack = async (req, res) => {
       transform,
       weather: battleLog.weather || "",
     });
-
   } catch (error) {
     console.error("Battle attack error:", error);
     res.status(500).send("Battle system error occurred");
@@ -1390,237 +1380,97 @@ class WeatherSystem {
   }
 }
 
-// Experience and leveling system
-const calculateExperience = (
-  defeatedPokemon,
-  winnerPokemon,
-  isTraded = false,
-  isPremium = false
-) => {
-  const baseExp = defeatedPokemon.base_exp || 50;
-  const level = defeatedPokemon.level;
-  let multiplier = 1.5;
 
-  if (isTraded) multiplier += 0.5;
-  if (isPremium) multiplier += 0.5;
-
-  const experience = Math.floor((baseExp * level * multiplier) / 7);
-  return experience;
-};
-
-const checkLevelUp = async (pokemon) => {
-  if (pokemon.exp >= pokemon.expnodig && pokemon.level < 100) {
-    const newLevel = pokemon.level + 1;
-
-    // Calculate new stats (simplified)
-    const hpIncrease = Math.floor(Math.random() * 5) + 2;
-    const statIncrease = Math.floor(Math.random() * 3) + 1;
-
-    await query(
-      `
-      UPDATE pokemon_speler_gevecht SET 
-        level = ?, 
-        levenmax = levenmax + ?,
-        attack = attack + ?,
-        defence = defence + ?,
-        speed = speed + ?,
-        \`spc.attack\` = \`spc.attack\` + ?,
-        \`spc.defence\` = \`spc.defence\` + ?
-      WHERE id = ?
-    `,
-      [
-        newLevel,
-        hpIncrease,
-        statIncrease,
-        statIncrease,
-        statIncrease,
-        statIncrease,
-        statIncrease,
-        pokemon.id,
-      ]
-    );
-
-    return {
-      leveledUp: true,
-      newLevel,
-      message: `<br/>${pokemon.naam_goed} grew to level ${newLevel}!`,
-    };
-  }
-
-  return { leveledUp: false, message: "" };
-};
-
-// AI for computer Pokemon selection
-const selectComputerAttack = (pokemon) => {
-  const attacks = [
-    pokemon.aanval_1,
-    pokemon.aanval_2,
-    pokemon.aanval_3,
-    pokemon.aanval_4,
-  ].filter((attack) => attack && attack.trim() !== "");
-
-  if (attacks.length === 0) return null;
-
-  // Simple AI - prefer attacking moves over status moves
-  const attackingMoves = attacks.filter((attack) => {
-    // This would normally check the attack database
-    return !["Growl", "Tail Whip", "Sand Attack", "String Shot"].includes(
-      attack
-    );
-  });
-
-  if (attackingMoves.length > 0) {
-    return attackingMoves[Math.floor(Math.random() * attackingMoves.length)];
-  }
-
-  return attacks[Math.floor(Math.random() * attacks.length)];
-};
-
-// Status effect processor
-const processStatusEffects = async (pokemon, isPlayer = true) => {
-  if (!pokemon.effect) return "";
-
-  const tableName = isPlayer
-    ? "pokemon_speler_gevecht"
-    : "pokemon_wild_gevecht";
-  let message = "";
-  let damage = 0;
-
-  switch (pokemon.effect) {
-    case "Burn":
-      damage = Math.round(pokemon.levenmax / 8);
-      message = `<br/>${pokemon.naam_goed} was hurt by its burn!`;
-      break;
-    case "Poisoned":
-      damage = Math.round(pokemon.levenmax / 16) * (pokemon.poison || 1);
-      message = `<br/>${pokemon.naam_goed} was hurt by poison!`;
-      // Increase poison counter
-      await query(`UPDATE ${tableName} SET poison = poison + 1 WHERE id = ?`, [
-        pokemon.id,
-      ]);
-      break;
-  }
-
-  if (damage > 0) {
-    const newHP = Math.max(0, pokemon.leven - damage);
-    await query(`UPDATE ${tableName} SET leven = ? WHERE id = ?`, [
-      newHP,
-      pokemon.id,
-    ]);
-  }
-
-  return message;
-};
-
-// Move validation
-const validateMove = (pokemon, moveName) => {
-  const pokemonMoves = [
-    pokemon.aanval_1,
-    pokemon.aanval_2,
-    pokemon.aanval_3,
-    pokemon.aanval_4,
-  ].filter((move) => move && move.trim() !== "");
-
-  return pokemonMoves.includes(moveName);
-};
-
-// Battle state validation
-const validateBattleState = (battleLog, userId) => {
-  if (battleLog.user_id !== userId) {
-    throw new Error("Battle ended due to inactivity!");
-  }
-
-  if (
-    battleLog.laatste_aanval === "klaar" ||
-    battleLog.laatste_aanval === "end_screen"
-  ) {
-    throw new Error("Battle has already ended!");
-  }
-};
 
 // Trainer change Pokemon handler
 export const trainerChangePokemon = async (req, res) => {
   try {
-    const { pokemon_info_name, computer_info_name, aanval_log_id,userId } = req.body;
-    
+    const { pokemon_info_name, computer_info_name, aanval_log_id, userId } =
+      req.body;
+
     if (!pokemon_info_name || !computer_info_name || !aanval_log_id) {
-      return res.status(400).send('Missing required parameters');
+      return res.status(400).send("Missing required parameters");
     }
-    
+
     const battleLogId = parseInt(aanval_log_id);
-    
+
     // Get battle log
-    const [battleLog] = await query(
-      'SELECT * FROM aanval_log WHERE id = ?',
-      [battleLogId]
-    );
-    
+    const [battleLog] = await query("SELECT * FROM aanval_log WHERE id = ?", [
+      battleLogId,
+    ]);
+
     if (!battleLog) {
-      return res.status(404).send('Battle not found');
+      return res.status(404).send("Battle not found");
     }
-    
+
     // Security check
     if (battleLog.user_id !== userId) {
-      return res.status(403).send('Unauthorized');
+      return res.status(403).send("Unauthorized");
     }
-    
+
     // Get current player Pokemon data
-    const [playerPokemon] = await query(`
+    const [playerPokemon] = await query(
+      `
       SELECT pw.*, ps.*, psg.*
       FROM pokemon_wild pw
       INNER JOIN pokemon_speler ps ON pw.wild_id = ps.wild_id
       INNER JOIN pokemon_speler_gevecht psg ON ps.id = psg.id
       WHERE psg.id = ?
-    `, [battleLog.pokemonid]);
-    
+    `,
+      [battleLog.pokemonid]
+    );
+
     if (!playerPokemon) {
-      return res.status(404).send('Player Pokemon not found');
+      return res.status(404).send("Player Pokemon not found");
     }
-    
-    let message = '';
+
+    let message = "";
     let refresh = 0;
-    let lastMove = '';
-    
+    let lastMove = "";
+
     // Check if trainer needs to change Pokemon
-    if (battleLog.laatste_aanval === 'trainer_wissel') {
+    if (battleLog.laatste_aanval === "trainer_wissel") {
       // Get a random alive computer Pokemon
-      const [newComputer] = await query(`
+      const [newComputer] = await query(
+        `
         SELECT pw.naam, pw.wild_id, pwg.id, pwg.levenmax, pwg.leven, pwg.speed, pwg.effect
         FROM pokemon_wild pw
         INNER JOIN pokemon_wild_gevecht pwg ON pw.wild_id = pwg.wildid
         WHERE pwg.aanval_log_id = ? AND pwg.leven > 0
         ORDER BY RAND()
         LIMIT 1
-      `, [battleLogId]);
-      
+      `,
+        [battleLogId]
+      );
+
       if (!newComputer) {
-        return res.status(400).send('No available computer Pokemon');
+        return res.status(400).send("No available computer Pokemon");
       }
-      
+
       // Apply computer name formatting (simplified)
       const computerNameGood = newComputer.naam; // In real implementation, use computer_naam function
-      
+
       message = `${battleLog.trainer} brought out ${computerNameGood}!<br/>`;
-      
+
       // Determine turn order based on speed
       if (playerPokemon.speed > newComputer.speed) {
-        message += 'Your turn!';
-        lastMove = 'computer';
+        message += "Your turn!";
+        lastMove = "computer";
         refresh = 0;
       } else {
         message += `${computerNameGood} will attack!`;
-        lastMove = 'pokemon';
+        lastMove = "pokemon";
         refresh = 1;
       }
-      
+
       // Update battle log with new computer Pokemon
       await query(
-        'UPDATE aanval_log SET laatste_aanval = ?, tegenstanderid = ? WHERE id = ?',
+        "UPDATE aanval_log SET laatste_aanval = ?, tegenstanderid = ? WHERE id = ?",
         [lastMove, newComputer.id, battleLogId]
       );
-      
-      updatePokedex(newComputer.wild_id,'zien', userId)
-      
+
+      updatePokedex(newComputer.wild_id, "zien", userId);
+
       // Response format: message | computerName | computerHP | computerMaxHP | refresh | oldComputerId | wildId | effect
       const response = {
         message,
@@ -1628,19 +1478,292 @@ export const trainerChangePokemon = async (req, res) => {
         hp: newComputer.leven,
         maxHp: newComputer.levenmax,
         refresh,
-        trainerId:battleLog.tegenstanderid, // old computer ID
+        trainerId: battleLog.tegenstanderid, // old computer ID
         wildId: newComputer.wild_id,
-        effect: newComputer.effect || ''
-      }
-      
+        effect: newComputer.effect || "",
+      };
+
       res.json(response);
-      
     } else {
-      res.status(400).send('Error: 5001 - Invalid battle state for trainer change');
+      res
+        .status(400)
+        .send("Error: 5001 - Invalid battle state for trainer change");
     }
-    
   } catch (error) {
-    console.error('Trainer change Pokemon error:', error);
-    res.status(500).send('Trainer change system error');
+    console.error("Trainer change Pokemon error:", error);
+    res.status(500).send("Trainer change system error");
+  }
+};
+
+/**
+ * מעדכן את מצב הפוקימונים אחרי קרב
+ */
+async function pokemonPlayerHandUpdate(userId) {
+  const rows = await query(
+    `SELECT id, leven, exp, totalexp, effect, attack_ev, defence_ev, speed_ev, \`spc.attack_ev\`, \`spc.defence_ev\`, hp_ev
+     FROM pokemon_speler_gevecht WHERE user_id=?`,
+    [userId]
+  );
+
+  for (const p of rows) {
+    await query(
+      `UPDATE pokemon_speler SET
+        leven=?, exp=?, totalexp=?, effect=?,
+        attack_ev=attack_ev+?, defence_ev=defence_ev+?, speed_ev=speed_ev+?,
+        \`spc.attack_ev\`=\`spc.attack_ev\`+?, \`spc.defence_ev\`=\`spc.defence_ev\`+?, hp_ev=hp_ev+?
+       WHERE id=?`,
+      [
+        p.leven,
+        p.exp,
+        p.totalexp,
+        p.effect,
+        p.attack_ev,
+        p.defence_ev,
+        p.speed_ev,
+        p["spc.attack_ev"],
+        p["spc.defence_ev"],
+        p.hp_ev,
+        p.id,
+      ]
+    );
+  }
+}
+
+/**
+ * מוחק את נתוני הקרב
+ */
+async function removeAttack(userId, aanvalLogId) {
+  await query("UPDATE gebruikers SET pagina='attack_start' WHERE user_id=?", [
+    userId,
+  ]);
+  await query("DELETE FROM pokemon_wild_gevecht WHERE aanval_log_id=?", [
+    aanvalLogId,
+  ]);
+  await query("DELETE FROM pokemon_speler_gevecht WHERE aanval_log_id=?", [
+    aanvalLogId,
+  ]);
+  await query("DELETE FROM aanval_log WHERE id=?", [aanvalLogId]);
+}
+
+/**
+ * סיום קרב מאמן
+ */
+export const finishTrainerBattle = async (req, res) => {
+  const { aanval_log_id } = req.body;
+  const userId = req.user?.user_id;
+  if (!userId) {
+    return res.status(401).json({ success: false, message: "משתמש לא מחובר" });
+  }
+
+  try {
+    const [user] = await query(
+      "SELECT * FROM gebruikers AS g INNER JOIN gebruikers_item AS gi ON g.user_id = gi.user_id WHERE g.user_id = ?",
+      [userId]
+    );
+    let victory = false;
+    let reward = 0;
+    let badge = null;
+    let hm = "";
+
+    const [logs] = await query("SELECT * FROM aanval_log WHERE id = ?", [
+      aanval_log_id,
+    ]);
+    if (!logs) {
+      return res
+        .status(400)
+        .json({ success: false, message: "לא נמצא קרב פעיל" });
+    }
+
+    if (logs.laatste_aanval != "end_screen") {
+      throw new Error("Not finished yet");
+    }
+
+    const myPokemonWasInBattle = await query(
+      "SELECT `id` FROM `pokemon_speler_gevecht` WHERE `user_id`=? AND `leven`>'0'",
+      [userId]
+    );
+
+    const [trainer] = await query("SELECT * FROM `trainer` WHERE `naam`=?", [
+      logs.trainer,
+    ]);
+
+    if (myPokemonWasInBattle.length === 0) {
+      let money = 0;
+      // You lose
+      if (user.rank >= 3) {
+        money = Math.round(user.silver / 50);
+      }
+      victory = false;
+      await query(
+        "UPDATE `gebruikers` SET `silver`=`silver`-?, `verloren`=`verloren`+'1',`points`=if (`points` > 0, (`points` - 60), 0),`points_temp`=if (`points_temp` > 0, (`points_temp` - 60), 0) WHERE `user_id`=?",
+        [money, userId]
+      );
+    } else {
+      victory = true;
+      // חישוב פרס לפי מאמן
+
+      badge = trainer.badge;
+      switch (badge) {
+        case "Hive":
+          await query(
+            "UPDATE `gebruikers_tmhm` SET `HM01`='1' WHERE `user_id`=?",
+            [userId]
+          );
+          hm = "You also get HM01 Cut.";
+          break;
+        case "Feather":
+          await query(
+            "UPDATE `gebruikers_tmhm` SET `HM02`='1' WHERE `user_id`=?",
+            [userId]
+          );
+          hm = "You also get HM02 Fly.";
+          break;
+        case "Cascade":
+          await query(
+            "UPDATE `gebruikers_tmhm` SET `HM03`='1' WHERE `user_id`=?",
+            [userId]
+          );
+          hm = "You also get HM03 Surf.";
+          break;
+        case "Knuckle":
+          await query(
+            "UPDATE `gebruikers_tmhm` SET `HM04`='1' WHERE `user_id`=?",
+            [userId]
+          );
+          hm = "You also get HM04 Strength.";
+          break;
+        case "Relic":
+          await query(
+            "UPDATE `gebruikers_tmhm` SET `HM05`='1' WHERE `user_id`=?",
+            [userId]
+          );
+          hm = "You also get HM05 Flash.";
+          break;
+        case "Storm":
+          await query(
+            "UPDATE `gebruikers_tmhm` SET `HM06`='1' WHERE `user_id`=?",
+            [userId]
+          );
+          hm = "You also get HM06 Rock Smash.";
+          break;
+        case "Fen":
+          await query(
+            "UPDATE `gebruikers_tmhm` SET `HM07`='1' WHERE `user_id`=?",
+            [userId]
+          );
+          hm = "You also get HM07 Waterfall.";
+          break;
+        case "Rain":
+          await query(
+            "UPDATE `gebruikers_tmhm` SET `HM08`='1' WHERE `user_id`=?",
+            [userId]
+          );
+          hm = "You also get HM08 Rock Climb.";
+          break;
+      }
+
+      if (badge) {
+        await query(
+          "UPDATE `gebruikers_badges` SET " +
+            badge +
+            " = '1' WHERE `user_id`=?",
+          [userId]
+        );
+
+        const gymWorld = `${user.wereld}_gym`;
+        if (user[gymWorld] === 7) {
+          const unlockWorldDic = {
+            Kanto: "Johto",
+            Johto: "Hoenn",
+            Hoenn: "Sinnoh",
+            Sinnoh: "Unova",
+            Unova: "Kalos",
+            Kalos: "Alola",
+            Alola: "Kanto",
+          };
+          const unlockWorld = unlockWorldDic[user.wereld] + "_block";
+          await query(
+            "UPDATE gebruikers SET badges = badges + '1', " +
+              gymWorld +
+              " = " +
+              gymWorld +
+              " + '1', " +
+              unlockWorld +
+              " = '1' WHERE user_id = ",
+            [userId]
+          );
+          await query(
+            "INSERT INTO gebeurtenis (`datum`,`ontvanger_id`,`bericht`,`gelezen`) VALUES (?,?,?,'0')",
+            [
+              new Date().toISOString().replace("T", " ").split(".")[0],
+              userId,
+              `השגת את <b>כל</b> התגים עבור <b>${
+                user.wereld
+              }</b> ופתחת גישה ל<b>אזור חדש</b>:${unlockWorldDic[user.wereld]}`,
+            ]
+          );
+        } else {
+          await query(
+            "UPDATE gebruikers SET badges = badges + '1'," +
+              gymWorld +
+              " = " +
+              gymWorld +
+              " + '1' WHERE user_id = ?",
+            [userId]
+          );
+        }
+
+        // עליית רמה לפי gym
+        //rankerbij('gym',$txt);
+      } else {
+        // עליית רמה לפי trainer
+        // rankerbij('trainer',$txt);
+      }
+
+      // Give money
+      reward = Math.round(
+        trainer.prijs * (getRandomInt(95, 110 + user.rank + 20) / 20)
+      );
+      const [silverTrainerValue] = await query(
+        "SELECT * FROM `configs` WHERE config='silver'"
+      );
+      reward *= silverTrainerValue.valor;
+      await query(
+        "UPDATE `gebruikers` SET `gewonnen`=`gewonnen`+1,`silver`=`silver`+?,`points`=(`points`+100),`points_temp`=(`points_temp`+100) WHERE `user_id`=?",
+        [reward, userId]
+      );
+      if (user["Badge case"] == 0) {
+        await query(
+          "UPDATE `gebruikers_item` SET `Badge case`='1' WHERE `user_id`=?",
+          [userId]
+        );
+      }
+    }
+
+    if (trainer.naam == "Jessie e James") {
+      hm = "<br/>צוות רוקט שוב ​​יוצא לדרך!";
+    }
+
+    // עדכון סטטיסטיקות פוקימונים
+    await pokemonPlayerHandUpdate(userId);
+
+    // TODO: pokemon_grow (צריך לממש לוגיקת level up כמו ב־PHP)
+
+    // מחיקה של הקרב
+    await removeAttack(userId, logs.id);
+    return res.json({
+      success: true,
+      data: {
+        badge,
+        reward,
+        hm,
+        victory
+      },
+    });
+  } catch (err) {
+    console.error("❌ finishTrainerBattle error:", err);
+    return res
+      .status(500)
+      .json({ success: false, message: "שגיאת שרת", error: err.message });
   }
 };
