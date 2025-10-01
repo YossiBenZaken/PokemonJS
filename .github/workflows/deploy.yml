@@ -52,4 +52,4 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             cd /Users/${{ secrets.SERVER_USER }}/server
-            docker compose up -d --build backend
+            /usr/local/bin/docker compose up -d --build backend
