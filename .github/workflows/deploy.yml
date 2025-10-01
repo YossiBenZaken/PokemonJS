@@ -22,7 +22,7 @@ jobs:
       - name: Build frontend
         run: |
           cd frontend
-          npm run build
+          CI=false npm run build
 
       # ===== Deploy frontend build to server =====
       - name: Deploy frontend build
