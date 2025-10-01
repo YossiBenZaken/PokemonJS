@@ -10,5 +10,5 @@ router.post('/init', InitBattle);
 router.post('/trainer-attack', extractAccId, doTrainerAttack)
 router.post('/trainer-change-pokemon', extractAccId, trainerChangePokemon);
 router.post('/trainer-finish', extractAccId, finishTrainerBattle);
-router.post('/attack-change-pokemon', attackChangePokemon);
+router.post('/attack-change-pokemon', extractAccId, attackChangePokemon);
 export default router;

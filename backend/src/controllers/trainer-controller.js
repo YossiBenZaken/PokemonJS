@@ -1,4 +1,5 @@
-import { getBattleInfo } from "./battle-controller.js";
+import { getBattleInfo, pokemonNaam } from "./battle-controller.js";
+
 import { query } from "../config/database.js";
 
 export const startTrainerBattle = async (req) => {
@@ -786,7 +787,7 @@ export const doTrainerAttack = async (req, res) => {
     if (isZMove) {
       if (battleLog.zmove === 0) {
         zmove = (await ZMoves.move(attackInfo))[0];
-        if(zmove == attack_name) {
+        if (zmove == attack_name) {
           await query("UPDATE aanval_log SET zmove = 1 WHERE id = ?", [
             battleLogId,
           ]);
@@ -1526,9 +1527,9 @@ export const finishTrainerBattle = async (req, res) => {
 
       if (badge) {
         await query(
-          "UPDATE `gebruikers_badges` SET " +
+          "UPDATE `gebruikers_badges` SET `" +
             badge +
-            " = '1' WHERE `user_id`=?",
+            "` = '1' WHERE `user_id`=?",
           [userId]
         );
 
@@ -1636,8 +1637,8 @@ export const finishTrainerBattle = async (req, res) => {
 export const attackChangePokemon = async (req, res) => {
   const { opzak_nummer, aanval_log_id } = req.body;
   const userId = req.user?.user_id;
-  let good = 0;
-  let refresh = 0;
+  let good = false;
+  let refresh = false;
   let message = "";
   const { battleLog, computerPokemon } = await getBattleData(aanval_log_id);
   // Security check
@@ -1671,7 +1672,7 @@ export const attackChangePokemon = async (req, res) => {
     //Check if it is not your turn
     else if (battleLog["laatste_aanval"] == "pokemon") {
       message = `זה לא תורך זה התור של ${computerPokemon.naam_goed}`;
-      refresh = 1;
+      refresh = true;
     }
     //Check if you can do something
     else if (
@@ -1680,13 +1681,13 @@ export const attackChangePokemon = async (req, res) => {
       )
     ) {
       //Change Pokemon Was A Success
-      good = 1;
+      good = true;
       let lastMove;
       //Check Who can begin
       if (computerPokemon.speed > changePokemon.speed) {
         message = `Switching Pok&eacute;mon. ${changePokemon.naam} is attacking..`;
         lastMove = "pokemon";
-        refresh = 1;
+        refresh = true;
       } else {
         message = "You've switched Pok&eacute;mon, you can attack now";
         lastMove = "computer";
@@ -1714,9 +1715,23 @@ export const attackChangePokemon = async (req, res) => {
       const tz = false;
 
       // check zmove
-      if(await ZMoves.valid(changePokemon)[0]) {
+      if (await ZMoves.valid(changePokemon)[0]) {
         zmove = (await ZMoves.move(changePokemon))[0];
         tz = await atk(zmove, changePokemon.soort);
+      }
+
+      changePokemon["naam_klein"] = changePokemon.naam.toLowerCase();
+      changePokemon["naam_goed"] = pokemonNaam(
+        changePokemon.naam,
+        changePokemon.roepnaam
+      );
+
+      if (changePokemon.shiny === 1) {
+        changePokemon["map"] = "shiny";
+        changePokemon["star"] = "block";
+      } else {
+        changePokemon["map"] = "pokemon";
+        changePokemon["star"] = "none";
       }
 
       return res.json({
@@ -1751,9 +1766,7 @@ export const attackChangePokemon = async (req, res) => {
 
 export async function atk(atkName, poke = null) {
   // שליפת המתקפה
-  const [rows] = await query("SELECT * FROM aanval WHERE naam = ?", [
-    atkName,
-  ]);
+  const [rows] = await query("SELECT * FROM aanval WHERE naam = ?", [atkName]);
   let arr = rows;
 
   if (poke) {
@@ -2039,11 +2052,12 @@ export function based(atk) {
   return a;
 }
 
-
 export async function pokemonEquip(id, item) {
   id = String(id);
 
-  if (["Burn Drive", "Chill Drive", "Douse Drive", "Shock Drive"].includes(item)) {
+  if (
+    ["Burn Drive", "Chill Drive", "Douse Drive", "Shock Drive"].includes(item)
+  ) {
     if (id !== "649") return false;
   } else if (item === "Dragon Scale" && id !== "117") {
     return false;
@@ -2082,9 +2096,12 @@ export async function pokemonEquip(id, item) {
     return false;
   } else if (item === "Stick" && id !== "83") {
     return false;
-  } else if (item === "Soul Dew" && !["381", "842", "841", "380"].includes(id)) {
+  } else if (
+    item === "Soul Dew" &&
+    !["381", "842", "841", "380"].includes(id)
+  ) {
     return false;
-  } else if (item.includes(" Z")) {
+  } else if (item?.includes(" Z")) {
     const rows = await query(
       "SELECT pokemons FROM zaanval_relacionados WHERE item = ?",
       [item]
@@ -2188,3 +2205,28 @@ export class ZMoves {
     }
   }
 }
+
+export const trainerAttackRun = async (req, res) => {
+  const { aanval_log_id } = req.body;
+  const userId = req.user?.user_id;
+  let good = false;
+  let message = "";
+  const { battleLog, computerPokemon, playerPokemon } = await getBattleData(
+    aanval_log_id
+  );
+  if (battleLog.user_id !== userId) {
+    return res.status(403).send("Unauthorized");
+  }
+
+  //You've caught the computer
+  else if (battleLog["laatste_aanval"] == "gevongen")
+    message = `אתה לכדת ${computerPokemon} בהצלחה. הקרב הסתיים.`;
+  //The fight is ended
+  else if (battleLog["laatste_aanval"] == "klaar")
+    message = `The fight is ended with ${computerPokemon.naam_goed}`;
+  //Check if it is not your turn
+  else if (battleLog["laatste_aanval"] == "pokemon") {
+    message = `זה לא תורך זה התור של ${computerPokemon.naam_goed}`;
+    
+  }
+};

@@ -1,6 +1,17 @@
 import "./style.css";
 
 import {
+  AttackChangePokemonResponse,
+  BattleResponse,
+  ComputerInfo,
+  PokemonInfo,
+  TrainerChangePokemonResponse,
+  attackChangePokemon,
+  trainerAttack,
+  trainerChangePokemonApi,
+  trainerFinish,
+} from "../../api/battle.api";
+import {
   AttackWrapper,
   BattlePokemon,
   BoxContent,
@@ -30,15 +41,6 @@ import {
   Title,
   Weather,
 } from "./TrainerAttack/styled";
-import {
-  BattleResponse,
-  ComputerInfo,
-  PokemonInfo,
-  TrainerChangePokemonResponse,
-  trainerAttack,
-  trainerChangePokemonApi,
-  trainerFinish,
-} from "../../api/battle.api";
 import React, { useCallback, useEffect, useState } from "react";
 
 import { ItemData } from "../../models/item.model";
@@ -47,7 +49,7 @@ import { useGame } from "../../contexts/GameContext";
 import { useNavigate } from "react-router-dom";
 
 const TrainerAttack: React.FC = () => {
-  const { attackLog, computerInfo, pokemonInfo, battleState, dispatchBattle } =
+  const { attackLog, computerInfo, pokemonInfo, battleState, dispatchBattle, setPokemonInfo } =
     useBattle();
   const { attacks, myPokemons, selectedCharacter, itemInfo } = useGame();
   const navigate = useNavigate();
@@ -135,7 +137,7 @@ const TrainerAttack: React.FC = () => {
     };
 
     initializeBattleState();
-  }, [attackLog, computerInfo, pokemonInfo]);
+  }, []);
   
   // Attack status handler (from PHP attack_status function)
   const attackStatus = useCallback((response: BattleResponse) => {
@@ -683,12 +685,8 @@ const TrainerAttack: React.FC = () => {
       });
 
       try {
-        const response = await fetch(
-          `/api/attack/attack_change_pokemon.php?opzak_nummer=${pokemonIndex}&computer_info_name=${computerInfo.naam}&aanval_log_id=${attackLog.id}`,
-          { method: "GET" }
-        );
-        const responseText = await response.text();
-        changePokemonStatus(responseText);
+        const response = await attackChangePokemon(pokemonIndex, attackLog.id);
+        changePokemonStatus(response);
       } catch (error) {
         console.error("Pokemon change failed:", error);
       }
@@ -698,25 +696,26 @@ const TrainerAttack: React.FC = () => {
 
   // Change Pokemon status handler
   const changePokemonStatus = useCallback(
-    (responseText: string) => {
-      const parts = responseText.split(" | ");
+    (response: AttackChangePokemonResponse) => {
 
-      setBattleMessage(parts[0]);
+      const {data} = response;
+      const {message, good,changePokemon,zmove,tz,opzak_nummer,refresh} = data;
+      setBattleMessage(message);
 
-      if (parts[1] === "1") {
+      if (good) {
         // Change was successful
         // Update Pokemon name and level
         const pokemonNameEl = document.getElementById("pokemon_naam");
         const pokemonLevelEl = document.getElementById("pokemon_level");
 
-        if (pokemonNameEl) pokemonNameEl.innerHTML = parts[3];
+        if (pokemonNameEl) pokemonNameEl.innerHTML = changePokemon.naam;
         if (pokemonLevelEl) {
-          pokemonLevelEl.innerHTML = `${parts[4]} <div id='hpPokemon' style='margin-top: -4px;margin-left: 80px;position: absolute;'></div>`;
+          pokemonLevelEl.innerHTML = `${changePokemon.level} <div id='hpPokemon' style='margin-top: -4px;margin-left: 80px;position: absolute;'></div>`;
         }
 
         const hpDisplay = document.getElementById("hpPokemon");
         if (hpDisplay) {
-          hpDisplay.innerHTML = `${parts[10]}/${parts[11]}`;
+          hpDisplay.innerHTML = `${changePokemon.leven}/${changePokemon.levenmax}`;
         }
 
         // Update move buttons
@@ -724,8 +723,10 @@ const TrainerAttack: React.FC = () => {
           const button = document.querySelector(
             `button:nth-of-type(${i + 1})`
           ) as HTMLButtonElement;
-          const move = parts[i + 5];
-          const moveType = parts[i + 17];
+          // גישה בטוחה לשדות במקום אינדקס דינמי על אובייקט טיפוסי
+          const move = changePokemon?.[`aanval_${i + 1}`] || "";
+          // נניח ש־parts מגיע מה־response או מה־data, נשתמש ב־changePokemon אם יש צורך
+          const moveType = data[`attack${i + 1}` as keyof typeof data];
 
           if (button) {
             if (move) {
@@ -739,12 +740,12 @@ const TrainerAttack: React.FC = () => {
         }
 
         // Handle Z-Move
-        if (!battleState.trainerZmove && parts[21] && parts[22]) {
+        if (!battleState.trainerZmove && zmove && tz) {
           const zMoveBtn = document.getElementById("use-zmove");
           if (zMoveBtn) {
             zMoveBtn.style.display = "block";
-            zMoveBtn.innerHTML = parts[21];
-            zMoveBtn.style.backgroundImage = `url(/images/attack/moves/${parts[22]}.png)`;
+            zMoveBtn.innerHTML = zmove;
+            zMoveBtn.style.backgroundImage = `url(/images/attack/moves/${tz}.png)`;
           }
         } else {
           const zMoveBtn = document.getElementById("use-zmove");
@@ -753,25 +754,25 @@ const TrainerAttack: React.FC = () => {
 
         // Handle status effect
         const pokemonEffectEl = document.getElementById("pokemon_effect");
-        if (!parts[16] || parts[16] === "") {
+        if (!changePokemon.effect || changePokemon.effect === "") {
           if (pokemonEffectEl) pokemonEffectEl.style.display = "none";
         } else {
           const img = pokemonEffectEl?.querySelector("img") as HTMLImageElement;
           if (img) {
-            img.src = `/images/effects/${parts[16]}.png`;
-            img.alt = parts[16];
-            img.title = parts[16];
+            img.src = `/images/effects/${changePokemon.effect}.png`;
+            img.alt = changePokemon.effect;
+            img.title = changePokemon.effect;
           }
           if (pokemonEffectEl) pokemonEffectEl.style.display = "block";
         }
 
         // Update Pokemon image
-        const map = parts[14] === "1" ? "shiny" : "pokemon";
+        const map = changePokemon.shiny === "1" ? "shiny" : "pokemon";
         const pokemonImg = document.getElementById(
           "img_pokemon"
         ) as HTMLImageElement;
         if (pokemonImg) {
-          pokemonImg.src = `/images/${map}/back/${parts[15]}.gif`;
+          pokemonImg.src = `/images/${map}/back/${changePokemon.wild_id}.gif`;
         }
 
         // Show all Pokemon in hand and hide the active one
@@ -786,15 +787,14 @@ const TrainerAttack: React.FC = () => {
 
         // Hide the new active Pokemon
         const activePokemonEl = document.querySelector(
-          `div[id='change_pokemon'][name='${parts[9]}']`
+          `div[id='change_pokemon'][name='${opzak_nummer}']`
         );
         if (activePokemonEl) {
           (activePokemonEl as HTMLElement).style.display = "none";
         }
-
         // Update HP and EXP bars
         const pokemonLifePercent = Math.round(
-          (parseInt(parts[10]) / parseInt(parts[11])) * 100
+          (changePokemon.leven / changePokemon.levenmax) * 100
         );
         const pokemonLifeEl = document.getElementById("pokemon_life");
         if (pokemonLifeEl) {
@@ -802,15 +802,15 @@ const TrainerAttack: React.FC = () => {
         }
 
         const expPercent = Math.round(
-          (parseInt(parts[12]) / parseInt(parts[13])) * 100
+          (changePokemon.exp / changePokemon.expnodig) * 100
         );
         const pokemonExpEl = document.getElementById("pokemon_exp");
         if (pokemonExpEl) {
           pokemonExpEl.style.width = `${expPercent}%`;
         }
-
+        setPokemonInfo(changePokemon);
         // Set battle state for next phase
-        if (parts[2] === "1") {
+        if (refresh) {
           dispatchBattle({ type: "SET_SPELER_ATTACK", value: false });
           dispatchBattle({ type: "SET_SPELER_WISSEL", value: false });
           setTimeout(() => computerAttack(), 3000);

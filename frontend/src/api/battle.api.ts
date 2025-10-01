@@ -223,6 +223,23 @@ export interface TrainerFinishResponse {
   badge?: string;
 }
 
+export interface AttackChangePokemonResponse {
+  success: boolean;
+  data: {
+    message: string;
+    good: boolean;
+    refresh: boolean;
+    changePokemon: any;
+    opzak_nummer: number;
+    attack1: any;
+    attack2: any;
+    attack3: any;
+    attack4: any;
+    zmove: any;
+    tz: any;
+  }
+}
+
 export const initBattle = async (
   aanval_log_id: number
 ): Promise<{
@@ -264,16 +281,35 @@ export const trainerChangePokemonApi = async (
   aanval_log_id: number,
   userId: number | undefined
 ): Promise<TrainerChangePokemonResponse> => {
-  const { data } = await axiosInstance.post<TrainerChangePokemonResponse>("/battle/trainer-change-pokemon", {
-    pokemon_info_name,
-    computer_info_name,
-    aanval_log_id,
-    userId,
-  });
+  const { data } = await axiosInstance.post<TrainerChangePokemonResponse>(
+    "/battle/trainer-change-pokemon",
+    {
+      pokemon_info_name,
+      computer_info_name,
+      aanval_log_id,
+      userId,
+    }
+  );
   return data;
 };
 
-export const trainerFinish = async(aanval_log_id: number): Promise<TrainerFinishResponse> => {
-  const {data} = await axiosInstance.post<TrainerFinishResponse>('/battle/trainer-finish', {aanval_log_id});
+export const trainerFinish = async (
+  aanval_log_id: number
+): Promise<TrainerFinishResponse> => {
+  const { data } = await axiosInstance.post<any>(
+    "/battle/trainer-finish",
+    { aanval_log_id }
+  );
+  return data.data;
+};
+
+export const attackChangePokemon = async (
+  opzak_nummer: number,
+  aanval_log_id: number
+): Promise<AttackChangePokemonResponse> => {
+  const { data } = await axiosInstance.post<AttackChangePokemonResponse>("/battle/attack-change-pokemon", {
+    opzak_nummer,
+    aanval_log_id,
+  });
   return data;
-}
+};

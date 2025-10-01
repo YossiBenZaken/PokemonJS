@@ -69,7 +69,7 @@ function computerNaam(old) {
     return old;
   }
 }
-function pokemonNaam(old, roepnaam) {
+export function pokemonNaam(old, roepnaam) {
   // אם יש רווח בשם
   if (roepnaam != "") return roepnaam;
   if (old.includes(" ")) {
