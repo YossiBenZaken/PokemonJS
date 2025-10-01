@@ -174,11 +174,11 @@ const ItemsPage: React.FC = () => {
   }
 
   const freeQuantity = () => {
-    const myItems = Object.entries(userItems.gebruikers_item[0]).reduce((a, b: Array<any>) => {
+    const myItems = Object.entries(userItems.gebruikers_item).reduce((a, b: Array<any>) => {
       if (b[0] === "user_id" || b[0] === "itembox") return 0;
       return a + b[1];
     }, 0) || 0;
-    const myHouse: 'Bag' | "Yellow box" | "Blue box"| "Red box" | "Purple box" | "Black box" = userItems.gebruikers_item[0]['itembox'];
+    const myHouse: 'Bag' | "Yellow box" | "Blue box"| "Red box" | "Purple box" | "Black box" = userItems.gebruikers_item['itembox'];
     return ItemBox[myHouse] - myItems;
   }
 

@@ -450,13 +450,26 @@ export const login = async (req, res) => {
 export const authToken = async (req, res) => {
   const { user_id } = req.body;
 
-  const [user] = await query("SELECT * FROM `gebruikers` WHERE `user_id` = ?", [user_id]);
-
-  const [account] = await query("SELECT gold FROM `rekeningen` WHERE `acc_id` = ?", [user.acc_id]);
-  
+  const [user] = await query("SELECT * FROM `gebruikers` WHERE `user_id` = ?", [
+    user_id,
+  ]);
+  const [userItem] = await query(
+    "SELECT * FROM `gebruikers_item` WHERE `user_id` = ?",
+    [user_id]
+  );
+  const [account] = await query(
+    "SELECT gold FROM `rekeningen` WHERE `acc_id` = ?",
+    [user.acc_id]
+  );
   res.json({
     success: true,
-    data: {...user, ...account},
+    data: {
+      user: {
+        ...user,
+        items: userItem,
+        ...account,
+      },
+    },
   });
 };
 

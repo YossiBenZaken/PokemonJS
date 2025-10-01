@@ -1,4 +1,5 @@
 import { query } from "../config/database.js";
+import {startTrainerBattle} from './trainer-controller.js';
 
 function possible(rank, act, next) {
   return rank >= 3 && act === next;
@@ -6,10 +7,15 @@ function possible(rank, act, next) {
 
 // פונקציה מדומה שמתחילה קרב מול מנהיג מכון
 async function startTrainerAttack(gymLeader, trainerAveLevel, gebied, userId) {
-  // כאן תקרא ללוגיקה האמיתית שלך ליצירת הקרב (attack_log וכדומה)
+  const finalInfo = await startTrainerBattle({body: {
+    trainer: gymLeader,
+    trainerAveLevel,
+    gebied,
+    userId
+  }});
   return {
     success: true,
-    redirect: `/attack/trainer?gym=${encodeURIComponent(gymLeader)}`,
+    data: finalInfo
   };
 }
 
@@ -199,10 +205,11 @@ export const postChallenge = async (req, res) => {
         message: start.message || "לא ניתן להתחיל את הקרב",
       });
     }
-
+    
     return res.json({
       success: true,
-      redirect: start.redirect || "/attack/trainer",
+      redirect: "/attack/trainer",
+      data: start.data
     });
   } catch (err) {
     console.error("postChallenge error:", err);

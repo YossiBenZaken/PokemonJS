@@ -1,5 +1,6 @@
 import authRoutes from "./auth.js";
 import bankRoutes from "./bank.js";
+import battleRoutes from './battle.js';
 import casinoRoutes from "./casino.js";
 import characterRoutes from "./character.js";
 import dayCareRoutes from "./daycare.js";
@@ -44,5 +45,6 @@ router.use("/api/notifications", notificationRoutes);
 router.use("/api/leaderboards", leaderboardsRoutes);
 router.use("/api/pokebox", pokeboxRoutes);
 router.use("/api/gyms", gymsRoutes);
+router.use('/api/battle', battleRoutes);
 
 export { router };

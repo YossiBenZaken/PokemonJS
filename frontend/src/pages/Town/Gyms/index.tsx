@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { getGyms, postChallenge } from "../../../api/gyms.api";
 
+import { initBattle } from "../../../api/battle.api";
 import styled from "styled-components";
+import { useBattle } from "../../../contexts/BattleContext";
 import { useGame } from "../../../contexts/GameContext";
+import { useNavigate } from "react-router-dom";
 
 const Page = styled.div`
   max-width: 980px;
@@ -73,10 +76,13 @@ const ActionButton = styled.button<{ disabled?: boolean }>`
 
 const GymsPage: React.FC = () => {
   const { selectedCharacter } = useGame();
+  const { setChallengeData, setAttackLog, setComputerInfo, setPokemonInfo } =
+    useBattle();
   const [gyms, setGyms] = useState<any[]>([]);
   const [selected, setSelected] = useState(0);
   const [next, setNext] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (selectedCharacter) {
@@ -121,7 +127,12 @@ const GymsPage: React.FC = () => {
     try {
       const resp = await postChallenge(sel.naam, selectedCharacter?.user_id);
       if (resp.success) {
-        if (resp.redirect) window.location.href = resp.redirect;
+        setChallengeData(resp.data);
+        const {aanval_log,computer_info,pokemon_info} = await initBattle(resp.data.trainer.aanvalLogId);
+        setAttackLog(aanval_log);
+        setComputerInfo(computer_info);
+        setPokemonInfo(pokemon_info);
+        if (resp.redirect) navigate(resp.redirect);
         else alert("האתגר נוצר — הטעינה תתבצע כעת");
       } else {
         alert(resp.message || "שגיאה ביצירת אתגר");

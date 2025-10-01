@@ -2,7 +2,7 @@ import { query } from "../config/database.js";
 
 export const getOnlineUsers = async (req, res) => {
   try {
-    const { acc_id } = req.user;
+    const acc_id = req?.user?.acc_id;
     // 15 דקות אחרונות (900 שניות)
     const result = await query(
       `SELECT user_id, username, premiumaccount, admin, rang, dv 
@@ -10,10 +10,12 @@ export const getOnlineUsers = async (req, res) => {
            WHERE (online + 900) >= UNIX_TIMESTAMP() AND banned = 'N'
            ORDER BY admin DESC, points DESC, rang ASC, user_id ASC`
     );
-    await query(
-      `UPDATE gebruikers SET online = UNIX_TIMESTAMP() WHERE acc_id = ?`,
-      [acc_id]
-    );
+    if(acc_id) {
+      await query(
+        `UPDATE gebruikers SET online = UNIX_TIMESTAMP() WHERE acc_id = ?`,
+        [acc_id]
+      );
+    }
     res.json({ success: true, users: result, total: result.length });
   } catch (error) {
     res.status(500).json({

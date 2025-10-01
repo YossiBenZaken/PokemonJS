@@ -82,7 +82,7 @@ export const Header: React.FC = () => {
     const checkAuth = async () => {
       const response = await AuthToken();
       if (response.success) {
-        setSelectedCharacter(response.data);
+        setSelectedCharacter(response.data.user);
         setIsLoggedIn(true);
       } else {
         setSelectedCharacter(null);
@@ -104,7 +104,7 @@ export const Header: React.FC = () => {
   }, [setAbilities, setAttacks, setItemInfo, setKarakters, setRanks]);
 
   useEffect(() => {
-    if (selectedCharacter) {
+    if (selectedCharacter?.user_id) {
       getMyPokemons(selectedCharacter?.user_id).then((res) => {
         setMyPokemons(res.data.myPokemon);
         setInHand(res.data.myPokemon.length);
