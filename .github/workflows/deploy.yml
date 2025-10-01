@@ -32,7 +32,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_KEY }}
           source: "frontend/build/*"
-          target: "/home/${{ secrets.SERVER_USER }}/project-root/sites"
+          target: "/home/${{ secrets.SERVER_USER }}/server/sites"
 
       # ===== Deploy backend to server (optional) =====
       - name: Deploy backend source
@@ -42,7 +42,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_KEY }}
           source: "backend/*"
-          target: "/home/${{ secrets.SERVER_USER }}/project-root/backend"
+          target: "/home/${{ secrets.SERVER_USER }}/server/backend"
 
       - name: Restart backend container
         uses: appleboy/ssh-action@v0.1.10
@@ -51,5 +51,5 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            cd /home/${{ secrets.SERVER_USER }}/project-root
+            cd /home/${{ secrets.SERVER_USER }}/server
             docker-compose up -d --build backend
