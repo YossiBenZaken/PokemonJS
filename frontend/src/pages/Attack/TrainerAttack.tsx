@@ -5,9 +5,11 @@ import {
   BattleResponse,
   ComputerInfo,
   PokemonInfo,
+  TrainerAttackRunResponse,
   TrainerChangePokemonResponse,
   attackChangePokemon,
   trainerAttack,
+  trainerAttackRun,
   trainerChangePokemonApi,
   trainerFinish,
 } from "../../api/battle.api";
@@ -49,8 +51,14 @@ import { useGame } from "../../contexts/GameContext";
 import { useNavigate } from "react-router-dom";
 
 const TrainerAttack: React.FC = () => {
-  const { attackLog, computerInfo, pokemonInfo, battleState, dispatchBattle, setPokemonInfo } =
-    useBattle();
+  const {
+    attackLog,
+    computerInfo,
+    pokemonInfo,
+    battleState,
+    dispatchBattle,
+    setPokemonInfo,
+  } = useBattle();
   const { attacks, myPokemons, selectedCharacter, itemInfo } = useGame();
   const navigate = useNavigate();
 
@@ -138,7 +146,7 @@ const TrainerAttack: React.FC = () => {
 
     initializeBattleState();
   }, []);
-  
+
   // Attack status handler (from PHP attack_status function)
   const attackStatus = useCallback((response: BattleResponse) => {
     // Calculate animation time based on damage
@@ -340,7 +348,7 @@ const TrainerAttack: React.FC = () => {
         let message = "";
         if (response.badge === "") {
           message = `You defeated ${attackLog.trainer}! You gained ${response.reward} Silvers.`;
-        }else {
+        } else {
           message = `You defeated ${attackLog.trainer}! You earned the ${response.badge} badge and ${response.reward} Silvers.`;
         }
 
@@ -374,7 +382,7 @@ const TrainerAttack: React.FC = () => {
 
       // Redirect after delay
       setTimeout(() => {
-        navigate('/');
+        navigate("/");
       }, 7500);
     } catch (error) {
       console.error("End screen failed:", error);
@@ -384,7 +392,6 @@ const TrainerAttack: React.FC = () => {
   // Attack status phase 2 (from PHP attack_status_2 function)
   const attackStatus2 = useCallback(
     (response: BattleResponse) => {
-
       // Clear attack timer
       if (battleState.attackTimer) {
         clearTimeout(battleState.attackTimer);
@@ -594,9 +601,7 @@ const TrainerAttack: React.FC = () => {
       }
 
       // Update HP bar
-      const computerLifePercent = Math.round(
-        (hp / maxHp) * 100
-      );
+      const computerLifePercent = Math.round((hp / maxHp) * 100);
       const computerLifeEl = document.getElementById("computer_life");
       if (computerLifeEl) {
         computerLifeEl.style.width = `${computerLifePercent}%`;
@@ -697,9 +702,9 @@ const TrainerAttack: React.FC = () => {
   // Change Pokemon status handler
   const changePokemonStatus = useCallback(
     (response: AttackChangePokemonResponse) => {
-
-      const {data} = response;
-      const {message, good,changePokemon,zmove,tz,opzak_nummer,refresh} = data;
+      const { data } = response;
+      const { message, good, changePokemon, zmove, tz, opzak_nummer, refresh } =
+        data;
       setBattleMessage(message);
 
       if (good) {
@@ -928,12 +933,8 @@ const TrainerAttack: React.FC = () => {
     setShowPotionsScreen(false);
 
     try {
-      const response = await fetch(
-        `/api/attack/trainer/trainer-attack_run.php?computer_info_name=${computerInfo.naam}&aanval_log_id=${attackLog.id}`,
-        { method: "GET" }
-      );
-      const responseText = await response.text();
-      attackRunStatus(responseText);
+      const response = await trainerAttackRun(attackLog.id);
+      attackRunStatus(response);
     } catch (error) {
       console.error("Run attempt failed:", error);
     }
@@ -941,15 +942,13 @@ const TrainerAttack: React.FC = () => {
 
   // Attack run status handler
   const attackRunStatus = useCallback(
-    (responseText: string) => {
-      const parts = responseText.split(" | ");
+    (response: TrainerAttackRunResponse) => {
+      setBattleMessage(response.message);
 
-      setBattleMessage(parts[0]);
-
-      if (parts[1] === "1") {
+      if (response.good) {
         // Successfully ran away
         setTimeout(() => {
-          window.location.href = "./trainers";
+          navigate("/");
         }, 3000);
       } else {
         // Failed to run, computer's turn
@@ -1108,7 +1107,7 @@ const TrainerAttack: React.FC = () => {
                   <img src={require("../../assets/images/hit.png")} alt="Hit" />
                 </div>
                 <OpponentPokemonImage
-                id="img_trainer"
+                  id="img_trainer"
                   src={require(`../../assets/images/${computerInfo?.map}/${computerInfo?.wild_id}.gif`)}
                   alt={computerInfo?.naam_goed}
                 />
@@ -1121,7 +1120,7 @@ const TrainerAttack: React.FC = () => {
                   <img src={require("../../assets/images/hit.png")} alt="Hit" />
                 </div>
                 <PokemonImage
-                id="img_pokemon"
+                  id="img_pokemon"
                   src={require(`../../assets/images/${pokemonInfo?.map}/back/${pokemonInfo?.wild_id}.gif`)}
                   alt={pokemonInfo?.naam_goed}
                 />
@@ -1150,7 +1149,7 @@ const TrainerAttack: React.FC = () => {
                             height: 14,
                           }}
                         />
-                        <span id='pokemon_level'>{` ${pokemonInfo?.level} `}</span>
+                        <span id="pokemon_level">{` ${pokemonInfo?.level} `}</span>
                         <div
                           id="hpPokemon"
                           style={{
@@ -1167,7 +1166,7 @@ const TrainerAttack: React.FC = () => {
                     <HpWrapper>
                       <HpRed>
                         <Progress
-                        id="pokemon_life"
+                          id="pokemon_life"
                           style={{ width: "100%" }}
                           data-original-title={`${pokemonInfo?.leven}/${pokemonInfo?.levenmax}`}
                         />
@@ -1189,7 +1188,7 @@ const TrainerAttack: React.FC = () => {
                     <ExpWrapper>
                       <HpRed>
                         <ExpProgress
-                        id="pokemon_exp"
+                          id="pokemon_exp"
                           style={{
                             width: `${calculatePercent(pokemonInfo!)}%`,
                           }}

@@ -2227,6 +2227,36 @@ export const trainerAttackRun = async (req, res) => {
   //Check if it is not your turn
   else if (battleLog["laatste_aanval"] == "pokemon") {
     message = `זה לא תורך זה התור של ${computerPokemon.naam_goed}`;
-    
   }
+  else {
+    let chance = 0;
+    if(playerPokemon.leven > computerPokemon.leven) chance = 90;
+    else chance = 60;
+
+    const rand = getRandomInt(1,100);
+
+    if(chance > rand) {
+      good = true;
+      message = "הצלחת לברוח.";
+
+      const playerHandRows = await query("SELECT `id`, `leven`, `effect` FROM `pokemon_speler_gevecht` WHERE `user_id`=?",[userId]);
+      for (const row of playerHandRows) {
+        await query(
+          "UPDATE pokemon_speler SET leven = ?, effect = ? WHERE id = ?",
+          [row.leven, row.effect, row.id]
+        );
+      }
+
+      removeAttack(userId, aanval_log_id);
+    } else {
+      message = "נכשלת בניסיון לברוח מ" + computerPokemon.naam_goed;
+      await query("UPDATE `aanval_log` SET `laatste_aanval`='pokemon', `beurten`=`beurten`+'1' WHERE `id`=?",[aanval_log_id]);
+    }
+
+  }
+
+  res.json({
+    message,
+    good
+  })
 };

@@ -240,6 +240,11 @@ export interface AttackChangePokemonResponse {
   }
 }
 
+export interface TrainerAttackRunResponse {
+  message: string;
+  good: boolean;
+}
+
 export const initBattle = async (
   aanval_log_id: number
 ): Promise<{
@@ -309,6 +314,15 @@ export const attackChangePokemon = async (
 ): Promise<AttackChangePokemonResponse> => {
   const { data } = await axiosInstance.post<AttackChangePokemonResponse>("/battle/attack-change-pokemon", {
     opzak_nummer,
+    aanval_log_id,
+  });
+  return data;
+};
+
+export const trainerAttackRun = async (
+  aanval_log_id: number
+): Promise<TrainerAttackRunResponse> => {
+  const { data } = await axiosInstance.post<TrainerAttackRunResponse>("/battle/trainer-attack-run", {
     aanval_log_id,
   });
   return data;
