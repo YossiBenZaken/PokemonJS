@@ -2,12 +2,14 @@ import "./style.css";
 
 import {
   AttackChangePokemonResponse,
+  AttackUsePotionResponse,
   BattleResponse,
   ComputerInfo,
   PokemonInfo,
   TrainerAttackRunResponse,
   TrainerChangePokemonResponse,
   attackChangePokemon,
+  attackUsePotion,
   trainerAttack,
   trainerAttackRun,
   trainerChangePokemonApi,
@@ -258,11 +260,11 @@ const TrainerAttack: React.FC = () => {
       if (response.playerHp) {
         const hpDisplay = document.getElementById("hpPokemon");
         if (hpDisplay) {
-          if (parseInt(response.playerHp) === 0) {
+          if (response.playerHp === 0) {
             hpDisplay.innerHTML = "";
             dispatchBattle({ type: "SET_SPELER_WISSEL", value: true });
           } else {
-            hpDisplay.innerHTML = `${response.playerHp}/${response.maxHp}`;
+            hpDisplay.innerHTML = `${response.playerHp}/${response.playerMaxHp}`;
           }
         }
       }
@@ -546,7 +548,7 @@ const TrainerAttack: React.FC = () => {
       }
 
       // Check if player Pokemon needs switching
-      if (response.playerHp === "0") {
+      if (response.playerHp === 0) {
         dispatchBattle({ type: "SET_SPELER_WISSEL", value: true });
       }
     },
@@ -834,13 +836,8 @@ const TrainerAttack: React.FC = () => {
       if (!battleState.spelerAttack || !attackLog || !computerInfo) return;
 
       try {
-        const response = await fetch(
-          `/api/attack/attack_use_potion.php?item=${itemName}&computer_info_name=${computerInfo.naam}&option_id=1&potion_pokemon_id=${targetPokemonId}&aanval_log_id=${attackLog.id}`,
-          { method: "GET" }
-        );
-        const responseText = await response.text();
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        useItemStatus(responseText);
+        const response = await attackUsePotion(itemName, computerInfo.naam, 1,targetPokemonId, attackLog.id);
+        handleUseItemStatus(response);
         setShowPotionsScreen(false);
       } catch (error) {
         console.error("Item use failed:", error);
@@ -850,27 +847,24 @@ const TrainerAttack: React.FC = () => {
   );
 
   // Use item status handler
-  const useItemStatus = useCallback(
-    (responseText: string) => {
-      const parts = responseText.split(" | ");
-
-      setBattleMessage(parts[0]);
+  const handleUseItemStatus = useCallback(
+    (response: AttackUsePotionResponse) => {
+      const {good,info_potion_left,item_info_naam,message,name,new_life,option_id,pokemon_infight,pokemonInfo} = response;
+      setBattleMessage(message);
 
       // Update item quantity
       const itemEl = document.querySelector(
-        `div[data-item-name='${parts[4]}'] .qtd`
+        `div[data-item-name='${item_info_naam}'] .qtd`
       );
-      const amount = parseInt(parts[2]);
+      const amount = info_potion_left;
 
-      if (parts[5] === "Potion") {
-        const lock = parts[1] === "0";
-
-        if (!lock) {
+      if (name === "Potion") {
+        if (good) {
           // Update Pokemon HP if it's the active Pokemon
-          if (parts[8] === "1") {
+          if (pokemon_infight) {
             const pokemonLifeEl = document.getElementById("pokemon_life");
-            const newHp = parseInt(parts[6]);
-            const maxHp = parseInt(parts[7]);
+            const newHp = new_life;
+            const maxHp = pokemonInfo.levenmax;
             const lifePercent = Math.round((newHp / maxHp) * 100);
 
             if (pokemonLifeEl) {
@@ -880,19 +874,19 @@ const TrainerAttack: React.FC = () => {
 
           // Update HP display
           const hpDisplay = document.getElementById("hpPokemon");
-          if (parts[8] === "1" && hpDisplay) {
-            hpDisplay.innerHTML = `${parts[6]}/${parts[7]}`;
+          if (pokemon_infight && hpDisplay) {
+            hpDisplay.innerHTML = `${new_life}/${pokemonInfo.levenmax}`;
           }
 
           // Update Pokemon in selection list
           const pokemonSelectionEl = document.querySelector(
-            `div[id='change_pokemon'][name='${parts[9]}']`
+            `div[id='change_pokemon'][name='${pokemonInfo.opzak_nummer}']`
           );
           if (pokemonSelectionEl) {
             const green = Math.round(
-              (parseInt(parts[6]) / parseInt(parts[7])) * 100
+              (new_life / pokemonInfo.levenmax) * 100
             );
-            pokemonSelectionEl.innerHTML = `${parts[10]}<div class='hp_red' style='height: 3px; width: 86%;'><div class='progress' style='width: 100%'></div></div>`;
+            pokemonSelectionEl.innerHTML = `${pokemonInfo.naam_goed}<div class='hp_red' style='height: 3px; width: 86%;'><div class='progress' style='width: 100%'></div></div>`;
 
             const progressEl = pokemonSelectionEl.querySelector(
               ".progress"
@@ -903,7 +897,7 @@ const TrainerAttack: React.FC = () => {
 
             pokemonSelectionEl.setAttribute(
               "data-original-title",
-              `${parts[10]} HP: ${parts[6]}/${parts[7]}`
+              `${pokemonInfo.naam_goed} HP: ${new_life}/${pokemonInfo.levenmax}`
             );
           }
 
@@ -916,7 +910,7 @@ const TrainerAttack: React.FC = () => {
         }
 
         // Computer's turn if needed
-        if (parts[1] === "1") {
+        if (good) {
           dispatchBattle({ type: "SET_SPELER_ATTACK", value: false });
           dispatchBattle({ type: "SET_SPELER_WISSEL", value: false });
           setTimeout(() => computerAttack(), 3000);
