@@ -31,7 +31,6 @@ export interface MoveResponse {
         name: string,
         level: number
     },
-    trainerEncounter: true;
     message: string;
 }
 export const getMap = async (mapId: number): Promise<MapInfo> => {

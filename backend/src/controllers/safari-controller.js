@@ -267,7 +267,6 @@ export const handleMove = async (req, res) => {
         return res.json({
           success: true,
           wildEncounter: null,
-          trainerEncounter: false,
           message: "A Zona do Safari está fechada!",
         });
       }
@@ -300,7 +299,6 @@ export const handleMove = async (req, res) => {
     res.json({
       success: true,
       wildEncounter: null,
-      trainerEncounter: false,
       message: randomMessage,
     });
   } catch (error) {

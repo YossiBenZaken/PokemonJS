@@ -25,6 +25,7 @@ import { ProfilePage } from "./pages/Profile";
 import Safari from "./pages/Safari";
 import { TownRoutes } from "./pages/Town/routes";
 import TrainerAttack from "./pages/Attack/TrainerAttack";
+import WildAttack from "./pages/Attack/WildAttack";
 
 function App() {
   return (
@@ -149,6 +150,7 @@ function App() {
             />
             <Route path="/information" element={<InformationPage />} />
             <Route path="/attack/trainer" element={<TrainerAttack />} />
+            <Route path="/attack/wild" element={<WildAttack />} />
             {InboxRoutes}
             {TownRoutes}
           </Routes>

@@ -32,6 +32,7 @@ import {
   LogOut,
   Map,
   Package,
+  Squirrel,
   User,
   Users
 } from "lucide-react";
@@ -75,6 +76,7 @@ export const Header: React.FC = () => {
     { path: '/badges', label: 'תגים', icon: <Badge size={20} />},
     { path: '/fishing', label: 'דיג', icon: <Fish size={20} />},
     { path: '/judge', label: 'שפוט', icon: <Gavel size={20} />},
+    { path: '/safari', label: 'ספארי', icon: <Squirrel size={20} />},
     { path: '/information', label: 'מידע', icon: <Info size={20} />}
   ];
 

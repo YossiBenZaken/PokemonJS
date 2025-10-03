@@ -1,8 +1,11 @@
 import { MapUser, getMap, getUserOnMap, moveOnMap } from "../../api/safari.api";
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { initBattle, startWildBattleApi } from "../../api/battle.api";
 
 import styled from "styled-components";
+import { useBattle } from "../../contexts/BattleContext";
 import { useGame } from "../../contexts/GameContext";
+import { useNavigate } from "react-router-dom";
 
 // Types
 interface Position {
@@ -67,33 +70,6 @@ const NavigationButtons = styled.div`
   position: relative;
   width: 90px;
   height: 90px;
-`;
-
-const NavButton = styled.button<{
-  direction: "up" | "down" | "left" | "right";
-}>`
-  position: absolute;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-
-  ${(props) => {
-    switch (props.direction) {
-      case "up":
-        return "top: 0; left: 50%; transform: translateX(-50%);";
-      case "down":
-        return "bottom: 0; left: 50%; transform: translateX(-50%);";
-      case "left":
-        return "left: 0; top: 50%; transform: translateY(-50%);";
-      case "right":
-        return "right: 0; top: 50%; transform: translateY(-50%);";
-    }
-  }}
-
-  &:hover {
-    opacity: 0.8;
-  }
 `;
 
 const MapSelector = styled.div`
@@ -192,12 +168,12 @@ const Safari: React.FC = () => {
   const [position, setPosition] = useState<Position>({ x: 5, y: 5 });
   const [users, setUsers] = useState<MapUser[]>([]);
   const [encounter, setEncounter] = useState<WildEncounter | null>(null);
-  const [trainerEncounter, setTrainerEncounter] = useState(false);
   const [message, setMessage] = useState("Use the arrows or buttons to move!");
   const [mapData, setMapData] = useState<number[][]>([]);
   const { selectedCharacter } = useGame();
   const canvasRef = useRef<HTMLDivElement>(null);
-
+  const navigate = useNavigate();
+  const { setAttackLog, setComputerInfo, setPokemonInfo } = useBattle();
   // Map names
   const mapNames: Record<number, string> = {
     1: "Grass Area",
@@ -292,12 +268,8 @@ const Safari: React.FC = () => {
         if (data.wildEncounter) {
           setEncounter(data.wildEncounter);
           setMessage(`You encountered a ${data.wildEncounter.name}!`);
-        } else if (data.trainerEncounter) {
-          setTrainerEncounter(true);
-          setMessage("A trainer wants to battle!");
         } else {
           setEncounter(null);
-          setTrainerEncounter(false);
           setMessage(data.message || "Keep exploring...");
         }
       } catch (error) {
@@ -311,8 +283,6 @@ const Safari: React.FC = () => {
   // Keyboard controls
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      if (encounter || trainerEncounter) return;
-
       switch (e.key) {
         case "ArrowUp":
           e.preventDefault();
@@ -335,58 +305,29 @@ const Safari: React.FC = () => {
 
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [moveSprite, encounter, trainerEncounter]);
+  }, [moveSprite, encounter]);
 
   // Start battle with wild Pokemon
   const startWildBattle = async () => {
     if (!encounter) return;
 
     try {
-      const response = await fetch("/api/safari/start-battle", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          pokemonId: encounter.id,
-          level: encounter.level,
-          area: mapNames[currentMap],
-        }),
-      });
+      const response = await startWildBattleApi(encounter.id, encounter.level, mapNames[currentMap]);
 
-      const data = await response.json();
+      const data = response;
 
-      if (data.success) {
+      if (data.aanvalLogId) {
         // Redirect to battle
-        window.location.href = "/battle/wild";
+        const {aanval_log,computer_info,pokemon_info} = await initBattle(data.aanvalLogId);
+        setAttackLog(aanval_log);
+        setComputerInfo(computer_info);
+        setPokemonInfo(pokemon_info);
+        navigate(`/attack/wild`);
       } else {
-        setMessage(data.message || "Failed to start battle");
+        setMessage("Failed to start battle");
       }
     } catch (error) {
       console.error("Failed to start battle:", error);
-      setMessage("Failed to start battle!");
-    }
-  };
-
-  // Start battle with trainer
-  const startTrainerBattle = async () => {
-    try {
-      const response = await fetch("/api/safari/start-trainer-battle", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          area: mapNames[currentMap],
-        }),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        // Redirect to trainer battle
-        window.location.href = "/battle/trainer";
-      } else {
-        setMessage(data.message || "Failed to start battle");
-      }
-    } catch (error) {
-      console.error("Failed to start trainer battle:", error);
       setMessage("Failed to start battle!");
     }
   };
@@ -538,33 +479,6 @@ const Safari: React.FC = () => {
                 <ActionButton onClick={startWildBattle}>Battle!</ActionButton>
                 <ActionButton onClick={() => setEncounter(null)}>
                   Run Away
-                </ActionButton>
-              </EncounterCard>
-            ) : trainerEncounter ? (
-              <EncounterCard>
-                <div
-                  style={{
-                    backgroundImage: `url('/images/maps/${mapNames[
-                      currentMap
-                    ].toLowerCase()}.png')`,
-                    backgroundPosition: "center bottom",
-                    backgroundRepeat: "no-repeat",
-                    padding: "20px",
-                  }}
-                >
-                  <img
-                    src="/images/maps/pokemon_trainer.png"
-                    alt="Trainer"
-                    style={{ maxWidth: "150px" }}
-                  />
-                  <h3>A trainer wants to battle!</h3>
-                  <p>Will you accept?</p>
-                </div>
-                <ActionButton onClick={startTrainerBattle}>
-                  Battle!
-                </ActionButton>
-                <ActionButton onClick={() => setTrainerEncounter(false)}>
-                  Decline
                 </ActionButton>
               </EncounterCard>
             ) : (
