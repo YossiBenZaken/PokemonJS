@@ -1,3 +1,4 @@
+import { Character } from "../pages/MyCharacters";
 import { UserItem } from "../models/item.model";
 import { axiosInstance } from "./axios";
 
@@ -34,27 +35,7 @@ export interface GetUserCharacterCountResponse {
 
 export interface GetUserCharactersResponse {
   success: boolean;
-  data: Array<{
-    id: number;
-    user_id: number;
-    username: string;
-    character: string;
-    wereld: string;
-    ultimo_login: string;
-    ultimo_login_hour: string;
-    datum: string;
-    aanmeld_datum: string;
-    rank?: number;
-    banned?: string;
-    admin?: number;
-    premiumaccount?: number;
-    antiguidade?: number;
-    sec_key?: string;
-    chat_key?: string;
-    tickets: number;
-    geluksrad: number;
-    items: UserItem;
-  }>;
+  data: Array<Character>;
 }
 
 export interface LoginWithCharacterRequest {

@@ -72,6 +72,7 @@ export interface Character {
   tickets: number;
   geluksrad: number;
   items: UserItem;
+  map_sprite: number;
 }
 
 
