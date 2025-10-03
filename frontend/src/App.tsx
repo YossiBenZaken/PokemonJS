@@ -22,6 +22,7 @@ import PokeBox from "./pages/PokeBox";
 import PokedexPage from "./pages/Pokedex";
 import PrivateRoute from "./components/PrivateRoute";
 import { ProfilePage } from "./pages/Profile";
+import Safari from "./pages/Safari";
 import { TownRoutes } from "./pages/Town/routes";
 import TrainerAttack from "./pages/Attack/TrainerAttack";
 
@@ -47,6 +48,14 @@ function App() {
               element={
                 <PrivateRoute>
                   <LeaderboardsPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/safari"
+              element={
+                <PrivateRoute>
+                  <Safari />
                 </PrivateRoute>
               }
             />

@@ -16,6 +16,7 @@ import notificationRoutes from "./notifications.js";
 import pokeboxRoutes from "./pokebox.js";
 import pokedexRoutes from "./pokedex.js";
 import pokemonRoutes from "./pokemon.js";
+import safariRoutes from './safari.js';
 import specialistsRoutes from "./specialists.js";
 import systemRoutes from "./system.js";
 import tradersRoutes from "./traders.js";
@@ -46,5 +47,6 @@ router.use("/api/leaderboards", leaderboardsRoutes);
 router.use("/api/pokebox", pokeboxRoutes);
 router.use("/api/gyms", gymsRoutes);
 router.use('/api/battle', battleRoutes);
+router.use('/api/safari', safariRoutes);
 
 export { router };
