@@ -58,7 +58,7 @@ export const InitBattle = async (req, res) => {
   });
 };
 
-function computerNaam(old) {
+export function computerNaam(old) {
   // אם יש רווח בשם
   if (old.includes(" ")) {
     const pokemon = old.split(" ");

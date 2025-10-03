@@ -1,4 +1,4 @@
-import { getBattleInfo, pokemonNaam } from "./battle-controller.js";
+import { computerNaam, getBattleInfo, pokemonNaam } from "./battle-controller.js";
 
 import { query } from "../config/database.js";
 
@@ -1292,7 +1292,7 @@ export const trainerChangePokemon = async (req, res) => {
     let lastMove = "";
 
     // Check if trainer needs to change Pokemon
-    if (battleLog.laatste_aanval === "trainer_wissel") {
+    if (battleLog.laatste_aanval === "trainer_wissel" || battleLog.laatste_aanval === 'pokemon') {
       // Get a random alive computer Pokemon
       const [newComputer] = await query(
         `
@@ -2227,19 +2227,21 @@ export const trainerAttackRun = async (req, res) => {
   //Check if it is not your turn
   else if (battleLog["laatste_aanval"] == "pokemon") {
     message = `זה לא תורך זה התור של ${computerPokemon.naam_goed}`;
-  }
-  else {
+  } else {
     let chance = 0;
-    if(playerPokemon.leven > computerPokemon.leven) chance = 90;
+    if (playerPokemon.leven > computerPokemon.leven) chance = 90;
     else chance = 60;
 
-    const rand = getRandomInt(1,100);
+    const rand = getRandomInt(1, 100);
 
-    if(chance > rand) {
+    if (chance > rand) {
       good = true;
       message = "הצלחת לברוח.";
 
-      const playerHandRows = await query("SELECT `id`, `leven`, `effect` FROM `pokemon_speler_gevecht` WHERE `user_id`=?",[userId]);
+      const playerHandRows = await query(
+        "SELECT `id`, `leven`, `effect` FROM `pokemon_speler_gevecht` WHERE `user_id`=?",
+        [userId]
+      );
       for (const row of playerHandRows) {
         await query(
           "UPDATE pokemon_speler SET leven = ?, effect = ? WHERE id = ?",
@@ -2250,13 +2252,124 @@ export const trainerAttackRun = async (req, res) => {
       removeAttack(userId, aanval_log_id);
     } else {
       message = "נכשלת בניסיון לברוח מ" + computerPokemon.naam_goed;
-      await query("UPDATE `aanval_log` SET `laatste_aanval`='pokemon', `beurten`=`beurten`+'1' WHERE `id`=?",[aanval_log_id]);
+      await query(
+        "UPDATE `aanval_log` SET `laatste_aanval`='pokemon', `beurten`=`beurten`+'1' WHERE `id`=?",
+        [aanval_log_id]
+      );
     }
-
   }
 
   res.json({
     message,
-    good
+    good,
+  });
+};
+
+export const attackUsePotion = async (req, res) => {
+  const {
+    item,
+    computer_info_name,
+    option_id,
+    potion_pokemon_id,
+    aanval_log_id,
+  } = req.body;
+  const userId = req.user?.user_id;
+  const { battleLog } = await getBattleData(aanval_log_id);
+  if (battleLog.user_id !== userId) {
+    return res.status(403).send("Unauthorized");
+  }
+
+  let good = false;
+  let message = "";
+  let [pokemon_info] = await query(
+    "SELECT pw.*, ps.*, psg.* FROM pokemon_wild AS pw INNER JOIN pokemon_speler AS ps ON ps.wild_id = pw.wild_id INNER JOIN pokemon_speler_gevecht AS psg ON ps.id = psg.id  WHERE psg.id= ?",
+    [potion_pokemon_id]
+  );
+  pokemon_info["naam_goed"] = pokemonNaam(
+    pokemon_info.naam,
+    pokemon_info.roepnaam
+  );
+
+  const [player_item_info] = await query("SELECT `Potion`, `Super potion`, `Hyper potion`, `Full heal`, `Revive`, `Max revive`, `Moomoo Milk`, `Fresh Water`, `Soda Pop`, `Lemonade` FROM `gebruikers_item` WHERE `user_id`=?", [userId]);
+
+  const [item_info] = await query("SELECT `naam`, `wat`, `kracht`, `apart`, `type1`, `type2`, `kracht2` FROM `items` WHERE `naam`=?",[item]);
+
+  const computer_naam = computerNaam(computer_info_name);
+  let new_life;
+  if(item == 'Kies') message = "בחר פריט שבבעלותך או קרב נגדו.";
+  else if(item_info.wat != 'potion') message = "השתמש בשיקוי.";
+  else if(player_item_info[item_info.naam] <= 0) message = "אתה לא יכול להשתמש ב" + item;
+  else if(['Revive', 'Max revive'].includes(item_info.naam) && pokemon_info.leven > 0) message = pokemon_info.naam + " - אי אפשר להחיות אותו כי עדיין יש לו נקודות חיים!";
+  else if(!['Revive', 'Max revive'].includes(item_info.naam) && pokemon_info.leven <= 0) message = pokemon_info.naam_goed + " - אין לו נקודות חיים לקבלת שיקויים!";
+  else if(pokemon_info.leven >= pokemon_info.levenmax) message = pokemon_info.naam_goed + 'יש לו חיים מלאים';
+  else if (battleLog["laatste_aanval"] == "klaar") message = `The fight is ended with ${computer_naam}`;
+  else if (battleLog["laatste_aanval"] == "pokemon") message = `זה לא תורך זה התור של ${computer_naam}`;
+  else {
+    let pokemon_effect = pokemon_info.effect;
+    let new_amount = player_item_info[item_info.naam];
+
+    switch(item_info.apart) {
+      //Item isn't strange
+      case "nee":
+        //Pokemon is dead, potions don't work
+        if (pokemon_info['leven'] <= 0) message = pokemon_info.naam_goed + ' אין נקודות חיים לשימוש בשיקויים!';
+        else{ 
+          message = `נתת ${item_info.naam} ל${pokemon_info.naam_goed}`;
+          //Calculate New life
+          new_life = pokemon_info['leven']+item_info['kracht'];
+          //If new life is bigger than life max, new life becomes lifemax
+          if (new_life > pokemon_info['levenmax']) new_life = pokemon_info['levenmax'];
+          //Set new amount
+          new_amount -= 1;
+        }
+      break;
+      //Item is strange
+      case "ja":
+        //Its a full heal
+        if (item_info['naam'] == "Full heal") {
+          //Effect is empty
+          pokemon_effect = "";
+          new_life = pokemon_info['levenmax'];
+        }
+        
+        //Its a Revive
+        else if (item_info['naam'] == "Revive") {
+          //Calculate new life
+          new_life = Math.round(pokemon_info['levenmax']/2);
+        }
+        
+        //Its a max revive
+        else if (item_info['naam'] == "Max revive") {
+          //Calculate new life
+          new_life = pokemon_info['levenmax'];
+          
+        }
+        message = `השתמשת ב${item_info['naam']} - ${pokemon_info['naam']} נרפא`;
+        //Set new amount
+        new_amount -= 1;
+
+      break;    
+    }
+
+    good = true;
+    await query("UPDATE `pokemon_speler_gevecht` SET `leven`=?, `effect` = ? WHERE `id`=?",[new_life, pokemon_effect, pokemon_info.id]);
+    await query("UPDATE `aanval_log` SET `laatste_aanval`='pokemon' WHERE `id`=?",[aanval_log_id]);
+    await query("UPDATE `gebruikers_item` SET `" + item_info['naam'] + "`=? WHERE `user_id`=?",[new_amount, userId]);
+  }
+
+  const info_potion_left = player_item_info[item_info.naam] - 1;
+  let pokemon_infight  = false;
+  if(battleLog.pokemonid == pokemon_info.id) pokemon_infight = true;
+
+  return res.json({
+    message,
+    good,
+    info_potion_left,
+    option_id,
+    item_info_naam: item_info.naam,
+    name: 'Potion',
+    new_life,
+    pokemonInfo: pokemon_info,
+    pokemon_infight,
   })
 };
