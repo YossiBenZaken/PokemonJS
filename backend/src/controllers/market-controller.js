@@ -235,10 +235,10 @@ const getUserInventory = async (req, res) => {
       }, {});
 
     // חישוב כמות הפריטים הכוללת
-    const totalItems = await calculateTotalItems(userId);
-    const maxItems = ItemBox[user[0]?.itembox] || 20;
-    const itemOver = maxItems - totalItems;
     const userResult = user[0];
+    const totalItems = await calculateTotalItems(userId);
+    const maxItems = ItemBox[userResult[0]?.itembox] || 20;
+    const itemOver = maxItems - totalItems;
     res.json({
       success: true,
       data: {

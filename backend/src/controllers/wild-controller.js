@@ -22,15 +22,20 @@ import { getBattleInfo } from "./battle-controller.js";
 import { query } from "../config/database.js";
 
 export const startWildBattle = async (req, res) => {
-  let { computer_id, computer_level, gebied,rarity } = req.body;
+  let { computer_id, computer_level, gebied, rarity } = req.body;
   const userId = req.user?.user_id;
   if (!userId) {
     return res.status(401).json({ success: false, message: "משתמש לא מחובר" });
   }
 
-  if(!computer_id) {
-    const [user] = await query("SELECT * FROM `gebruikers` WHERE `user_id`=?", [userId]);
-    const [randomComputer] = await query("SELECT wild_id FROM `pokemon_wild` WHERE `gebied`=? AND `wereld`=? AND `zeldzaamheid`=? AND `aparece`='sim' ORDER BY rand() limit 1", [gebied, user.wereld, rarity]);
+  if (!computer_id) {
+    const [user] = await query("SELECT * FROM `gebruikers` WHERE `user_id`=?", [
+      userId,
+    ]);
+    const [randomComputer] = await query(
+      "SELECT wild_id FROM `pokemon_wild` WHERE `gebied`=? AND `wereld`=? AND `zeldzaamheid`=? AND `aparece`='sim' ORDER BY rand() limit 1",
+      [gebied, user.wereld, rarity]
+    );
     computer_id = randomComputer.wild_id;
     computer_level = await calculatePokemonLevel(user.rank);
   }
@@ -79,7 +84,7 @@ export const startWildBattle = async (req, res) => {
     [gebied == "Gras" ? "gras-1" : "wate-1", userId]
   );
 
-  return res.json({aanvalLogId});
+  return res.json({ aanvalLogId });
 };
 
 export const finishWildBattle = async (req, res) => {
@@ -92,7 +97,7 @@ export const finishWildBattle = async (req, res) => {
   let text = false;
   let drop = false;
   let money = 0;
-  const {  computer_info, aanval_log } = await getBattleInfo(aanval_log_id);
+  const { computer_info, aanval_log } = await getBattleInfo(aanval_log_id);
 
   const [user] = await query(
     "SELECT * FROM gebruikers AS g INNER JOIN gebruikers_item AS gi ON g.user_id = gi.user_id WHERE g.user_id = ?",
@@ -840,7 +845,329 @@ export const doWildAttack = async (req, res) => {
   }
 };
 
-const createNewComputer = async (computer_id, computer_level, gebied, aanvalLogId) => {
+export const attackUsePokeball = async (req, res) => {
+  const { item, option_id, aanval_log_id, computerEffect } = req.body;
+  const userId = req.user?.user_id;
+
+  // Get battle data
+  const battleData = await getBattleData(aanval_log_id);
+  if (!battleData) {
+    return res.status(404).send("Battle not found");
+  }
+
+  const { battleLog, computerPokemon, playerPokemon } = battleData;
+
+  // Security check
+  if (battleLog.user_id !== userId) {
+    return res.status(403).send("Battle ended due to inactivity!");
+  }
+
+  const [playerItemInfo] = await query(
+    "SELECT `Poke ball`, `Great ball`, `Ultra ball`, `Premier ball`, `Net ball`, `Dive ball`, `Nest ball`, `Repeat ball`, `Timer ball`, `Master ball`, `Moon ball`, `Dusk ball`, `Dream ball`, `Luxury ball`, `Rocket ball`, `DNA ball`, `Cherish ball`, `Black ball`, `Santa ball`, `Antique ball`, `Frozen ball`, `GS ball`, `Trader ball`, `Ecology ball` FROM `gebruikers_item` WHERE `user_id`=?",
+    [userId]
+  );
+  const [given] = await query(
+    "SELECT `huis` FROM `gebruikers` WHERE `user_id`=?",
+    [userId]
+  );
+  const [itemInfo] = await query(
+    "SELECT `naam`, `wat`, `kracht`, `apart`, `type1`, `type2`, `type3`, `kracht2` FROM `items` WHERE `naam`=?",
+    [item]
+  );
+  const playerHand = (
+    await query(
+      "SELECT `id` FROM `pokemon_speler` WHERE `user_id`=? and `opzak` = 'ja'",
+      [userId]
+    )
+  ).length;
+  const house = (
+    await query(
+      "SELECT `id` FROM `pokemon_speler` WHERE `user_id`=? AND `opzak`='nee'",
+      [userId]
+    )
+  ).length;
+  let good = true;
+  let drop = false;
+  let message = "";
+  let catched = false;
+  const { huis } = given;
+  const over =
+    (huis == "doos" ? 2 : huis == "shuis" ? 20 : huis == "nhuis" ? 100 : 2500) -
+    house;
+  if (itemInfo.wat != "pokeball")
+    message = "You have to use a Pok&eacute;ball.";
+  else if (playerItemInfo[item] <= 0) message = "You do not have a " + item;
+  else if (playerHand > 5 && over <= 0)
+    message = "You have no more room left for a new Pok&eacute;mon.";
+  else if (battleLog.laatste_aanval == "gevongen")
+    message = `You've caught ${computerPokemon.naam_goed}. The battle finished.`;
+  else if (battleLog.laatste_aanval == "klaar")
+    message = `${computerPokemon.naam_goed} cannot battle because he's knocked out.`;
+  else if (battleLog.laatste_aanval == "pokemon")
+    message = `${computerPokemon.naam_goed} need to attack`;
+  else {
+    switch (itemInfo.naam) {
+      case "Master ball":
+      case "DNA ball":
+      case "Cherish ball":
+      case "Black ball":
+      case "Santa ball":
+      case "GS ball":
+        catched = true;
+        break;
+    }
+    let catch_change;
+    if (!catched) {
+      if (computerEffect != "") {
+        const [effectInfo] = await query(
+          "SELECT `vangkans` FROM `effect` WHERE `actie`=?",
+          [computerEffect]
+        );
+        catch_change = effectInfo.vangkans;
+        if (catch_change < 0.5) catch_change = 1;
+      } else catch_change = 1;
+
+      let pokeballPower;
+      if (itemInfo.apart === "nee") pokeballPower = itemInfo.kracht;
+      else if (itemInfo.apart === "ja") {
+        if (itemInfo.type2 == "") itemInfo.type2 = "None";
+        if (
+          [
+            "Net ball",
+            "Antique ball",
+            "Frozen ball",
+            "Dive ball",
+            "Dream ball",
+            "Dusk ball",
+            "Ecology ball",
+            "Moon ball",
+            "Nest ball",
+            "Repeat ball",
+            "Timer ball",
+          ].includes(itemInfo.naam)
+        ) {
+          if (
+            computerPokemon.type1 == itemInfo.type1 ||
+            computerPokemon.type1 == itemInfo.type2 ||
+            computerPokemon.type2 == itemInfo.type1 ||
+            computerPokemon.type2 == itemInfo.type2
+          ) {
+            pokeballPower = itemInfo.kracht2;
+          } else pokeballPower = itemInfo.kracht;
+        }
+      }
+
+      let resultCatchRate =
+        (((3 * computerPokemon.levenmax - 2 * computerPokemon.leven) *
+          computerPokemon.vangbaarheid *
+          pokeballPower) /
+          (3 * computerPokemon.levenmax)) *
+        catch_change;
+      if (resultCatchRate >= 255) catched = true;
+      else {
+        if (resultCatchRate == 0) resultCatchRate = 1;
+        let catchRate = 16711680 / resultCatchRate;
+        catchRate = Math.pow(catchRate, 1 / 4);
+        if (catchRate == 0) catchRate = 1;
+        catchRate = Math.floor(1048650 / catchRate);
+
+        const number1 = getRandomInt(4e4, 65535);
+        const number2 = getRandomInt(0, 65535);
+        const number3 = getRandomInt(0, 65535);
+        const number4 = getRandomInt(0, 65535);
+
+        if (
+          catchRate >= number1 &&
+          catchRate >= number2 &&
+          catchRate >= number3 &&
+          catchRate >= number4
+        ) {
+          catched = true;
+        } else catched = false;
+      }
+    }
+
+    await query(
+      `UPDATE gebruikers_item SET \`${itemInfo.naam}\`=\`${itemInfo.naam}\` - '1' WHERE user_id=?`,
+      [userId]
+    );
+
+    if (catched) {
+      await updatePokedex(computerPokemon.wild_id, "vangen", userId);
+
+      const [karakter] = await query(
+        "SELECT * FROM karakters ORDER BY RAND() LIMIT 1"
+      );
+      const currentPlayerHands = playerHand + 1;
+      const [experienceInfo] = await query(
+        "SELECT `punten` FROM `experience` WHERE `soort`=? AND `level`=?",
+        [computerPokemon.groei, computerPokemon.level + 1]
+      );
+      let newPokemon = {
+        karakter: karakter.karakter_naam,
+        expnodig: experienceInfo.punten,
+        attack_iv: getRandomInt(0, 31),
+        defence_iv: getRandomInt(0, 31),
+        speed_iv: getRandomInt(0, 31),
+        spcattack_iv: getRandomInt(0, 31),
+        spcdefence_iv: getRandomInt(0, 31),
+        hp_iv: getRandomInt(0, 31),
+      };
+
+      newPokemon["attackstat"] = Math.round(
+        (((computerPokemon.attack_base * 2 + newPokemon.attack_iv) *
+          computerPokemon.level) /
+          100 +
+          5) *
+          1 *
+          karakter.attack_add
+      );
+      newPokemon["defencestat"] = Math.round(
+        (((computerPokemon.defence_base * 2 + newPokemon.defence_iv) *
+          computerPokemon.level) /
+          100 +
+          5) *
+          1 *
+          karakter.defence_add
+      );
+      newPokemon["speedstat"] = Math.round(
+        (((computerPokemon.speed_base * 2 + newPokemon.speed_iv) *
+          computerPokemon.level) /
+          100 +
+          5) *
+          1 *
+          karakter.speed_add
+      );
+      newPokemon["spcattackstat"] = Math.round(
+        (((computerPokemon["spc.attack_base"] * 2 + newPokemon.spcattack_iv) *
+          computerPokemon.level) /
+          100 +
+          5) *
+          1 *
+          karakter["spc.attack_add"]
+      );
+      newPokemon["spcdefencestat"] = Math.round(
+        (((computerPokemon["spc.defence_base"] * 2 + newPokemon.spcdefence_iv) *
+          computerPokemon.level) /
+          100 +
+          5) *
+          1 *
+          karakter["spc.defence_add"]
+      );
+      newPokemon["hpstat"] = Math.round(
+        ((computerPokemon["hp_base"] * 2 + newPokemon.hp_iv) *
+          computerPokemon.level) /
+          100 +
+          computerPokemon.level +
+          10
+      );
+
+      message =
+        "You threw a " +
+        itemInfo.naam +
+        ". " +
+        computerPokemon.naam_goed +
+        " was caught.";
+
+      good = false;
+
+      if (currentPlayerHands > 6) {
+        const [lastInHouse] = await query("SELECT COALESCE(MIN(t1.opzak_nummer) + 1, 1) AS next_opzak_nummer FROM pokemon_speler t1 WHERE NOT EXISTS (SELECT 1 FROM pokemon_speler t2 WHERE t2.user_id = t1.user_id AND t2.opzak = 'nee' AND t2.opzak_nummer = t1.opzak_nummer + 1) AND t1.user_id = ? AND t1.opzak = 'nee'", [userId])
+        await query(
+          "INSERT INTO `pokemon_speler` (`wild_id`, `user_id`, `opzak`, `opzak_nummer`, `karakter`, `shiny`, `level`, `levenmax`, `leven`, `expnodig`, `attack`, `defence`, `speed`, `spc.attack`, `spc.defence`, `attack_iv`, `defence_iv`, `speed_iv`, `spc.attack_iv`, `spc.defence_iv`, `hp_iv`, `aanval_1`, `aanval_2`, `aanval_3`, `aanval_4`, `effect`, `gevongenmet`, `ability`, `capture_date`) \
+          SELECT `wildid`, ?, 'nee', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, `effect`, ?, ?, ?  FROM `pokemon_wild_gevecht` WHERE `id`=?",
+          [
+            userId,
+            lastInHouse.next_opzak_nummer,
+            newPokemon.karakter,
+            computerPokemon.shiny,
+            computerPokemon.level,
+            newPokemon.hpstat,
+            computerPokemon.leven,
+            newPokemon.expnodig,
+            newPokemon.attackstat,
+            newPokemon.defencestat,
+            newPokemon.speedstat,
+            newPokemon["spcattackstat"],
+            newPokemon["spcdefencestat"],
+            newPokemon.attack_iv,
+            newPokemon.defence_iv,
+            newPokemon.speed_iv,
+            newPokemon.spcattack_iv,
+            newPokemon.spcdefence_iv,
+            newPokemon.hp_iv,
+            computerPokemon.aanval_1,
+            computerPokemon.aanval_2,
+            computerPokemon.aanval_3,
+            computerPokemon.aanval_4,
+            itemInfo.naam,
+            computerPokemon.ability,
+            new Date(),
+            computerPokemon.id,
+          ]
+        );
+        message += `${computerPokemon.naam_goed} is in your house.`;
+      } else {
+        await query("INSERT INTO `pokemon_speler` (`wild_id`, `user_id`, `opzak`, `opzak_nummer`, `karakter`, `shiny`, `level`, `levenmax`, `leven`, `expnodig`, `attack`, `defence`, `speed`, `spc.attack`, `spc.defence`, `attack_iv`, `defence_iv`, `speed_iv`, `spc.attack_iv`, `spc.defence_iv`, `hp_iv`, `aanval_1`, `aanval_2`, `aanval_3`, `aanval_4`, `effect`, `gevongenmet`, `ability`, `capture_date`) \
+          SELECT `wildid`, ?, 'ja', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, `effect`, ?, ?, ? FROM `pokemon_wild_gevecht` WHERE `id`=?", [
+          userId,
+          currentPlayerHands,
+          newPokemon.karakter,
+          computerPokemon.shiny,
+          computerPokemon.level,
+          newPokemon.hpstat,
+          computerPokemon.leven,
+          newPokemon.expnodig,
+          newPokemon.attackstat,
+          newPokemon.defencestat,
+          newPokemon.speedstat,
+          newPokemon["spcattackstat"],
+          newPokemon["spcdefencestat"],
+          newPokemon.attack_iv,
+          newPokemon.defence_iv,
+          newPokemon.speed_iv,
+          newPokemon.spcattack_iv,
+          newPokemon.spcdefence_iv,
+          newPokemon.hp_iv,
+          computerPokemon.aanval_1,
+          computerPokemon.aanval_2,
+          computerPokemon.aanval_3,
+          computerPokemon.aanval_4,
+          itemInfo.naam,
+          computerPokemon.ability,
+          new Date(),
+          computerPokemon.id,
+        ]);
+      }
+
+      await query("UPDATE `gebruikers` SET `aantalpokemon`=`aantalpokemon`+'1' WHERE `user_id`=?",[userId]);
+
+      await pokemonPlayerHandUpdate(userId);
+
+      await removeAttack(userId, aanval_log_id);
+    } else {
+      await query("UPDATE `aanval_log` SET `laatste_aanval`='pokemon' WHERE `id`=?",[aanval_log_id]);
+      message = `You threw a ${itemInfo.naam}. ${computerPokemon.naam_goed} has escaped.`
+    }
+  }
+
+  res.json({
+    message,
+    ballLeft: playerItemInfo[itemInfo.naam] - 1,
+    good,
+    option_id,
+    name: itemInfo.naam,
+    type: "Pokeball",
+    drop,
+  });
+};
+
+const createNewComputer = async (
+  computer_id,
+  computer_level,
+  gebied,
+  aanvalLogId
+) => {
   const [newComputerSql] = await query(
     "SELECT * FROM `pokemon_wild` WHERE `wild_id`=?",
     [computer_id]
@@ -879,7 +1206,7 @@ const createNewComputer = async (computer_id, computer_level, gebied, aanvalLogI
       newComputer.aanval2,
       newComputer.aanval3,
       newComputer.aanval4,
-      '',
+      "",
       gebied,
       newComputer.ability,
     ]

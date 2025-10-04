@@ -268,6 +268,17 @@ export interface AttackUsePotionResponse {
   pokemon_infight: boolean;
 }
 
+export interface AttackUsePokeballResponse {
+  message:   string;
+  ballLeft:  number;
+  good:      boolean;
+  option_id: number;
+  name:      string;
+  type:      string;
+  drop:      boolean;
+}
+
+
 export const startWildBattleApi = async (
   pokemonId: number | undefined,
   level: number | undefined,
@@ -411,6 +422,23 @@ export const attackUsePotion = async (
       option_id,
       potion_pokemon_id,
       aanval_log_id,
+    }
+  );
+  return data;
+};
+export const attackUsePokeball = async (
+  aanval_log_id: number,
+  item: string,
+  option_id: string,
+  computerEffect: string,
+): Promise<AttackUsePokeballResponse> => {
+  const { data } = await axiosInstance.post<AttackUsePokeballResponse>(
+    "/battle/attack-use-pokeball",
+    {
+      aanval_log_id,
+      item,
+      option_id,
+      computerEffect,
     }
   );
   return data;

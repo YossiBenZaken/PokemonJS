@@ -7,6 +7,7 @@ import {
   trainerChangePokemon,
 } from "../controllers/trainer-controller.js";
 import {
+  attackUsePokeball,
   doWildAttack,
   finishWildBattle,
   startWildBattle,
@@ -25,6 +26,7 @@ router.post("/trainer-finish", extractAccId, finishTrainerBattle);
 router.post("/attack-change-pokemon", extractAccId, attackChangePokemon);
 router.post("/trainer-attack-run", extractAccId, trainerAttackRun);
 router.post("/attack-use-potion", extractAccId, attackUsePotion);
+router.post("/attack-use-pokeball", extractAccId, attackUsePokeball);
 router.post("/start-wild-battle", extractAccId, startWildBattle);
 router.post("/wild-finish", extractAccId, finishWildBattle);
 router.post("/wild-attack", extractAccId, doWildAttack);

@@ -2,12 +2,14 @@ import "./style.css";
 
 import {
   AttackChangePokemonResponse,
+  AttackUsePokeballResponse,
   AttackUsePotionResponse,
   BattleResponse,
   ComputerInfo,
   PokemonInfo,
   TrainerAttackRunResponse,
   attackChangePokemon,
+  attackUsePokeball,
   attackUsePotion,
   trainerAttackRun,
   wildAttack,
@@ -43,10 +45,10 @@ import {
   Title,
   Weather,
 } from "./TrainerAttack/styled";
+import { ItemData, ItemInfo } from "../../models/item.model";
 import React, { useCallback, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import { ItemData } from "../../models/item.model";
 import { useBattle } from "../../contexts/BattleContext";
 import { useGame } from "../../contexts/GameContext";
 
@@ -70,7 +72,7 @@ const WildAttack: React.FC = () => {
   const [showBag, setShowBag] = useState<boolean>(false);
   const [battleMessage, setBattleMessage] = useState("");
 
-  const potions = itemInfo.filter(
+  const itemsToUse = itemInfo.filter(
     (item) => item.soort === "potions" || item.soort === "balls"
   );
 
@@ -724,7 +726,6 @@ const WildAttack: React.FC = () => {
         message,
         name,
         new_life,
-        option_id,
         pokemon_infight,
         pokemonInfo,
       } = response;
@@ -869,6 +870,62 @@ const WildAttack: React.FC = () => {
     );
   };
 
+  const handleUseItem = async (item: ItemInfo, name: keyof ItemData) => {
+    if (battleState.spelerAttack) {
+      switch (item.soort) {
+        case "balls":
+          setShowPotionsScreen(false);
+          setSelectedPotion("");
+          if(attackLog?.id && computerInfo?.effect != null) {
+            const response = await attackUsePokeball(attackLog.id, name, item.soort, computerInfo.effect);
+            handleUsePokeballStatus(response);
+          }
+          break;
+        case "potions":
+          setShowPotionsScreen(true);
+          setSelectedPotion(name);
+          break;
+      }
+    }
+  };
+
+  const handleUsePokeballStatus = useCallback(
+    (response: AttackUsePokeballResponse) => {
+      const {
+        good,
+        message,
+        name,
+        ballLeft,drop,type
+      } = response;
+      setBattleMessage(message);
+
+      // Update item quantity
+      const itemEl = document.querySelector(
+        `div[data-item-name='${name}'] .qtd`
+      );
+      const amount = ballLeft;
+
+      if (type === "Pokeball") {
+        if (amount < 1) {
+          itemEl?.parentElement?.parentElement?.remove();
+        } else if (itemEl) {
+          itemEl.innerHTML = amount.toString();
+        }
+        if (!good) {
+          // Update item quantity
+          setTimeout(() => {
+            navigate('/');
+          }, 4000);
+        } else {
+          dispatchBattle({ type: "SET_SPELER_ATTACK", value: false });
+          dispatchBattle({ type: "SET_SPELER_WISSEL", value: false });
+          setTimeout(() => computerAttack(), 3000);
+        }
+      }
+    },
+    [dispatchBattle]
+  );
+
   const pokemonAttacks = [
     pokemonInfo?.aanval_1,
     pokemonInfo?.aanval_2,
@@ -901,7 +958,10 @@ const WildAttack: React.FC = () => {
       </GifAttack>
       <Weather id="weather">
         <img id="zmove" />
-        <BattleArea attackLog={attackLog} background={location.state.background}>
+        <BattleArea
+          attackLog={attackLog}
+          background={location.state.background}
+        >
           <tbody>
             <tr>
               <td>
@@ -1158,20 +1218,17 @@ const WildAttack: React.FC = () => {
                         justifyContent: "center",
                       }}
                     >
-                      {potions.map((potion) => {
-                        const name = potion.naam as keyof ItemData;
+                      {itemsToUse.map((item) => {
+                        const name = item.naam as keyof ItemData;
                         const quantity = selectedCharacter?.items[name];
                         if (Number(quantity) > 0) {
                           return (
-                            <div key={potion.naam} className="carousel-cell">
+                            <div key={item.naam} className="carousel-cell">
                               <div
-                                data-item-name={potion.naam}
-                                data-item-type={potion.soort}
+                                data-item-name={item.naam}
+                                data-item-type={item.soort}
                                 onClick={() => {
-                                  if (battleState.spelerAttack) {
-                                    setShowPotionsScreen(true);
-                                    setSelectedPotion(name);
-                                  }
+                                  handleUseItem(item, name);
                                 }}
                                 style={{
                                   opacity: battleState.spelerAttack ? 1 : 0.5,
@@ -1181,9 +1238,9 @@ const WildAttack: React.FC = () => {
                                 }}
                               >
                                 <img
-                                  src={`/images/items/${potion.naam}.png`}
+                                  src={`/images/items/${item.naam}.png`}
                                   className="image"
-                                  alt={potion.naam}
+                                  alt={item.naam}
                                 />
                                 <span
                                   className="badges qtd"
