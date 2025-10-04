@@ -15,6 +15,7 @@ import {
 } from "../../api/battle.api";
 import {
   AttackWrapper,
+  BattleArea,
   BattlePokemon,
   BoxContent,
   ComputerStar,
@@ -43,11 +44,11 @@ import {
   Weather,
 } from "./TrainerAttack/styled";
 import React, { useCallback, useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { ItemData } from "../../models/item.model";
 import { useBattle } from "../../contexts/BattleContext";
 import { useGame } from "../../contexts/GameContext";
-import { useNavigate } from "react-router-dom";
 
 const WildAttack: React.FC = () => {
   const {
@@ -60,6 +61,7 @@ const WildAttack: React.FC = () => {
   } = useBattle();
 
   const { selectedCharacter, myPokemons, itemInfo, attacks } = useGame();
+  const location = useLocation();
   const navigate = useNavigate();
   const [showPotionsScreen, setShowPotionsScreen] = useState<boolean>(false);
   const [selectedPotion, setSelectedPotion] = useState("");
@@ -330,7 +332,7 @@ const WildAttack: React.FC = () => {
 
         // Redirect after delay
         setTimeout(() => {
-          navigate("/");
+          navigate("/attack/map");
         }, 7500);
       } catch (error) {
         console.error("End screen failed:", error);
@@ -816,7 +818,7 @@ const WildAttack: React.FC = () => {
       if (response.good) {
         // Successfully ran away
         setTimeout(() => {
-          navigate("/");
+          navigate("/attack/map");
         }, 3000);
       } else {
         // Failed to run, computer's turn
@@ -899,7 +901,7 @@ const WildAttack: React.FC = () => {
       </GifAttack>
       <Weather id="weather">
         <img id="zmove" />
-        <TableDuelArena>
+        <BattleArea attackLog={attackLog} background={location.state.background}>
           <tbody>
             <tr>
               <td>
@@ -1207,7 +1209,7 @@ const WildAttack: React.FC = () => {
               </AttackWrapper>
             </tr>
           </tbody>
-        </TableDuelArena>
+        </BattleArea>
       </Weather>
       <div
         className="potion_screen"

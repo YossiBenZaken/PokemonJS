@@ -1,5 +1,6 @@
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 
+import AttackMap from "./pages/Attack/AttackMap";
 import { BadgeCase } from "./pages/Badges";
 import { BattleProvider } from "./contexts/BattleContext";
 import { ChoosePokemonPage } from "./pages/ChoosePokemon";
@@ -151,6 +152,7 @@ function App() {
             <Route path="/information" element={<InformationPage />} />
             <Route path="/attack/trainer" element={<TrainerAttack />} />
             <Route path="/attack/wild" element={<WildAttack />} />
+            <Route path="/attack/map" element={<AttackMap />} />
             {InboxRoutes}
             {TownRoutes}
           </Routes>

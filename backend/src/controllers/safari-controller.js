@@ -363,7 +363,7 @@ async function checkEvolution(wildId, level) {
 }
 
 // Helper function to calculate Pokemon level based on rank
-async function calculatePokemonLevel(rank) {
+export async function calculatePokemonLevel(rank) {
   // Implement your rankpokemon logic here
   // This is a simplified version - replace with your actual logic
   const baseLevel = 5;

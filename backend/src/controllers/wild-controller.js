@@ -17,15 +17,24 @@ import {
   whoCanStart,
 } from "../helpers/battle-utils.js";
 
+import { calculatePokemonLevel } from "./safari-controller.js";
 import { getBattleInfo } from "./battle-controller.js";
 import { query } from "../config/database.js";
 
 export const startWildBattle = async (req, res) => {
-  const { computer_id, computer_level, gebied } = req.body;
+  let { computer_id, computer_level, gebied,rarity } = req.body;
   const userId = req.user?.user_id;
   if (!userId) {
     return res.status(401).json({ success: false, message: "משתמש לא מחובר" });
   }
+
+  if(!computer_id) {
+    const [user] = await query("SELECT * FROM `gebruikers` WHERE `user_id`=?", [userId]);
+    const [randomComputer] = await query("SELECT wild_id FROM `pokemon_wild` WHERE `gebied`=? AND `wereld`=? AND `zeldzaamheid`=? AND `aparece`='sim' ORDER BY rand() limit 1", [gebied, user.wereld, rarity]);
+    computer_id = randomComputer.wild_id;
+    computer_level = await calculatePokemonLevel(user.rank);
+  }
+
   // 1. מחיקת קרבות ישנים
   await cleanupBattle(userId);
 

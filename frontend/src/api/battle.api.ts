@@ -269,11 +269,15 @@ export interface AttackUsePotionResponse {
 }
 
 export const startWildBattleApi = async (
-  pokemonId: number,
-  level: number,
-  area: string
+  pokemonId: number | undefined,
+  level: number | undefined,
+  area: string,
+  rarity: number | undefined = undefined
 ): Promise<{ aanvalLogId: number }> => {
-  const { data } = await axiosInstance.post<{ aanvalLogId: number }>("/battle/start-wild-battle", { computer_id: pokemonId, computer_level: level, gebied: area });
+  const { data } = await axiosInstance.post<{ aanvalLogId: number }>(
+    "/battle/start-wild-battle",
+    { computer_id: pokemonId, computer_level: level, gebied: area, rarity }
+  );
   return data;
 };
 
@@ -399,12 +403,15 @@ export const attackUsePotion = async (
   potion_pokemon_id: number,
   aanval_log_id: number
 ): Promise<AttackUsePotionResponse> => {
-  const { data } = await axiosInstance.post<AttackUsePotionResponse>("/battle/attack-use-potion", {
-    item,
-    computer_info_name,
-    option_id,
-    potion_pokemon_id,
-    aanval_log_id,
-  });
+  const { data } = await axiosInstance.post<AttackUsePotionResponse>(
+    "/battle/attack-use-potion",
+    {
+      item,
+      computer_info_name,
+      option_id,
+      potion_pokemon_id,
+      aanval_log_id,
+    }
+  );
   return data;
 };

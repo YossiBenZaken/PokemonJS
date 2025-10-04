@@ -77,6 +77,7 @@ export const Header: React.FC = () => {
     { path: '/fishing', label: 'דיג', icon: <Fish size={20} />},
     { path: '/judge', label: 'שפוט', icon: <Gavel size={20} />},
     { path: '/safari', label: 'ספארי', icon: <Squirrel size={20} />},
+    { path: '/attack/map', label: 'מפה', icon: <Map size={20} />},
     { path: '/information', label: 'מידע', icon: <Info size={20} />}
   ];
 
