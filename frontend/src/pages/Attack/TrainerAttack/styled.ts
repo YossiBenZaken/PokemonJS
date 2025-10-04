@@ -1,3 +1,4 @@
+import { AanvalLog } from "../../../api/battle.api";
 import styled from "styled-components";
 
 export const BoxContent = styled("div")(() => ({
@@ -48,6 +49,48 @@ export const TableDuelArena = styled("table")(() => ({
   backgroundRepeat: "no-repeat",
   borderSpacing: 1,
 }));
+
+export const BattleArea = styled("table")<{
+  attackLog: AanvalLog;
+  background: string | undefined;
+}>(({ attackLog, background }) => {
+  let backgroundImage = "";
+  if (background) {
+    backgroundImage = `url(${require(`../../../assets/images/attack/backgrounds/${background}.png`)})`;
+  } else {
+    const { gebied } = attackLog;
+    let name = "gras-1";
+    switch (gebied) {
+      case "Lavagrot":
+        name = "lavagrot";
+        break;
+      case "Grot":
+        name = "grot";
+        break;
+      case "Spookhuis":
+        name = "spookhous";
+        break;
+      case "Strand":
+        name = "strand";
+        break;
+      case "Vechtschool":
+        name = "dojo";
+        break;
+      case "Water":
+        name = "water-1";
+        break;
+    }
+    backgroundImage = `url(${require("../../../assets/images/attack/backgrounds/" +
+      name +
+      ".png")})`;
+  }
+  return {
+    backgroundImage,
+    width: "100%",
+    backgroundSize: "100% 100%",
+    backgroundRepeat: "no-repeat",
+  };
+});
 
 export const OpponentBar = styled("div")(() => ({
   backgroundImage: `url(${require(`../../../assets/images/attack/new_bar2.png`)})`,
@@ -189,8 +232,8 @@ export const BattlePokemon = styled.div`
 
 export const TextBox = styled("div")(() => ({
   marginTop: 7,
- width: '95%',
- height: 168,
- color: '#fff',
- textAlign: 'left'
+  width: "95%",
+  height: 168,
+  color: "#fff",
+  textAlign: "left",
 }));

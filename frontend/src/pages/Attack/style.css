@@ -57,7 +57,6 @@ input[type='submit'], button, #button, .button, a.paginate_button {
     font-size: 12px;
     font-weight: bold;
     opacity: .9;
-    overflow: hidden;
     position: relative;
 }
 
