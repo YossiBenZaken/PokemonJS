@@ -1,13 +1,13 @@
 import styled, { css, keyframes } from "styled-components";
 
 import { Link } from "react-router-dom";
-import eventos from '../../assets/images/layout/eventos.png';
+import eventos from "../../assets/images/layout/eventos.png";
 import gold from "../../assets/images/layout/Gold.png";
-import logo1 from '../../assets/images/layout/Logo/logo1.png';
-import logo2 from '../../assets/images/layout/Logo/logo2.png';
-import logo3 from '../../assets/images/layout/Logo/logo3.png';
-import logo4 from '../../assets/images/layout/Logo/logo4.png';
-import logo5 from '../../assets/images/layout/Logo/logo5.png';
+import logo1 from "../../assets/images/layout/Logo/logo1.png";
+import logo2 from "../../assets/images/layout/Logo/logo2.png";
+import logo3 from "../../assets/images/layout/Logo/logo3.png";
+import logo4 from "../../assets/images/layout/Logo/logo4.png";
+import logo5 from "../../assets/images/layout/Logo/logo5.png";
 import plus from "../../assets/images/layout/plus.png";
 import silvers from "../../assets/images/layout/silvers.png";
 
@@ -49,7 +49,6 @@ const HeaderContent = styled.div`
     gap: 1rem;
   }
 `;
-
 
 const Navigation = styled.nav`
   display: flex;
@@ -200,42 +199,40 @@ const AuthLink = styled(Link)`
   text-decoration: none;
 `;
 
-
 const HeaderHubContainer = styled("div")(() => ({
   width: 1010,
   height: "auto !important",
   paddingBottom: 5,
   margin: "0 auto",
-  display: 'flex'
+  display: "flex",
 }));
 
 const HeaderHub = styled("div")(() => ({
   width: 990,
   height: 270,
   margin: "0 auto",
-  display: 'flex',
-  flexDirection: 'column'
+  display: "flex",
+  flexDirection: "column",
 }));
 
 const Hub = styled("div")(() => ({
   display: "flex",
   paddingTop: 30,
   width: "100%",
-  position: 'relative'
+  position: "relative",
 }));
 
 const HubHud = styled("ul")(() => ({
   display: "flex",
   listStyle: "none",
-  alignItems: 'stretch',
-  flexDirection: 'row',
-  position:'relative',
-  width: '100%',
-  justifyContent:'end'
+  alignItems: "stretch",
+  flexDirection: "row",
+  position: "relative",
+  width: "100%",
+  justifyContent: "end",
 }));
 
-const HubHudLine = styled("li")(() => ({
-}));
+const HubHudLine = styled("li")(() => ({}));
 
 const Silvers = styled("div")(() => ({
   background: `url(${silvers}) no-repeat`,
@@ -244,7 +241,7 @@ const Silvers = styled("div")(() => ({
   textAlign: "center",
   paddingTop: 10,
   width: 120,
-  position: 'relative',
+  position: "relative",
   "> p": {
     color: "white",
     fontSize: 13,
@@ -260,7 +257,7 @@ const Golds = styled("div")(() => ({
   textAlign: "center",
   paddingTop: 10,
   width: 120,
-  position: 'relative',
+  position: "relative",
   "> p": {
     color: "white",
     fontSize: 13,
@@ -271,7 +268,7 @@ const Golds = styled("div")(() => ({
 }));
 
 const Add = styled("div")(() => ({
-  position: 'absolute',
+  position: "absolute",
   right: 0,
   width: 45,
   height: 45,
@@ -294,33 +291,51 @@ const Badges = styled("span")(() => ({
   verticalAlign: "middle",
 }));
 
-const HubLogo = styled('div')(() => ({
+const HubLogo = styled("div")(() => ({
   width: 401,
   height: 200,
-  background: `url(${Logos[Math.floor(Math.random() * Logos.length)]}) no-repeat center`,
-  backgroundSize: 'cover',
+  background: `url(${
+    Logos[Math.floor(Math.random() * Logos.length)]
+  }) no-repeat center`,
+  backgroundSize: "cover",
 }));
 
-const MyPokemon = styled('div')(() => ({
-  float: 'left',
-  display: 'flex',
-  '> div.icon': {
+const MyPokemon = styled("div")(() => ({
+  float: "left",
+  display: "flex",
+  "> div.icon": {
     background: `url(${eventos}) no-repeat`,
     marginLeft: 2,
     width: 44,
     height: 44,
     borderRadius: 5,
-    verticalAlign: 'bottom',
-    '> div': {
-      backgroundPosition: 'center',
-      backgroundRepeat: 'no-repeat',
-      margin: '0 2px',
+    verticalAlign: "bottom",
+    "> div": {
+      backgroundPosition: "center",
+      backgroundRepeat: "no-repeat",
+      margin: "0 2px",
       width: 42,
       height: 42,
-      display: 'inline-block'
-    }
-  }
-}))
+      display: "inline-block",
+    },
+  },
+}));
+
+const Events = styled("div")(() => ({
+  background: `url(${require("../../assets/images/layout/eventos.png")})`,
+  borderRadius: 5,
+  height: 45,
+  paddingRight: 3,
+  width: "100%",
+  display: "flex",
+  img: {
+    marginRight: 3,
+    width: 45,
+    textAlign: "right",
+    float: "right",
+    cursor: "pointer",
+  },
+}));
 
 export {
   HeaderContainer,
@@ -342,5 +357,6 @@ export {
   Golds,
   Badges,
   HubLogo,
-  MyPokemon
+  MyPokemon,
+  Events,
 };

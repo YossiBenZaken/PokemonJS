@@ -1,4 +1,5 @@
 import {
+  dailyBonus,
   getAssets,
   getOfficialMessages,
   getOnlineUsers,
@@ -11,7 +12,7 @@ import {
 } from "../controllers/pokemoncenter-controller.js";
 
 import express from "express";
-import { extractAccId } from '../middleware/auth.js';
+import { extractAccId } from "../middleware/auth.js";
 
 const router = express.Router();
 
@@ -22,4 +23,5 @@ router.get("/pc/hand", getHandPokemons);
 router.get("/cooldown", getCooldown);
 router.post("/tickets", extractAccId, updateTickets);
 router.post("/official-messages", getOfficialMessages);
+router.get("/daily-bonus", extractAccId, dailyBonus);
 export default router;
