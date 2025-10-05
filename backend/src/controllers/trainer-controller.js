@@ -11,10 +11,12 @@ import {
   multipleHits,
   onePokemonExp,
   pokemonPlayerHandUpdate,
+  pokemon_grow,
+  rankerbij,
   removeAttack,
   saveAttack,
   updatePokedex,
-  whoCanStart
+  whoCanStart,
 } from "../helpers/battle-utils.js";
 import {
   computerNaam,
@@ -684,11 +686,11 @@ export const doTrainerAttack = async (req, res) => {
       attackStatus
     );
 
-    if(shouldExit && jsonResponse) {
+    if (shouldExit && jsonResponse) {
       return res.json(jsonResponse);
     }
 
-    if(messageToAdd) {
+    if (messageToAdd) {
       messageAdd += messageToAdd;
     }
 
@@ -993,6 +995,7 @@ export const trainerChangePokemon = async (req, res) => {
 export const finishTrainerBattle = async (req, res) => {
   const { aanval_log_id } = req.body;
   const userId = req.user?.user_id;
+  const accId = req.user.acc_id;
   if (!userId) {
     return res.status(401).json({ success: false, message: "משתמש לא מחובר" });
   }
@@ -1156,10 +1159,10 @@ export const finishTrainerBattle = async (req, res) => {
         }
 
         // עליית רמה לפי gym
-        //rankerbij('gym',$txt);
+        rankerbij("gym", userId, accId);
       } else {
         // עליית רמה לפי trainer
-        // rankerbij('trainer',$txt);
+        rankerbij("trainer", userId, accId);
       }
 
       // Give money
@@ -1189,7 +1192,7 @@ export const finishTrainerBattle = async (req, res) => {
     // עדכון סטטיסטיקות פוקימונים
     await pokemonPlayerHandUpdate(userId);
 
-    // TODO: pokemon_grow (צריך לממש לוגיקת level up כמו ב־PHP)
+    pokemon_grow(userId);
 
     // מחיקה של הקרב
     await removeAttack(userId, logs.id);

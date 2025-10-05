@@ -11,6 +11,8 @@ import {
   multipleHits,
   onePokemonExp,
   pokemonPlayerHandUpdate,
+  pokemon_grow,
+  rankerbij,
   removeAttack,
   saveAttack,
   updatePokedex,
@@ -90,6 +92,7 @@ export const startWildBattle = async (req, res) => {
 export const finishWildBattle = async (req, res) => {
   const { aanval_log_id } = req.body;
   const userId = req.user?.user_id;
+  const accId = req.user.acc_id;
   if (!userId) {
     return res.status(401).json({ success: false, message: "משתמש לא מחובר" });
   }
@@ -109,7 +112,7 @@ export const finishWildBattle = async (req, res) => {
   }
 
   if (computer_info.leven <= 0) {
-    //rankerbij('attack',$txt);
+    rankerbij('attack',userId, accId);
     await query(
       "UPDATE `gebruikers` SET `gewonnen`=`gewonnen`+'1',`in_battle`=0,`map_wild`=0,`points`=(`points` + 50),`points_temp`=(`points_temp` + 50) WHERE `user_id`=?",
       [userId]
@@ -129,7 +132,7 @@ export const finishWildBattle = async (req, res) => {
   }
   await pokemonPlayerHandUpdate(userId);
 
-  // TODO: pokemon_grow (צריך לממש לוגיקת level up כמו ב־PHP)
+  pokemon_grow(userId);
 
   // מחיקה של הקרב
   await removeAttack(userId, aanval_log.id);

@@ -302,95 +302,86 @@ export async function pokemonPlayerHandUpdate(userId) {
   }
 }
 
-// export const pokemon_grow = async (text, userId) => {
-//   let count = 0;
+export const pokemon_grow = async (userId) => {
+  let count = 0;
 
-//   // שאילתה ראשונה - מביא פוקימונים שצריכים לעלות level
-//   const sql = `
-//   SELECT pokemon_wild.naam, pokemon_speler.id, pokemon_speler.roepnaam,
-//          pokemon_speler.level, pokemon_speler.expnodig, pokemon_speler.exp
-//   FROM pokemon_wild
-//   INNER JOIN pokemon_speler ON pokemon_wild.wild_id = pokemon_speler.wild_id
-//   WHERE user_id = ? AND exp >= expnodig AND opzak = 'ja'
-// `;
+  // שאילתה ראשונה - מביא פוקימונים שצריכים לעלות level
+  const sql = `
+  SELECT pokemon_wild.naam, pokemon_speler.id, pokemon_speler.roepnaam,
+         pokemon_speler.level, pokemon_speler.expnodig, pokemon_speler.exp
+  FROM pokemon_wild
+  INNER JOIN pokemon_speler ON pokemon_wild.wild_id = pokemon_speler.wild_id
+  WHERE user_id = ? AND exp >= expnodig AND opzak = 'ja'
+`;
 
-//   const [pokemons] = await query(sql, [userId]);
+  const pokemons = await query(sql, [userId]);
 
-//   for (const select of pokemons) {
-//     let lvl_old;
-//     if (count == 0) lvl_old = select.level;
-//     count++;
+  for (const select of pokemons) {
+    count++;
 
-//     // const naamGoed = await pokemonNaam(select.naam, select.roepnaam);
+    const naamGoed = await pokemonNaam(select.naam, select.roepnaam);
 
-//     if (select.level < 100 && select.exp >= select.expnoding) {
-//       let shouldContinue = true;
-//       let iterations = 0;
-//       const maxIterations = 10; // הגנה מלולאה אינסופית
+    if (select.level < 100 && select.exp >= select.expnoding) {
+      let shouldContinue = true;
+      let iterations = 0;
+      const maxIterations = 10; // הגנה מלולאה אינסופית
 
-//       while (shouldContinue && iterations < maxIterations) {
-//         iterations++;
+      while (shouldContinue && iterations < maxIterations) {
+        iterations++;
 
-//         // מביא את הנתונים העדכניים
-//         const realQuery = `
-//           SELECT pokemon_wild.*, pokemon_speler.*
-//           FROM pokemon_wild
-//           INNER JOIN pokemon_speler ON pokemon_speler.wild_id = pokemon_wild.wild_id
-//           WHERE pokemon_speler.id = ?
-//         `;
+        // מביא את הנתונים העדכניים
+        const realQuery = `
+          SELECT pokemon_wild.*, pokemon_speler.*
+          FROM pokemon_wild
+          INNER JOIN pokemon_speler ON pokemon_speler.wild_id = pokemon_wild.wild_id
+          WHERE pokemon_speler.id = ?
+        `;
 
-//         const realResults = await query(realQuery, [select.id]);
-//         if (realResults.length === 0) {
-//           shouldContinue = false;
-//           continue;
-//         }
+        const realResults = await query(realQuery, [select.id]);
+        if (realResults.length === 0) {
+          shouldContinue = false;
+          continue;
+        }
 
-//         const real = realResults[0];
+        const real = realResults[0];
 
-//         // level info
-//         const levelNieuw = real.level + 1;
-//         if (levelNieuw > 100) {
-//           shouldContinue = false;
-//           continue;
-//         }
+        // level info
+        const levelNieuw = real.level + 1;
+        if (levelNieuw > 100) {
+          shouldContinue = false;
+          continue;
+        }
 
-//         // חישוב סטטים חדשים
-//         const expnodig = await nieuweStats(real, levelNieuw, real.exp);
+        // חישוב סטטים חדשים
+        const expnodig = await nieuweStats(real, levelNieuw, real.exp);
 
-//         // בדיקה אם הפוקימון עולה level
-//         await levelGroei(levelNieuw, real, userId);
+        // בדיקה אם הפוקימון עולה level
+        await levelGroei(levelNieuw, real, userId);
 
-//         // יצירת log
-//         // const pokemonNaamEscaped = escapeHtml(naamGoed);
+        // יצירת log
+        const pokemonNaamEscaped = escapeHtml(naamGoed);
 
-//         // // event language
-//         // const eventLanguage = getEventLanguage(session);
-//         // const eventTxt = await loadEventLanguage(eventLanguage);
+        const eventMessage = `<img src="/images/icons/blue.png" class="imglower" /> <b><a href="./pokemon-profile&id=${select.id}">${pokemonNaamEscaped}</a></b> עלה רמה!`;
 
-//         // const eventMessage = `<img src="${staticUrl}/images/icons/blue.png" class="imglower" /> ${sprintf(
-//         //   eventTxt.event_is_level_up || "Pokemon leveled up!",
-//         //   `<a href="./pokemon-profile&id=${select.id}">${pokemonNaamEscaped}</a>`
-//         // )}`;
+        // הוספת אירוע למשתמש
+        await query(
+          "INSERT INTO gebeurtenis (id, datum, ontvanger_id, bericht, gelezen) VALUES (NULL, NOW(), ?, ?, '0')",
+          [userId, eventMessage]
+        );
 
-//         // הוספת אירוע למשתמש
-//         // await query(
-//         //   "INSERT INTO gebeurtenis (datum, ontvanger_id, bericht, gelezen) VALUES (NOW(), ?, ?, '0')",
-//         //   [userId, eventMessage]
-//         // );
+        // תנאי יציאה מהלולאה - תיקון הלוגיקה
+        const remainingExp = real.exp - real.expnodig;
+        if (expnodig >= remainingExp) {
+          shouldContinue = false;
+        }
+      }
 
-//         // תנאי יציאה מהלולאה - תיקון הלוגיקה
-//         const remainingExp = real.exp - real.expnodig;
-//         if (expnodig >= remainingExp) {
-//           shouldContinue = false;
-//         }
-//       }
-
-//       if (iterations >= maxIterations) {
-//         console.warn(`Max iterations reached for pokemon ${select.id}`);
-//       }
-//     }
-//   }
-// };
+      if (iterations >= maxIterations) {
+        console.warn(`Max iterations reached for pokemon ${select.id}`);
+      }
+    }
+  }
+};
 
 async function nieuweStats(pokemon, levelNieuw, nieuweXp) {
   if (!pokemon || !pokemon.id) {
@@ -1448,4 +1439,239 @@ export async function applyAttackEffect(
   }
 
   return { messageAdd, shouldExit, jsonResponse };
+}
+
+export const rank = async (rankNumber) => {
+  const [rankQuery] = await query(
+    "SELECT * FROM `rank` WHERE `ranknummer`=? LIMIT 1",
+    [rankNumber]
+  );
+
+  return {
+    rankNumber,
+    rankName: `${rankNumber} - ${rankQuery.naam}`,
+  };
+};
+
+export const rankerbij = async (type, userId, acc_id) => {
+  let [playerRank] = await query(
+    "SELECT `g`.`username`,`g`.`user_id`,`g`.`rankexp`,`g`.`rankexpnodig`,`g`.`rank`,`g`.`premiumaccount` FROM `gebruikers` AS `g` INNER JOIN `rekeningen` AS `r` ON `g`.`acc_id`=`r`.`acc_id` WHERE `g`.`user_id`=? LIMIT 1",
+    userId
+  );
+  let premiumFlag = 1;
+  if (playerRank.premiumaccount > new Date()) premiumFlag += 0.5;
+
+  let typeNumber;
+  switch (type) {
+    case "race":
+      typeNumber = 1;
+      break;
+    case "werken":
+    case "whoisitquiz":
+      typeNumber = 2;
+      break;
+    case "attack":
+    case "jail":
+      typeNumber = 3;
+      break;
+    case "trainer":
+      typeNumber = 4;
+      break;
+    case "gym":
+    case "duel":
+      typeNumber = 5;
+      break;
+  }
+
+  const _rank = await rank(playerRank.rank);
+  const result = Math.round(
+    (((_rank.rankNumber / 0.5) * typeNumber) / 3) * premiumFlag
+  );
+  await query(
+    "UPDATE `gebruikers` SET `rankexp`=`rankexp`+ ? WHERE `user_id`=? LIMIT 1",
+    [result, userId]
+  );
+
+  playerRank.rankexp += result;
+  if (playerRank.rankexpnoding <= playerRank.rankexp) {
+    const rankExpOver = playerRank.rankexp - playerRank.rankexpnoding;
+    const newRank = ++playerRank.rank;
+
+    if (newRank <= 33) {
+      const [rankDetails] = await query(
+        "SELECT `naam`,`punten` FROM `rank` WHERE `ranknummer`=? LIMIT 1",
+        [newRank]
+      );
+
+      if (newRank >= 33) {
+        await query(
+          "UPDATE `gebruikers` SET `rank`='33', `rankexp`='1', `rankexpnodig`='170000000' WHERE `user_id`=?",
+          [userId]
+        );
+      } else {
+        await query(
+          "UPDATE `gebruikers` SET `rank`=?, `rankexp`=?, `rankexpnodig`=? WHERE `user_id`=?",
+          [newRank, rankExpOver, rankDetails.punten, userId]
+        );
+      }
+
+      const [rankUp] = await query(
+        "SELECT * FROM `rank_up` WHERE `rank`=? LIMIT 1",
+        [newRank]
+      );
+
+      if (rankUp.wild_id != "") {
+        const [user] = await query(
+          "SELECT COUNT(ps.wild_id) AS in_hand, g.premiumaccount, g.silver FROM gebruikers AS g INNER JOIN pokemon_speler AS ps ON g.user_id = ps.user_id WHERE g.user_id = ? AND ps.opzak='ja'",
+          [userId]
+        );
+        const date = new Date().toISOString().slice(0, 19).replace("T", " ");
+        const opzakNumber = user.in_hand + 1;
+
+        const [pokemon] = await query(
+          "SELECT `wild_id`,`groei`,`attack_base`,`defence_base`,`speed_base`,`spc.attack_base`,`spc.defence_base`,`hp_base`,`aanval_1`,`aanval_2`,`aanval_3`,`aanval_4`,`ability` FROM `pokemon_wild` WHERE `wild_id`=? LIMIT 1",
+          [rankUp.wild_id]
+        );
+        const abilities = pokemon.ability.split(",");
+        const randomAbility =
+          abilities[Math.floor(Math.random() * abilities.length)];
+
+        const newPokemon = await query(
+          "INSERT INTO `pokemon_speler` (`wild_id`,`aanval_1`,`aanval_2`,`aanval_3`,`aanval_4`) SELECT `wild_id`,`aanval_1`,`aanval_2`,`aanval_3`,`aanval_4` FROM `pokemon_wild` WHERE `wild_id`=?",
+          [pokemon.wild_id]
+        );
+        const pokemonId = newPokemon.insertId;
+
+        const [trait] = await query(
+          "SELECT * FROM `karakters` ORDER BY RAND() LIMIT 1"
+        );
+
+        const [experience] = await query(
+          "SELECT `punten` FROM `experience` WHERE `soort` = ? AND `level` = 6",
+          [pokemon.groei]
+        );
+
+        // יצירת IVs אקראיים (2-31)
+        const attack_iv = Math.floor(Math.random() * 30) + 2;
+        const defence_iv = Math.floor(Math.random() * 30) + 2;
+        const speed_iv = Math.floor(Math.random() * 30) + 2;
+        const spcattack_iv = Math.floor(Math.random() * 30) + 2;
+        const spcdefence_iv = Math.floor(Math.random() * 30) + 2;
+        const hp_iv = Math.floor(Math.random() * 30) + 2;
+
+        // חישוב הסטטים
+        const attackstat = Math.round(
+          (((attack_iv + 2 * pokemon.attack_base) * 5) / 100 + 5) *
+            trait.attack_add
+        );
+        const defencestat = Math.round(
+          (((defence_iv + 2 * pokemon.defence_base) * 5) / 100 + 5) *
+            trait.defence_add
+        );
+        const speedstat = Math.round(
+          (((speed_iv + 2 * pokemon.speed_base) * 5) / 100 + 5) *
+            trait.speed_add
+        );
+        const spcattackstat = Math.round(
+          (((spcattack_iv + 2 * pokemon.spc_attack_base) * 5) / 100 + 5) *
+            trait.spc_attack_add
+        );
+        const spcdefencestat = Math.round(
+          (((spcdefence_iv + 2 * pokemon.spc_defence_base) * 5) / 100 + 5) *
+            trait.spc_defence_add
+        );
+        const hpstat = Math.round(
+          ((hp_iv + 2 * pokemon.hp_base) * 5) / 100 + 10 + 5
+        );
+
+        await query(
+          "UPDATE `pokemon_speler` SET `level`='5',`karakter`=?,`expnodig`=?,`user_id`=?,`opzak`='nee',`opzak_nummer`=?,`ei`='1',`ei_tijd`=?,`attack_iv`=?,`defence_iv`=?,`speed_iv`=?,`spc.attack_iv`=?,`spc.defence_iv`=?,`hp_iv`=?,`attack`=?,`defence`=?,`speed`=?,`spc.attack`=?,`spc.defence`=?,`levenmax`=?,`leven`=?,`ability`=?,`capture_date`=? WHERE `id`=?",
+          [
+            trait.karakter_naam,
+            experience.punten,
+            userId,
+            opzakNumber,
+            date,
+            attack_iv,
+            defence_iv,
+            speed_iv,
+            spcattack_iv,
+            spcdefence_iv,
+            hp_iv,
+            attackstat,
+            defencestat,
+            speedstat,
+            spcattackstat,
+            spcdefencestat,
+            hpstat,
+            hpstat,
+            randomAbility,
+            date,
+            pokemonId,
+          ]
+        );
+
+        await query(
+          "UPDATE `gebruikers` SET `aantalpokemon`=`aantalpokemon`+'1' WHERE `user_id`=?",
+          [userId]
+        );
+      }
+
+      await query(
+        "UPDATE `gebruikers` SET `silver`=`silver`+ ?, `points`=`points`+ ? WHERE `user_id`=?",
+        [rankUp.silvers, rankUp.extra_points, userId]
+      );
+      await query(
+        "UPDATE `rekeningen` SET `gold`=`gold`+ ?,  WHERE `acc_id`=?",
+        [rankUp.golds, acc_id]
+      );
+
+      let msg =
+        "וכ<b>פרס</b> הוא זכה:<b>" +
+        highAmount(rankUp.silvers) +
+        '</b><img src="/images/icons/silver.png" title="" width="16" height="16" title="Silver">';
+      if (rankUp.golds > 0) {
+        msg +=
+          " ו <b>" +
+          highAmount(rankUp.golds) +
+          '</b> <img src="/images/icons/gold.png" title="" width="16" height="16" title="Gold">';
+      }
+
+      if (rankUp.wild_id != "") {
+        msg += "וביצת פוקימון";
+      }
+
+      if (rankUp.message != "") {
+        msg += " ו" + rankUp.message;
+      }
+
+      msg += "!";
+
+      const event =
+        '<img src="/images/icons/blue.png" class="imglower"/> ' +
+        `עלית בדירוג, הדירוג החדש שלך הוא: <b>${rankDetails.naam}</b>.` +
+        msg;
+      await query(
+        "INSERT INTO `gebeurtenis` (`datum`,`ontvanger_id`,`bericht`,`gelezen`) VALUES (NOW(),?,?,0)",
+        [userId, event]
+      );
+    }
+  }
+};
+
+function highAmount(amount) {
+  return Math.round(amount).toLocaleString("he-IL", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
+}
+
+function escapeHtml(str) {
+  if (typeof str !== "string") return str;
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
