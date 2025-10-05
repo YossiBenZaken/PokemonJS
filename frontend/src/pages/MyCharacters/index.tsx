@@ -73,6 +73,9 @@ export interface Character {
   geluksrad: number;
   items: UserItem;
   map_sprite: number;
+  quest_1: number;
+  quest_2: number;
+  daily_bonus: number;
 }
 
 

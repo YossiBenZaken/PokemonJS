@@ -3,6 +3,8 @@ import {
   AuthButton,
   AuthLink,
   AuthSection,
+  Badges,
+  Events,
   Golds,
   HeaderContainer,
   HeaderContent,
@@ -34,13 +36,19 @@ import {
   Package,
   Squirrel,
   User,
-  Users
+  Users,
 } from "lucide-react";
+import {
+  DailyBonusResponse,
+  dailyBonus,
+  getAssets,
+} from "../../api/system.api";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import React, { useEffect, useState } from "react";
+import Snackbar, { SnackbarCloseReason } from "@mui/material/Snackbar";
 
+import Alert from "@mui/material/Alert";
 import { AuthToken } from "../../api/auth.api";
-import { getAssets } from "../../api/system.api";
 import { getMyPokemons } from "../../api/character.api";
 import messsages from "../../assets/images/layout/mensagens.png";
 import profile from "../../assets/images/layout/perfil.png";
@@ -50,6 +58,9 @@ export const Header: React.FC = () => {
   const navigate = useNavigate();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [inHand, setInHand] = useState<number>(0);
+  const [open, setOpen] = useState<boolean>(false);
+  const [dailyBonusDetails, setDailyBonusDetails] =
+    useState<DailyBonusResponse>();
   const location = useLocation();
   const {
     selectedCharacter,
@@ -64,7 +75,9 @@ export const Header: React.FC = () => {
     setKarakters,
     setAttacks,
     setAbilities,
-    setItemInfo
+    setItemInfo,
+    setConfig,
+    config,
   } = useGame();
   const navigationItems = [
     { path: "/", label: "בית", icon: <Home size={20} /> },
@@ -72,13 +85,17 @@ export const Header: React.FC = () => {
     { path: "/town", label: "מחוז", icon: <Map size={20} /> },
     { path: "/items", label: "חפצים", icon: <Package size={20} /> },
     { path: "/house-shop", label: "מוכר הבתים", icon: <Home size={20} /> },
-    { path: '/statistics', label: 'סטטיסטיקות', icon: <ChartColumnIncreasing size={20} />},
-    { path: '/badges', label: 'תגים', icon: <Badge size={20} />},
-    { path: '/fishing', label: 'דיג', icon: <Fish size={20} />},
-    { path: '/judge', label: 'שפוט', icon: <Gavel size={20} />},
-    { path: '/safari', label: 'ספארי', icon: <Squirrel size={20} />},
-    { path: '/attack/map', label: 'מפה', icon: <Map size={20} />},
-    { path: '/information', label: 'מידע', icon: <Info size={20} />}
+    {
+      path: "/statistics",
+      label: "סטטיסטיקות",
+      icon: <ChartColumnIncreasing size={20} />,
+    },
+    { path: "/badges", label: "תגים", icon: <Badge size={20} /> },
+    { path: "/fishing", label: "דיג", icon: <Fish size={20} /> },
+    { path: "/judge", label: "שפוט", icon: <Gavel size={20} /> },
+    { path: "/safari", label: "ספארי", icon: <Squirrel size={20} /> },
+    { path: "/attack/map", label: "מפה", icon: <Map size={20} /> },
+    { path: "/information", label: "מידע", icon: <Info size={20} /> },
   ];
 
   useEffect(() => {
@@ -103,6 +120,7 @@ export const Header: React.FC = () => {
       setAttacks(res.data.attacks);
       setAbilities(res.data.abilities);
       setItemInfo(res.data.itemInfo);
+      setConfig(res.data.config);
     });
   }, [setAbilities, setAttacks, setItemInfo, setKarakters, setRanks]);
 
@@ -158,8 +176,76 @@ export const Header: React.FC = () => {
     const totalPokemon = 1000;
     return Math.round((uniquePokemon.length / totalPokemon) * 100);
   };
+
+  function isSeason() {
+    const month = new Date().getMonth() + 1; // getMonth() מחזיר 0–11, לכן מוסיפים 1
+    let season_act = "";
+    let season_number = 0;
+
+    if ([1, 5, 9].includes(month)) {
+      season_act = "אביב";
+      season_number = 1;
+    } else if ([2, 6, 10].includes(month)) {
+      season_act = "קיץ";
+      season_number = 2;
+    } else if ([3, 7, 11].includes(month)) {
+      season_act = "סתיו";
+      season_number = 3;
+    } else if ([4, 8, 12].includes(month)) {
+      season_act = "חורף";
+      season_number = 4;
+    }
+
+    return [season_act, season_number];
+  }
+
+  const getDailyBonus = async () => {
+    const response = await dailyBonus();
+    setDailyBonusDetails(response);
+    setOpen(true);
+  };
+
+  const handleSnackBarClose = (
+    event?: React.SyntheticEvent | Event,
+    reason?: SnackbarCloseReason
+  ) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    setOpen(false);
+  };
+
+  const [seasonName, seasonNumber] = isSeason();
+  const bonusArray = ["Double", "Triple", "Quadruple"];
+  const expConfig = config.find((c) => c.config === "exp");
+  const silverConfig = config.find((c) => c.config === "silver");
   return (
     <>
+      <Snackbar
+        open={open}
+        autoHideDuration={5000}
+        onClose={handleSnackBarClose}
+        dir="rtl"
+        anchorOrigin={{ horizontal: "center", vertical: "top" }}
+      >
+        <Alert
+          severity={dailyBonusDetails?.success ? "success" : "error"}
+          sx={{ width: "100%" }}
+          dir="rtl"
+          icon={false}
+          slots={{
+            action: undefined,
+            closeButton: undefined
+          }}
+        >
+          {dailyBonusDetails && (
+            <span
+              dangerouslySetInnerHTML={{ __html: dailyBonusDetails.message }}
+            />
+          )}
+        </Alert>
+      </Snackbar>
       <HeaderHubContainer>
         <HeaderHub>
           <Hub>
@@ -169,7 +255,7 @@ export const Header: React.FC = () => {
                   width: 600,
                   position: "absolute",
                   right: 0,
-                  zIndex: 1,
+                  zIndex: 0,
                 }}
               >
                 <Link to={""}>
@@ -342,9 +428,93 @@ export const Header: React.FC = () => {
           </Hub>
           <Hub style={{ padding: 0 }}>
             <HubHud>
-              <HubHudLine style={{ width: "45%" }} />
-              <HubHudLine style={{ width: 160 }} />
-              <HubHudLine style={{ width: 200 }}>
+              <HubHudLine style={{ width: 240 }}>
+                <Events>
+                  <img
+                    src={require(`../../assets/images/icons/avatar/${seasonNumber}-season.png`)}
+                    title={"במהלך החודש הזה אנחנו בתחנה " + seasonName}
+                    alt={"במהלך החודש הזה אנחנו בתחנה " + seasonName}
+                    style={{
+                      width: 49,
+                      marginTop: -3,
+                      marginRight: -3,
+                    }}
+                  />
+                  {selectedCharacter &&
+                    selectedCharacter.quest_1 + selectedCharacter.quest_2 <
+                      2 && (
+                      <>
+                        <Badges
+                          style={{
+                            float: "right",
+                            marginLeft: -20,
+                            marginTop: 23,
+                            zIndex: 100,
+                            position: "relative",
+                            cursor: "pointer",
+                            width: 13,
+                            height: 13,
+                            lineHeight: "11px",
+                            fontSize: 8,
+                          }}
+                          onClick={() => navigate("/daily-quests")}
+                        >
+                          {2 -
+                            (selectedCharacter["quest_1"] +
+                              selectedCharacter["quest_2"])}
+                        </Badges>
+                        <a
+                          href="./daily_quests"
+                          className="noanimate"
+                          style={{ display: "block" }}
+                        >
+                          <img
+                            src="/images/icons/avatar/quests.png"
+                            title="לחץ כאן כדי לצפות במשימות היומיות שלך."
+                            alt="לחץ כאן כדי לצפות במשימות היומיות שלך."
+                          />
+                        </a>
+                      </>
+                    )}
+                  {selectedCharacter &&
+                    selectedCharacter.daily_bonus + 86400 <
+                      new Date().getTime() / 1000 && (
+                      <img
+                        src={require("../../assets/images/icons/avatar/pokeball.png")}
+                        alt="לחץ כאן כדי לקבל את הבונוס היומי שלך."
+                        title="לחץ כאן כדי לקבל את הבונוס היומי שלך."
+                        onClick={getDailyBonus}
+                      />
+                    )}
+                  {expConfig &&
+                    Number(expConfig.valor) > 1 &&
+                    Number(expConfig.valor) < 5 && (
+                      <img
+                        src={require(`../../assets/images/icons/avatar/${expConfig.valor}x-exp.png`)}
+                        title={`קמפיין ${
+                          bonusArray[Number(expConfig.valor) - 2]
+                        } EXP בעיצומו!`}
+                        alt={`קמפיין ${
+                          bonusArray[Number(expConfig.valor) - 2]
+                        } EXP בעיצומו!`}
+                      />
+                    )}
+                  {silverConfig &&
+                    Number(silverConfig.valor) > 1 &&
+                    Number(silverConfig.valor) < 5 && (
+                      <img
+                        src={require(`../../assets/images/icons/avatar/${silverConfig.valor}x-silver.png`)}
+                        title={`קמפיין ${
+                          bonusArray[Number(silverConfig.valor) - 2]
+                        } סילבר בעיצומו!`}
+                        alt={`קמפיין ${
+                          bonusArray[Number(silverConfig.valor) - 2]
+                        } סילבר בעיצומו!`}
+                      />
+                    )}
+                </Events>
+              </HubHudLine>
+              <HubHudLine style={{ width: 280 }}>
                 <MyPokemon>
                   {inHand > 0 &&
                     myPokemons.map((pokemon) => {

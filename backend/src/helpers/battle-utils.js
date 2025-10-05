@@ -1659,7 +1659,7 @@ export const rankerbij = async (type, userId, acc_id) => {
   }
 };
 
-function highAmount(amount) {
+export function highAmount(amount) {
   return Math.round(amount).toLocaleString("he-IL", {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,

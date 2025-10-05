@@ -27,7 +27,14 @@ export interface GetAssetsResponse {
     attacks: Attack[];
     abilities: Ability[];
     itemInfo: ItemInfo[];
+    config: Config[];
   };
+}
+
+export interface Config {
+  id: number;
+  config: string;
+  valor: string;
 }
 
 export interface GetOfficialMessageResponse {
@@ -41,10 +48,20 @@ export interface GetOfficialMessageResponse {
   }[]
 }
 
+export interface DailyBonusResponse {
+  success: boolean;
+  message: string;
+}
+
 export const getOnlineUsers = async (): Promise<GetOnlineUsersResponse> => {
   const { data } = await axiosInstance.get("/system/online");
   return data;
 };
+
+export const dailyBonus = async(): Promise<DailyBonusResponse> => {
+  const { data } = await axiosInstance.get<DailyBonusResponse>("/system/daily-bonus");
+  return data;
+}
 
 export const getAssets = async (): Promise<GetAssetsResponse> => {
   const { data } = await axiosInstance.get("/system/assets");
