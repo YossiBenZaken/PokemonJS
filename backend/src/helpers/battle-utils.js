@@ -1456,7 +1456,7 @@ export const rank = async (rankNumber) => {
 export const rankerbij = async (type, userId, acc_id) => {
   let [playerRank] = await query(
     "SELECT `g`.`username`,`g`.`user_id`,`g`.`rankexp`,`g`.`rankexpnodig`,`g`.`rank`,`g`.`premiumaccount` FROM `gebruikers` AS `g` INNER JOIN `rekeningen` AS `r` ON `g`.`acc_id`=`r`.`acc_id` WHERE `g`.`user_id`=? LIMIT 1",
-    userId
+    [userId]
   );
   let premiumFlag = 1;
   if (playerRank.premiumaccount > new Date()) premiumFlag += 0.5;
