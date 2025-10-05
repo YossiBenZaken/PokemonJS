@@ -477,7 +477,7 @@ const WildAttack: React.FC = () => {
         if (response.hp <= 0) {
           // Handle experience gain
           if (response.expGained && response.levelGained) {
-            // expChange(response.expGained, response.levelGained);
+            expChange(response.expGained, response.levelGained);
           }
 
           if (response.battleFinished) {
@@ -495,6 +495,10 @@ const WildAttack: React.FC = () => {
     },
     [battleState.attackTimer, dispatchBattle, pokemonInfo?.naam, showEndScreen]
   );
+
+  const expChange = (expGained: number, levelGained: number) => {
+    setPokemonInfo({ ...pokemonInfo!, exp: expGained, expnodig: levelGained });
+  };
 
   const handleAttackClick = useCallback(
     async (attackName: string, isZMove = false) => {
@@ -876,8 +880,13 @@ const WildAttack: React.FC = () => {
         case "balls":
           setShowPotionsScreen(false);
           setSelectedPotion("");
-          if(attackLog?.id && computerInfo?.effect != null) {
-            const response = await attackUsePokeball(attackLog.id, name, item.soort, computerInfo.effect);
+          if (attackLog?.id && computerInfo?.effect != null) {
+            const response = await attackUsePokeball(
+              attackLog.id,
+              name,
+              item.soort,
+              computerInfo.effect
+            );
             handleUsePokeballStatus(response);
           }
           break;
@@ -891,12 +900,7 @@ const WildAttack: React.FC = () => {
 
   const handleUsePokeballStatus = useCallback(
     (response: AttackUsePokeballResponse) => {
-      const {
-        good,
-        message,
-        name,
-        ballLeft,drop,type
-      } = response;
+      const { good, message, name, ballLeft, drop, type } = response;
       setBattleMessage(message);
 
       // Update item quantity
@@ -914,7 +918,7 @@ const WildAttack: React.FC = () => {
         if (!good) {
           // Update item quantity
           setTimeout(() => {
-            navigate('/');
+            navigate("/");
           }, 4000);
         } else {
           dispatchBattle({ type: "SET_SPELER_ATTACK", value: false });
@@ -1114,7 +1118,7 @@ const WildAttack: React.FC = () => {
                         <ExpProgress
                           id="pokemon_exp"
                           style={{
-                            width: `${calculatePercent(pokemonInfo!)}%`,
+                            width: `${Math.round((pokemonInfo.exp / pokemonInfo.expnodig) * 100)}%`,
                           }}
                         />
                       </HpRed>

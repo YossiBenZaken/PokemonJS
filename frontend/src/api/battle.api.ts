@@ -190,10 +190,10 @@ export interface BattleResponse {
   computerEffect?: string;
   computerId?: string;
   damage: string;
-  expGained?: string;
+  expGained?: number;
   hp: number;
   knockedOut: boolean;
-  levelGained?: string;
+  levelGained?: number;
   maxHp: number;
   message: string;
   nextTurn: boolean;

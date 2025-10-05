@@ -525,7 +525,7 @@ const TrainerAttack: React.FC = () => {
         if (response.hp <= 0) {
           // Handle experience gain
           if (response.expGained && response.levelGained) {
-            // expChange(response.expGained, response.levelGained);
+            expChange(response.expGained, response.levelGained);
           }
 
           if (!response.battleFinished) {
@@ -560,6 +560,10 @@ const TrainerAttack: React.FC = () => {
       trainerChange,
     ]
   );
+
+  const expChange = (expGained: number, levelGained: number) => {
+    setPokemonInfo({...pokemonInfo!, exp: expGained, expnodig: levelGained});
+  }
 
   // Trainer change Pokemon response handler
   const trainerChangePokemon = useCallback(
@@ -1184,7 +1188,7 @@ const TrainerAttack: React.FC = () => {
                         <ExpProgress
                           id="pokemon_exp"
                           style={{
-                            width: `${calculatePercent(pokemonInfo!)}%`,
+                            width: `${Math.round((pokemonInfo.exp / pokemonInfo.expnodig) * 100)}%`,
                           }}
                         />
                       </HpRed>
