@@ -321,7 +321,7 @@ export const pokemon_grow = async (userId) => {
 
     const naamGoed = await pokemonNaam(select.naam, select.roepnaam);
 
-    if (select.level < 100 && select.exp >= select.expnoding) {
+    if (select.level < 100 && select.exp >= select.expnodig) {
       let shouldContinue = true;
       let iterations = 0;
       const maxIterations = 10; // הגנה מלולאה אינסופית

@@ -132,7 +132,7 @@ export const finishWildBattle = async (req, res) => {
   }
   await pokemonPlayerHandUpdate(userId);
 
-  pokemon_grow(userId);
+  await pokemon_grow(userId);
 
   // מחיקה של הקרב
   await removeAttack(userId, aanval_log.id);
