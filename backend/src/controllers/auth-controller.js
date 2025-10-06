@@ -461,6 +461,24 @@ export const authToken = async (req, res) => {
     "SELECT gold FROM `rekeningen` WHERE `acc_id` = ?",
     [user.acc_id]
   );
+  const eventsCount = (
+    await query(
+      "SELECT `id` FROM `gebeurtenis` WHERE `ontvanger_id`=? AND `gelezen`='0'",
+      [user_id]
+    )
+  ).length;
+
+  const mailsCount = (
+    await query(
+      "SELECT * FROM `conversas` WHERE `trainer_2_hidden`='0' AND `id` = ANY (SELECT DISTINCT (`conversa`) FROM `conversas_messages` WHERE `reciever`=? AND `seen`='0')",
+      [user_id]
+    )
+  ).length;
+  const officialCount = (await query(
+    "SELECT `id` FROM `official_message` WHERE `hidden`='0' AND `id` NOT IN (SELECT `id_msg` FROM `official_message_read` WHERE `id_user`=?)",
+    [user_id]
+  )).length;
+
   res.json({
     success: true,
     data: {
@@ -469,6 +487,8 @@ export const authToken = async (req, res) => {
         items: userItem,
         ...account,
       },
+      eventsCount,
+      unreadMessage: mailsCount + officialCount
     },
   });
 };
