@@ -15,6 +15,7 @@ import Slots from "./Casino/Slots";
 import Specialists from "./Specialists";
 import TownPage from "./index";
 import Traders from "./Traders";
+import TransferListPage from "./TransferList";
 import TravelPage from "./Travel";
 import Vault from "./Casino/Vault";
 import WhoIs from "./Casino/WhoIs";
@@ -138,6 +139,14 @@ export const TownRoutes = (
       element={
         <PrivateRoute>
           <TravelPage />
+        </PrivateRoute>
+      }
+    />
+    <Route
+      path="/transferlist"
+      element={
+        <PrivateRoute>
+          <TransferListPage />
         </PrivateRoute>
       }
     />
