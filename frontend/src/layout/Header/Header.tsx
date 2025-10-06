@@ -14,6 +14,9 @@ import {
   HubHud,
   HubHudLine,
   HubLogo,
+  MobileMenu,
+  MobileMenuButton,
+  MobileMenuOverlay,
   MyPokemon,
   NavLink,
   Navigation,
@@ -22,21 +25,39 @@ import {
   UserMenuItem,
 } from "./styled";
 import {
+  AppBar,
+  Button,
+  CssBaseline,
+  Divider,
+  Drawer,
+  IconButton,
+  LinearProgress,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Toolbar,
+  Tooltip,
+  Typography,
+} from "@mui/material";
+import {
   Badge,
   BellRing,
-  BookOpen,
   ChartColumnIncreasing,
+  Coins,
   Computer,
   Fish,
   Gavel,
+  Gem,
   Home,
+  Inbox,
   Info,
   LogOut,
   Map,
+  Menu as MenuIcon,
   Package,
   Squirrel,
-  User,
-  Users,
+  Users
 } from "lucide-react";
 import {
   DailyBonusResponse,
@@ -46,22 +67,67 @@ import {
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import Snackbar, { SnackbarCloseReason } from "@mui/material/Snackbar";
+import { styled, useTheme } from "@mui/material/styles";
 
 import Alert from "@mui/material/Alert";
 import { AuthToken } from "../../api/auth.api";
+import { Box } from "@mui/system";
 import { getMyPokemons } from "../../api/character.api";
-import messsages from "../../assets/images/layout/mensagens.png";
-import profile from "../../assets/images/layout/perfil.png";
 import { useGame } from "../../contexts/GameContext";
 
-export const Header: React.FC = () => {
+const drawerWidth = 220;
+
+// Drawer פתוח
+const OpenedDrawer = styled(Drawer)(({ theme }) => ({
+  width: drawerWidth,
+  flexShrink: 0,
+  whiteSpace: "nowrap",
+  boxSizing: "border-box",
+  "& .MuiDrawer-paper": {
+    width: drawerWidth,
+    transition: theme.transitions.create("width", {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+    overflowX: "hidden",
+    background: "#1e293b",
+    color: "#e2e8f0",
+    border: "none",
+  },
+}));
+
+// Drawer סגור (collapsed)
+const ClosedDrawer = styled(Drawer)(({ theme }) => ({
+  flexShrink: 0,
+  whiteSpace: "nowrap",
+  boxSizing: "border-box",
+  "& .MuiDrawer-paper": {
+    width: theme.spacing(8),
+    transition: theme.transitions.create("width", {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen,
+    }),
+    overflowX: "hidden",
+    background: "#1e293b",
+    color: "#e2e8f0",
+    border: "none",
+  },
+}));
+
+export const Header: React.FC<{ children?: React.ReactNode }> = ({
+  children,
+}) => {
+  const theme = useTheme();
   const navigate = useNavigate();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [inHand, setInHand] = useState<number>(0);
   const [open, setOpen] = useState<boolean>(false);
+  const [drawer, setDrawer] = useState<boolean>(false);
   const [dailyBonusDetails, setDailyBonusDetails] =
     useState<DailyBonusResponse>();
   const location = useLocation();
+  const [notification, setNotification] = useState(0);
+  const [unreadMessages, seUnreadMessages] = useState(0);
   const {
     selectedCharacter,
     setSelectedCharacter,
@@ -102,6 +168,8 @@ export const Header: React.FC = () => {
     const checkAuth = async () => {
       const response = await AuthToken();
       if (response.success) {
+        setNotification(response.data.eventsCount);
+        seUnreadMessages(response.data.unreadMessage);
         setSelectedCharacter(response.data.user);
         setIsLoggedIn(true);
       } else {
@@ -236,7 +304,7 @@ export const Header: React.FC = () => {
           icon={false}
           slots={{
             action: undefined,
-            closeButton: undefined
+            closeButton: undefined,
           }}
         >
           {dailyBonusDetails && (
@@ -246,69 +314,132 @@ export const Header: React.FC = () => {
           )}
         </Alert>
       </Snackbar>
-      <HeaderHubContainer>
-        <HeaderHub>
-          <Hub>
-            <HubHud>
-              <HubHudLine
-                style={{
-                  width: 600,
-                  position: "absolute",
-                  right: 0,
-                  zIndex: 0,
-                }}
-              >
-                <Link to={""}>
-                  <HubLogo />
-                </Link>
-              </HubHudLine>
-              <HubHudLine style={{ paddingLeft: 30 }}>
-                <Silvers>
-                  <Add />
-                  <p>{selectedCharacter?.silver}</p>
-                </Silvers>
-              </HubHudLine>
-              <HubHudLine style={{ paddingLeft: 30 }}>
-                <Golds>
-                  <Add />
-                  <p>{selectedCharacter?.gold}</p>
-                </Golds>
-              </HubHudLine>
+      <Box
+        sx={{ display: "flex", direction: "rtl" }}
+        onClick={() => isUserMenuOpen && setIsUserMenuOpen(false)}
+      >
+        <CssBaseline />
 
-              <HubHudLine style={{ paddingLeft: 10 }}>
-                <Link to={"inbox"}>
-                  {/* <Badges
-                    style={{
-                      float: "left",
-                      marginRight: -20,
-                      marginTop: -8,
-                      zIndex: 100,
-                      position: "relative",
-                    }}
-                  >
-                    2
-                  </Badges> */}
-                  <img src={messsages} alt="messages" />
-                </Link>
-              </HubHudLine>
-              <HubHudLine>
-                <img
-                  src={profile}
-                  alt="profile"
+        <AppBar
+          position="fixed"
+          sx={{
+            background: "#0f172a",
+            color: "white",
+            zIndex: theme.zIndex.drawer + 1,
+            direction: "rtl",
+          }}
+        >
+          <Toolbar>
+            {isLoggedIn && (
+              <IconButton
+                color="inherit"
+                edge="start"
+                onClick={() => setDrawer(!drawer)}
+                sx={{ marginLeft: 2 }}
+              >
+                <MenuIcon size={22} />
+              </IconButton>
+            )}
+            <Typography variant="h6" noWrap component="div">
+              פוקימון אונליין
+            </Typography>
+            <Events>
+              <img
+                src={require(`../../assets/images/icons/avatar/${seasonNumber}-season.png`)}
+                title={"במהלך החודש הזה אנחנו בתחנה " + seasonName}
+                alt={"במהלך החודש הזה אנחנו בתחנה " + seasonName}
+                style={{
+                  width: 49,
+                  marginTop: -3,
+                  marginRight: -3,
+                }}
+              />
+              {selectedCharacter &&
+                selectedCharacter.quest_1 + selectedCharacter.quest_2 < 2 && (
+                  <>
+                    <Badges
+                      style={{
+                        float: "right",
+                        marginLeft: -20,
+                        marginTop: 23,
+                        zIndex: 100,
+                        position: "relative",
+                        cursor: "pointer",
+                        width: 13,
+                        height: 13,
+                        lineHeight: "11px",
+                        fontSize: 8,
+                      }}
+                      onClick={() => navigate("/daily-quests")}
+                    >
+                      {2 -
+                        (selectedCharacter["quest_1"] +
+                          selectedCharacter["quest_2"])}
+                    </Badges>
+                    <a
+                      href="./daily_quests"
+                      className="noanimate"
+                      style={{ display: "block" }}
+                    >
+                      <img
+                        src="/images/icons/avatar/quests.png"
+                        title="לחץ כאן כדי לצפות במשימות היומיות שלך."
+                        alt="לחץ כאן כדי לצפות במשימות היומיות שלך."
+                      />
+                    </a>
+                  </>
+                )}
+              {selectedCharacter &&
+                selectedCharacter.daily_bonus + 86400 <
+                  new Date().getTime() / 1000 && (
+                  <img
+                    src={require("../../assets/images/icons/avatar/pokeball.png")}
+                    alt="לחץ כאן כדי לקבל את הבונוס היומי שלך."
+                    title="לחץ כאן כדי לקבל את הבונוס היומי שלך."
+                    onClick={getDailyBonus}
+                  />
+                )}
+              {expConfig &&
+                Number(expConfig.valor) > 1 &&
+                Number(expConfig.valor) < 5 && (
+                  <img
+                    src={require(`../../assets/images/icons/avatar/${expConfig.valor}x-exp.png`)}
+                    title={`קמפיין ${
+                      bonusArray[Number(expConfig.valor) - 2]
+                    } EXP בעיצומו!`}
+                    alt={`קמפיין ${
+                      bonusArray[Number(expConfig.valor) - 2]
+                    } EXP בעיצומו!`}
+                  />
+                )}
+              {silverConfig &&
+                Number(silverConfig.valor) > 1 &&
+                Number(silverConfig.valor) < 5 && (
+                  <img
+                    src={require(`../../assets/images/icons/avatar/${silverConfig.valor}x-silver.png`)}
+                    title={`קמפיין ${
+                      bonusArray[Number(silverConfig.valor) - 2]
+                    } סילבר בעיצומו!`}
+                    alt={`קמפיין ${
+                      bonusArray[Number(silverConfig.valor) - 2]
+                    } סילבר בעיצומו!`}
+                  />
+                )}
+            </Events>
+            {isLoggedIn && selectedCharacter && (
+              <>
+                <Typography
+                  sx={{
+                    marginRight: "auto",
+                    fontSize: "0.9rem",
+                    cursor: "pointer",
+                  }}
                   onClick={toggleUserMenu}
-                  style={{ cursor: "pointer" }}
-                />
+                >
+                  שלום, {selectedCharacter.username}
+                </Typography>
                 {isUserMenuOpen && (
                   <UserMenu>
-                    <UserMenuItem
-                      onClick={() => {
-                        navigate("/profile/" + selectedCharacter?.username);
-                        handleClose();
-                      }}
-                    >
-                      <User size={16} />
-                      <span>פרופיל</span>
-                    </UserMenuItem>
                     <UserMenuItem
                       onClick={() => {
                         navigate("/my-characters");
@@ -317,19 +448,6 @@ export const Header: React.FC = () => {
                     >
                       <Users size={16} />
                       <span>השחקנים שלי</span>
-                    </UserMenuItem>
-                    <UserMenuItem
-                      onClick={() => {
-                        navigate("/events");
-                        handleClose();
-                      }}
-                    >
-                      <BellRing size={16} />
-                      <span>התראות</span>
-                    </UserMenuItem>
-                    <UserMenuItem>
-                      <BookOpen size={16} />
-                      <span>הפוקימונים שלי</span>
                     </UserMenuItem>
                     <hr
                       style={{
@@ -344,232 +462,292 @@ export const Header: React.FC = () => {
                     </UserMenuItem>
                   </UserMenu>
                 )}
-              </HubHudLine>
-            </HubHud>
-          </Hub>
-          <Hub style={{ padding: 0 }}>
-            <HubHud>
-              <HubHudLine style={{ width: "100%" }}>
-                <div
-                  style={{
-                    background: `url(${require("../../assets/images/characters/" +
-                      (selectedCharacter?.character ?? "Ash") +
-                      "/bar.png")}) no-repeat`,
-                    borderRadius: 5,
-                    float: "left",
-                    direction: "ltr",
-                  }}
-                >
-                  <div
-                    style={{
-                      background: `url(${require("../../assets/images/layout/player.png")}) no-repeat`,
-                      width: 520,
-                      height: 93,
-                    }}
-                  >
-                    <ul
-                      style={{
-                        listStyle: "none",
-                        paddingTop: 16,
-                        color: "white",
-                        fontSize: 12,
-                        paddingInlineStart: 40,
+              </>
+            )}
+          </Toolbar>
+        </AppBar>
+        {/* Sidebar רק אם מחובר */}
+        {isLoggedIn && (
+          <>
+            {drawer ? (
+              <OpenedDrawer variant="permanent" anchor="right">
+                <Toolbar />
+                <List>
+                  {/* פרטי השחקן */}
+                  <Box sx={{ p: 2, textAlign: "right" }}>
+                    <Typography
+                      variant="subtitle1"
+                      sx={{ fontWeight: 600, cursor: "pointer" }}
+                      onClick={() => {
+                        navigate("/profile/" + selectedCharacter?.username);
                       }}
                     >
-                      <li
-                        style={{
-                          paddingLeft: 103,
-                          width: 224,
-                          textAlign: "center",
-                        }}
-                      >
-                        <Link to={"/profile/" + selectedCharacter?.username!}>
-                          {selectedCharacter?.username}
-                        </Link>
-                      </li>
-                      <li
-                        style={{
-                          paddingLeft: 103,
-                          width: 224,
-                          textAlign: "center",
-                        }}
-                      >
-                        {selectedCharacter?.wereld}
-                      </li>
-                      <li
-                        style={{
-                          paddingLeft: 85,
-                          width: 256,
-                          textAlign: "center",
-                        }}
-                      >
-                        {selectedCharacter?.rank} -{" "}
+                      {selectedCharacter?.username}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: "#94a3b8" }}>
+                      מחוז: {selectedCharacter?.wereld}
+                    </Typography>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        mt: 1,
+                        mb: 0.5,
+                        fontSize: "0.9rem",
+                      }}
+                    >
+                      <span>
+                        רמה {selectedCharacter?.rank} -{" "}
                         {
                           ranks?.find((r) => r.id === selectedCharacter?.rank)
                             ?.naam
                         }{" "}
-                        ({rankPercent()}%)
-                      </li>
-                      <li
-                        style={{
-                          paddingLeft: 85,
-                          width: 275,
-                          textAlign: "center",
-                          paddingTop: 2,
+                      </span>
+                      <span>{rankPercent()}%</span>
+                    </Box>
+                    <LinearProgress
+                      variant="determinate"
+                      value={rankPercent()}
+                      sx={{
+                        height: 6,
+                        borderRadius: 3,
+                        backgroundColor: "#334155",
+                        "& .MuiLinearProgress-bar": {
+                          backgroundColor: "#38bdf8",
+                        },
+                      }}
+                    />
+
+                    <Divider sx={{ my: 1.5, background: "#475569" }} />
+
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                        mb: 0.5,
+                      }}
+                    >
+                      <Coins size={16} />
+                      <Typography variant="body2">
+                        סילבר: {selectedCharacter?.silver?.toLocaleString()}
+                      </Typography>
+                    </Box>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                        mb: 0.5,
+                      }}
+                    >
+                      <Gem size={16} />
+                      <Typography variant="body2">
+                        גולד: {selectedCharacter?.gold?.toLocaleString()}
+                      </Typography>
+                    </Box>
+
+                    <Typography variant="body2" sx={{ mt: 1 }}>
+                      פוקימונים: {catchPokemonPercent()}%
+                    </Typography>
+
+                    <Divider sx={{ mt: 2, mb: 1.5, background: "#475569" }} />
+                  </Box>
+
+                  {navigationItems.map((item) => (
+                    <ListItemButton
+                      key={item.path}
+                      component={Link}
+                      to={item.path}
+                      selected={isActiveRoute(item.path)}
+                      sx={{
+                        color: isActiveRoute(item.path) ? "#fff" : "#cbd5e1",
+                        "&.Mui-selected": {
+                          backgroundColor: "#334155",
+                        },
+                      }}
+                    >
+                      <ListItemIcon sx={{ color: "inherit", minWidth: 36 }}>
+                        {item.icon}
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={item.label}
+                        sx={{ textAlign: "right" }}
+                      />
+                    </ListItemButton>
+                  ))}
+                  <ListItemButton
+                    component={Link}
+                    to={"/events"}
+                    selected={isActiveRoute("/events")}
+                    sx={{
+                      color: isActiveRoute("/events") ? "#fff" : "#cbd5e1",
+                      "&.Mui-selected": {
+                        backgroundColor: "#334155",
+                      },
+                    }}
+                  >
+                    <ListItemIcon sx={{ color: "inherit", minWidth: 36 }}>
+                      <BellRing size={20} />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={`התראות ${
+                        notification > 0 ? `(${notification})` : ""
+                      }`}
+                      sx={{ textAlign: "right" }}
+                    />
+                  </ListItemButton>
+                  <ListItemButton
+                    component={Link}
+                    to={"/inbox"}
+                    selected={isActiveRoute("/inbox")}
+                    sx={{
+                      color: isActiveRoute("/inbox") ? "#fff" : "#cbd5e1",
+                      "&.Mui-selected": {
+                        backgroundColor: "#334155",
+                      },
+                    }}
+                  >
+                    <ListItemIcon sx={{ color: "inherit", minWidth: 36 }}>
+                      <Inbox size={20} />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={`הודעות ${
+                        unreadMessages > 0 ? `(${unreadMessages})` : ""
+                      }`}
+                      sx={{ textAlign: "right" }}
+                    />
+                  </ListItemButton>
+                </List>
+              </OpenedDrawer>
+            ) : (
+              <ClosedDrawer variant="permanent" anchor="right">
+                <Toolbar />
+                <List>
+                  {navigationItems.map((item) => (
+                    <Tooltip
+                      title={item.label}
+                      placement="left"
+                      arrow
+                      key={item.path}
+                    >
+                      <ListItemButton
+                        component={Link}
+                        to={item.path}
+                        selected={isActiveRoute(item.path)}
+                        sx={{
+                          justifyContent: "center",
+                          color: isActiveRoute(item.path) ? "#fff" : "#cbd5e1",
+                          "&.Mui-selected": {
+                            backgroundColor: "#334155",
+                          },
                         }}
                       >
-                        {catchPokemonPercent()}% of all Pokémon
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </HubHudLine>
-            </HubHud>
-          </Hub>
-          <Hub style={{ padding: 0 }}>
-            <HubHud>
-              <HubHudLine style={{ width: 240 }}>
-                <Events>
-                  <img
-                    src={require(`../../assets/images/icons/avatar/${seasonNumber}-season.png`)}
-                    title={"במהלך החודש הזה אנחנו בתחנה " + seasonName}
-                    alt={"במהלך החודש הזה אנחנו בתחנה " + seasonName}
-                    style={{
-                      width: 49,
-                      marginTop: -3,
-                      marginRight: -3,
-                    }}
-                  />
-                  {selectedCharacter &&
-                    selectedCharacter.quest_1 + selectedCharacter.quest_2 <
-                      2 && (
-                      <>
-                        <Badges
-                          style={{
-                            float: "right",
-                            marginLeft: -20,
-                            marginTop: 23,
-                            zIndex: 100,
-                            position: "relative",
-                            cursor: "pointer",
-                            width: 13,
-                            height: 13,
-                            lineHeight: "11px",
-                            fontSize: 8,
-                          }}
-                          onClick={() => navigate("/daily-quests")}
-                        >
-                          {2 -
-                            (selectedCharacter["quest_1"] +
-                              selectedCharacter["quest_2"])}
-                        </Badges>
-                        <a
-                          href="./daily_quests"
-                          className="noanimate"
-                          style={{ display: "block" }}
-                        >
-                          <img
-                            src="/images/icons/avatar/quests.png"
-                            title="לחץ כאן כדי לצפות במשימות היומיות שלך."
-                            alt="לחץ כאן כדי לצפות במשימות היומיות שלך."
-                          />
-                        </a>
-                      </>
-                    )}
-                  {selectedCharacter &&
-                    selectedCharacter.daily_bonus + 86400 <
-                      new Date().getTime() / 1000 && (
-                      <img
-                        src={require("../../assets/images/icons/avatar/pokeball.png")}
-                        alt="לחץ כאן כדי לקבל את הבונוס היומי שלך."
-                        title="לחץ כאן כדי לקבל את הבונוס היומי שלך."
-                        onClick={getDailyBonus}
-                      />
-                    )}
-                  {expConfig &&
-                    Number(expConfig.valor) > 1 &&
-                    Number(expConfig.valor) < 5 && (
-                      <img
-                        src={require(`../../assets/images/icons/avatar/${expConfig.valor}x-exp.png`)}
-                        title={`קמפיין ${
-                          bonusArray[Number(expConfig.valor) - 2]
-                        } EXP בעיצומו!`}
-                        alt={`קמפיין ${
-                          bonusArray[Number(expConfig.valor) - 2]
-                        } EXP בעיצומו!`}
-                      />
-                    )}
-                  {silverConfig &&
-                    Number(silverConfig.valor) > 1 &&
-                    Number(silverConfig.valor) < 5 && (
-                      <img
-                        src={require(`../../assets/images/icons/avatar/${silverConfig.valor}x-silver.png`)}
-                        title={`קמפיין ${
-                          bonusArray[Number(silverConfig.valor) - 2]
-                        } סילבר בעיצומו!`}
-                        alt={`קמפיין ${
-                          bonusArray[Number(silverConfig.valor) - 2]
-                        } סילבר בעיצומו!`}
-                      />
-                    )}
-                </Events>
-              </HubHudLine>
-              <HubHudLine style={{ width: 280 }}>
-                <MyPokemon>
-                  {inHand > 0 &&
-                    myPokemons.map((pokemon) => {
-                      return (
-                        <div className="icon" key={pokemon.id}>
-                          <div
-                            style={{
-                              backgroundImage: `url(${require(`../../assets/images/${
-                                pokemon.shiny === 1 ? "shiny" : "pokemon"
-                              }/icon/${pokemon.wild_id}.gif`)})`,
-                            }}
-                          ></div>
-                        </div>
-                      );
-                    })}
-                  {[...Array(6 - inHand)].map((_, idx) => (
-                    <div key={`empty-${idx}`} className="icon" />
+                        <ListItemIcon sx={{ color: "inherit", minWidth: 0 }}>
+                          {item.icon}
+                        </ListItemIcon>
+                      </ListItemButton>
+                    </Tooltip>
                   ))}
-                </MyPokemon>
-              </HubHudLine>
-            </HubHud>
-          </Hub>
-        </HeaderHub>
-      </HeaderHubContainer>
-      <HeaderContainer>
-        <HeaderContent>
-          {/* Desktop Navigation - Only show if logged in */}
-          {isLoggedIn && (
-            <Navigation>
-              {navigationItems.map((item) => (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  className={isActiveRoute(item.path) ? "active" : ""}
+                  <Tooltip
+                    title={`התראות ${
+                      notification > 0 ? `(${notification})` : ""
+                    }`}
+                    placement="left"
+                    arrow
+                  >
+                    <ListItemButton
+                      component={Link}
+                      to={"/events"}
+                      selected={isActiveRoute("/events")}
+                      sx={{
+                        justifyContent: "center",
+                        color: isActiveRoute("/events") ? "#fff" : "#cbd5e1",
+                        "&.Mui-selected": {
+                          backgroundColor: "#334155",
+                        },
+                      }}
+                    >
+                      <ListItemIcon sx={{ color: "inherit", minWidth: 0 }}>
+                        <BellRing size={20} />
+                      </ListItemIcon>
+                    </ListItemButton>
+                  </Tooltip>
+                  <Tooltip
+                    title={`הודעות ${
+                      unreadMessages > 0 ? `(${unreadMessages})` : ""
+                    }`}
+                    placement="left"
+                    arrow
+                  >
+                    <ListItemButton
+                      component={Link}
+                      to={"/inbox"}
+                      selected={isActiveRoute("/inbox")}
+                      sx={{
+                        justifyContent: "center",
+                        color: isActiveRoute("/inbox") ? "#fff" : "#cbd5e1",
+                        "&.Mui-selected": {
+                          backgroundColor: "#334155",
+                        },
+                      }}
+                    >
+                      <ListItemIcon sx={{ color: "inherit", minWidth: 0 }}>
+                        <Inbox size={20} />
+                      </ListItemIcon>
+                    </ListItemButton>
+                  </Tooltip>
+                </List>
+              </ClosedDrawer>
+            )}
+          </>
+        )}
+        <Box
+          component="main"
+          sx={{
+            flexGrow: 1,
+            bgcolor: "#f1f5f9",
+            minHeight: "100vh",
+            padding: 3,
+            marginTop: "64px",
+            textAlign: "right",
+          }}
+        >
+          {!isLoggedIn &&
+          !["/login", "/signup", "/my-characters", "/new-character"].includes(
+            location.pathname
+          ) ? (
+            <Box textAlign="center" dir="rtl">
+              <Typography variant="h5" gutterBottom>
+                ברוך הבא לפוקימון אונליין!
+              </Typography>
+              <Typography variant="body1" sx={{ mb: 3 }}>
+                התחבר כדי לגשת ללוח המשחק, לאירועים ולפוקימונים שלך.
+              </Typography>
+              <Box sx={{ display: "flex", justifyContent: "center", gap: 2 }}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  component={Link}
+                  to="/login"
                 >
-                  {item.icon}
-                  <span>{item.label}</span>
-                </NavLink>
-              ))}
-            </Navigation>
+                  התחבר
+                </Button>
+                <Button
+                  variant="outlined"
+                  color="inherit"
+                  component={Link}
+                  to="/signup"
+                >
+                  הירשם
+                </Button>
+              </Box>
+            </Box>
+          ) : (
+            children
           )}
-
-          {/* Right Section - User menu if logged in, Auth buttons if not */}
-          {!isLoggedIn && (
-            <AuthSection>
-              <AuthLink to="/login">
-                <AuthButton variant="outline">Login</AuthButton>
-              </AuthLink>
-              <AuthLink to="/signup">
-                <AuthButton variant="primary">Sign Up</AuthButton>
-              </AuthLink>
-            </AuthSection>
-          )}
-        </HeaderContent>
-      </HeaderContainer>
+        </Box>
+      </Box>
     </>
   );
 };

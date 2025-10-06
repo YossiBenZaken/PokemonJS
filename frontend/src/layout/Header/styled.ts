@@ -36,13 +36,10 @@ const HeaderContainer = styled.header`
 `;
 
 const HeaderContent = styled.div`
-  max-width: 1200px;
   margin: 0 auto;
   padding: 1rem 2rem;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 2rem;
 
   @media (max-width: 768px) {
     padding: 1rem;
@@ -53,11 +50,10 @@ const HeaderContent = styled.div`
 const Navigation = styled.nav`
   display: flex;
   align-items: center;
-  gap: 0.5rem;
   flex: 1;
   justify-content: center;
-
-  @media (max-width: 1024px) {
+  
+  @media (max-width: 900px) {
     display: none;
   }
 `;
@@ -98,9 +94,46 @@ const NavLink = styled(Link)`
   }
 
   span {
-    @media (max-width: 1200px) {
+    @media (max-width: 1200px and min-width: 900px) {
       display: none;
     }
+  }
+`;
+
+export const MobileMenuButton = styled.button`
+  display: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+
+  @media (max-width: 900px) {
+    display: block;
+  }
+`;
+
+export const MobileMenuOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  z-index: 98;
+`;
+
+export const MobileMenu = styled.div`
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 75%;
+  max-width: 300px;
+  height: 100vh;
+  background: #1e293b;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  gap: 0.5rem;
+  z-index: 99;
+
+  ${NavLink} {
+    padding: 0.8rem;
+    font-size: 1rem;
   }
 `;
 
@@ -322,12 +355,8 @@ const MyPokemon = styled("div")(() => ({
 }));
 
 const Events = styled("div")(() => ({
-  background: `url(${require("../../assets/images/layout/eventos.png")})`,
-  borderRadius: 5,
-  height: 45,
-  paddingRight: 3,
-  width: "100%",
-  display: "flex",
+  marginRight: '1rem',
+  width: 245,
   img: {
     marginRight: 3,
     width: 45,

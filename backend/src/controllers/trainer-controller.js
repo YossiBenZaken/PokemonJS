@@ -1192,7 +1192,7 @@ export const finishTrainerBattle = async (req, res) => {
     // עדכון סטטיסטיקות פוקימונים
     await pokemonPlayerHandUpdate(userId);
 
-    pokemon_grow(userId);
+    await pokemon_grow(userId);
 
     // מחיקה של הקרב
     await removeAttack(userId, logs.id);

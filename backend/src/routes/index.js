@@ -20,6 +20,7 @@ import safariRoutes from './safari.js';
 import specialistsRoutes from "./specialists.js";
 import systemRoutes from "./system.js";
 import tradersRoutes from "./traders.js";
+import transferListRoutes from './transferlist.js';
 import travelRoutes from "./travel.js";
 
 const router = express.Router();
@@ -48,5 +49,6 @@ router.use("/api/pokebox", pokeboxRoutes);
 router.use("/api/gyms", gymsRoutes);
 router.use('/api/battle', battleRoutes);
 router.use('/api/safari', safariRoutes);
+router.use('/api/transferlist', transferListRoutes);
 
 export { router };
