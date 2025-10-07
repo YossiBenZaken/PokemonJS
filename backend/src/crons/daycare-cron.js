@@ -2,7 +2,7 @@ import cron from 'node-cron';
 import { query } from '../config/database.js';
 
 // Daycare cron job - runs every hour (adjust as needed)
-const daycareCronJob = cron.schedule('0 * * * *', async () => {
+const daycareCronJob = cron.schedule('0 0,12 * * *', async () => {
   console.log('Running daycare cron job...');
   
   try {

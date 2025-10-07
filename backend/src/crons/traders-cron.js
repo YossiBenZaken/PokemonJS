@@ -2,7 +2,7 @@ import cron from 'node-cron';
 import { query } from '../config/database.js';
 
 // Traders cron job - runs to refresh empty trader offers
-const tradersCronJob = cron.schedule('0 */4 * * *', async () => { // Every 4 hours
+const tradersCronJob = cron.schedule('0 * * * *', async () => { // Every 4 hours
   console.log('Running traders cron job...');
   
   try {
