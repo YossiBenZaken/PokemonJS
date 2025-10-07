@@ -964,7 +964,7 @@ const WildAttack: React.FC = () => {
         <img id="zmove" />
         <BattleArea
           attackLog={attackLog}
-          background={location.state.background}
+          background={location?.state?.background}
         >
           <tbody>
             <tr>

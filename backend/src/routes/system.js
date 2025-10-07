@@ -1,6 +1,8 @@
 import {
+  completeQuests,
   dailyBonus,
   getAssets,
+  getDailyQuests,
   getOfficialMessages,
   getOnlineUsers,
   updateTickets,
@@ -24,4 +26,8 @@ router.get("/cooldown", getCooldown);
 router.post("/tickets", extractAccId, updateTickets);
 router.post("/official-messages", getOfficialMessages);
 router.get("/daily-bonus", extractAccId, dailyBonus);
+router.get('/daily-quests', extractAccId,getDailyQuests);
+router.post('/daily-quests/complete/:questNumber', extractAccId,completeQuests);
+
+
 export default router;

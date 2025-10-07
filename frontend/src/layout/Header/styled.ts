@@ -1,17 +1,4 @@
-import styled, { css, keyframes } from "styled-components";
-
-import { Link } from "react-router-dom";
-import eventos from "../../assets/images/layout/eventos.png";
-import gold from "../../assets/images/layout/Gold.png";
-import logo1 from "../../assets/images/layout/Logo/logo1.png";
-import logo2 from "../../assets/images/layout/Logo/logo2.png";
-import logo3 from "../../assets/images/layout/Logo/logo3.png";
-import logo4 from "../../assets/images/layout/Logo/logo4.png";
-import logo5 from "../../assets/images/layout/Logo/logo5.png";
-import plus from "../../assets/images/layout/plus.png";
-import silvers from "../../assets/images/layout/silvers.png";
-
-const Logos = [logo1, logo2, logo3, logo4, logo5];
+import styled, { keyframes } from "styled-components";
 
 const slideDown = keyframes`
   from {
@@ -21,119 +8,6 @@ const slideDown = keyframes`
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-`;
-
-// Styled Components
-const HeaderContainer = styled.header`
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(59, 130, 246, 0.1);
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-`;
-
-const HeaderContent = styled.div`
-  margin: 0 auto;
-  padding: 1rem 2rem;
-  display: flex;
-  align-items: center;
-
-  @media (max-width: 768px) {
-    padding: 1rem;
-    gap: 1rem;
-  }
-`;
-
-const Navigation = styled.nav`
-  display: flex;
-  align-items: center;
-  flex: 1;
-  justify-content: center;
-  
-  @media (max-width: 900px) {
-    display: none;
-  }
-`;
-
-const NavLink = styled(Link)`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
-  color: #6b7280;
-  text-decoration: none;
-  border-radius: 0.75rem;
-  transition: all 0.3s ease;
-  font-weight: 500;
-  position: relative;
-
-  &:hover {
-    color: #3b82f6;
-    background: rgba(59, 130, 246, 0.1);
-    transform: translateY(-2px);
-  }
-
-  &.active {
-    color: #3b82f6;
-    background: rgba(59, 130, 246, 0.1);
-
-    &::after {
-      content: "";
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 20px;
-      height: 3px;
-      background: linear-gradient(to right, #3b82f6, #7c3aed);
-      border-radius: 2px;
-    }
-  }
-
-  span {
-    @media (max-width: 1200px and min-width: 900px) {
-      display: none;
-    }
-  }
-`;
-
-export const MobileMenuButton = styled.button`
-  display: none;
-  border: none;
-  color: white;
-  cursor: pointer;
-
-  @media (max-width: 900px) {
-    display: block;
-  }
-`;
-
-export const MobileMenuOverlay = styled.div`
-  position: fixed;
-  inset: 0;
-  z-index: 98;
-`;
-
-export const MobileMenu = styled.div`
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: 75%;
-  max-width: 300px;
-  height: 100vh;
-  background: #1e293b;
-  display: flex;
-  flex-direction: column;
-  padding: 1rem;
-  gap: 0.5rem;
-  z-index: 99;
-
-  ${NavLink} {
-    padding: 0.8rem;
-    font-size: 1rem;
   }
 `;
 
@@ -172,144 +46,6 @@ const UserMenuItem = styled.div`
   }
 `;
 
-const AuthSection = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  flex-shrink: 0;
-
-  @media (max-width: 640px) {
-    gap: 0.5rem;
-  }
-`;
-
-const AuthButton = styled.button<{ variant: "primary" | "outline" }>`
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.75rem;
-  font-weight: 600;
-  font-size: 0.875rem;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 80px;
-
-  ${(props) =>
-    props.variant === "primary"
-      ? css`
-          background: linear-gradient(to right, #3b82f6, #7c3aed);
-          color: white;
-          box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
-
-          &:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
-          }
-        `
-      : css`
-          background: transparent;
-          color: #3b82f6;
-          border: 2px solid #3b82f6;
-
-          &:hover {
-            background: #3b82f6;
-            color: white;
-            transform: translateY(-2px);
-          }
-        `}
-
-  @media (max-width: 640px) {
-    padding: 0.5rem 1rem;
-    font-size: 0.75rem;
-    min-width: 70px;
-  }
-`;
-
-const AuthLink = styled(Link)`
-  text-decoration: none;
-`;
-
-const HeaderHubContainer = styled("div")(() => ({
-  width: 1010,
-  height: "auto !important",
-  paddingBottom: 5,
-  margin: "0 auto",
-  display: "flex",
-}));
-
-const HeaderHub = styled("div")(() => ({
-  width: 990,
-  height: 270,
-  margin: "0 auto",
-  display: "flex",
-  flexDirection: "column",
-}));
-
-const Hub = styled("div")(() => ({
-  display: "flex",
-  paddingTop: 30,
-  width: "100%",
-  position: "relative",
-}));
-
-const HubHud = styled("ul")(() => ({
-  display: "flex",
-  listStyle: "none",
-  alignItems: "stretch",
-  flexDirection: "row",
-  position: "relative",
-  width: "100%",
-  justifyContent: "end",
-}));
-
-const HubHudLine = styled("li")(() => ({}));
-
-const Silvers = styled("div")(() => ({
-  background: `url(${silvers}) no-repeat`,
-  display: "inline-block",
-  height: 45,
-  textAlign: "center",
-  paddingTop: 10,
-  width: 120,
-  position: "relative",
-  "> p": {
-    color: "white",
-    fontSize: 13,
-    fontWeight: "bold",
-    marginRight: 20,
-    width: "46%",
-  },
-}));
-const Golds = styled("div")(() => ({
-  background: `url(${gold}) no-repeat`,
-  display: "inline-block",
-  height: 45,
-  textAlign: "center",
-  paddingTop: 10,
-  width: 120,
-  position: "relative",
-  "> p": {
-    color: "white",
-    fontSize: 13,
-    fontWeight: "bold",
-    marginRight: 20,
-    width: "46%",
-  },
-}));
-
-const Add = styled("div")(() => ({
-  position: "absolute",
-  right: 0,
-  width: 45,
-  height: 45,
-  marginRight: -26,
-  marginTop: -7,
-  background: `url(${plus}) no-repeat`,
-}));
-
 const Badges = styled("span")(() => ({
   backgroundColor: "red",
   border: "1px solid white",
@@ -322,36 +58,6 @@ const Badges = styled("span")(() => ({
   textAlign: "center",
   display: "inline-block",
   verticalAlign: "middle",
-}));
-
-const HubLogo = styled("div")(() => ({
-  width: 401,
-  height: 200,
-  background: `url(${
-    Logos[Math.floor(Math.random() * Logos.length)]
-  }) no-repeat center`,
-  backgroundSize: "cover",
-}));
-
-const MyPokemon = styled("div")(() => ({
-  float: "left",
-  display: "flex",
-  "> div.icon": {
-    background: `url(${eventos}) no-repeat`,
-    marginLeft: 2,
-    width: 44,
-    height: 44,
-    borderRadius: 5,
-    verticalAlign: "bottom",
-    "> div": {
-      backgroundPosition: "center",
-      backgroundRepeat: "no-repeat",
-      margin: "0 2px",
-      width: 42,
-      height: 42,
-      display: "inline-block",
-    },
-  },
 }));
 
 const Events = styled("div")(() => ({
@@ -367,25 +73,8 @@ const Events = styled("div")(() => ({
 }));
 
 export {
-  HeaderContainer,
-  HeaderContent,
-  Navigation,
-  NavLink,
   UserMenu,
   UserMenuItem,
-  AuthSection,
-  AuthButton,
-  AuthLink,
-  HeaderHubContainer,
-  HeaderHub,
-  Hub,
-  HubHud,
-  HubHudLine,
-  Silvers,
-  Add,
-  Golds,
   Badges,
-  HubLogo,
-  MyPokemon,
   Events,
 };

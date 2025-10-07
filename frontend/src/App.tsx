@@ -4,6 +4,7 @@ import AttackMap from "./pages/Attack/AttackMap";
 import { BadgeCase } from "./pages/Badges";
 import { BattleProvider } from "./contexts/BattleContext";
 import { ChoosePokemonPage } from "./pages/ChoosePokemon";
+import DailyQuestsPage from "./pages/DailyQuests";
 import FishingPage from "./pages/Fishing";
 import { Footer } from "./layout/Footer/Footer";
 import { GameProvider } from "./contexts/GameContext";
@@ -66,6 +67,14 @@ function App() {
                 element={
                   <PrivateRoute>
                     <PokedexPage />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/daily_quests"
+                element={
+                  <PrivateRoute>
+                    <DailyQuestsPage />
                   </PrivateRoute>
                 }
               />

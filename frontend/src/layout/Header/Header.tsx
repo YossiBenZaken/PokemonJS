@@ -1,30 +1,4 @@
 import {
-  Add,
-  AuthButton,
-  AuthLink,
-  AuthSection,
-  Badges,
-  Events,
-  Golds,
-  HeaderContainer,
-  HeaderContent,
-  HeaderHub,
-  HeaderHubContainer,
-  Hub,
-  HubHud,
-  HubHudLine,
-  HubLogo,
-  MobileMenu,
-  MobileMenuButton,
-  MobileMenuOverlay,
-  MyPokemon,
-  NavLink,
-  Navigation,
-  Silvers,
-  UserMenu,
-  UserMenuItem,
-} from "./styled";
-import {
   AppBar,
   Button,
   CssBaseline,
@@ -57,14 +31,15 @@ import {
   Menu as MenuIcon,
   Package,
   Squirrel,
-  Users
+  Users,
 } from "lucide-react";
+import { Badges, Events, UserMenu, UserMenuItem } from "./styled";
 import {
   DailyBonusResponse,
   dailyBonus,
   getAssets,
 } from "../../api/system.api";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import Snackbar, { SnackbarCloseReason } from "@mui/material/Snackbar";
 import { styled, useTheme } from "@mui/material/styles";
@@ -120,7 +95,6 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
   const theme = useTheme();
   const navigate = useNavigate();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [inHand, setInHand] = useState<number>(0);
   const [open, setOpen] = useState<boolean>(false);
   const [drawer, setDrawer] = useState<boolean>(false);
   const [dailyBonusDetails, setDailyBonusDetails] =
@@ -136,7 +110,6 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
     isLoggedIn,
     ranks,
     setRanks,
-    myPokemons,
     setMyPokemons,
     setKarakters,
     setAttacks,
@@ -196,7 +169,6 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
     if (selectedCharacter?.user_id) {
       getMyPokemons(selectedCharacter?.user_id).then((res) => {
         setMyPokemons(res.data.myPokemon);
-        setInHand(res.data.myPokemon.length);
       });
     }
   }, [selectedCharacter, setMyPokemons]);
@@ -376,17 +348,13 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
                         (selectedCharacter["quest_1"] +
                           selectedCharacter["quest_2"])}
                     </Badges>
-                    <a
-                      href="./daily_quests"
-                      className="noanimate"
-                      style={{ display: "block" }}
-                    >
+                    <NavLink to={"/daily_quests"} style={{ display: "block" }}>
                       <img
                         src="/images/icons/avatar/quests.png"
                         title="לחץ כאן כדי לצפות במשימות היומיות שלך."
                         alt="לחץ כאן כדי לצפות במשימות היומיות שלך."
                       />
-                    </a>
+                    </NavLink>
                   </>
                 )}
               {selectedCharacter &&
