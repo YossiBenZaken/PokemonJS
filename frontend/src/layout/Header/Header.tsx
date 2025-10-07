@@ -31,6 +31,7 @@ import {
   Menu as MenuIcon,
   Package,
   Squirrel,
+  Swords,
   Users,
 } from "lucide-react";
 import { Badges, Events, UserMenu, UserMenuItem } from "./styled";
@@ -135,6 +136,7 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
     { path: "/safari", label: "ספארי", icon: <Squirrel size={20} /> },
     { path: "/attack/map", label: "מפה", icon: <Map size={20} /> },
     { path: "/information", label: "מידע", icon: <Info size={20} /> },
+    { path: '/npc', label: 'קרב עם מאמן', icon: <Swords size={20} />}
   ];
 
   useEffect(() => {
@@ -676,7 +678,7 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
             flexGrow: 1,
             bgcolor: "#f1f5f9",
             minHeight: "100vh",
-            padding: 3,
+            padding: "0 64px 0 0",
             marginTop: "64px",
             textAlign: "right",
           }}

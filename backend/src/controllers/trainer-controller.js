@@ -25,6 +25,7 @@ import {
 } from "./battle-controller.js";
 
 import { query } from "../config/database.js";
+import { startTrainerAttack } from "./gyms-controller.js";
 
 export const startTrainerBattle = async (req) => {
   const userId = req.body.userId;
@@ -171,6 +172,71 @@ async function createNewTrainer(trainer, trainerAveLevel, aanvalLogId) {
   }
   return attackInfo;
 }
+
+export const startRandomBattle = async (req, res) => {
+  const userId = req.user?.user_id;
+
+  const [gebruiker] = await query(
+    "SELECT * FROM `gebruikers` WHERE user_id = ?",
+    [userId]
+  );
+  
+  if(gebruiker.level < 4) {
+    return res.json({
+      suceess: false,
+      message: "דרג המשתמש נמוך מדי."
+    })
+  }
+
+  const allTrainers = await query(
+    "SELECT `naam` FROM `trainer` WHERE `badge`='' AND (`gebied`!='') ORDER BY RAND() LIMIT 10",
+    []
+  );
+  var trainersNames = [];
+
+  for (const trainer of allTrainers) {
+    trainersNames.push(trainer.naam);
+  }
+  const randomTrainer = trainersNames[getRandomInt(0, trainersNames.length)];
+
+  const alivePokemon = await query(
+    "SELECT `id`,`level` FROM `pokemon_speler` WHERE `user_id`=? AND `opzak`='ja' AND `leven`>'0'",
+    [userId]
+  );
+
+  if (!alivePokemon) {
+    return res.json({
+      suceess: false,
+      message: "אין לך פוקימונים",
+    });
+  }
+
+  const pokemonCount = alivePokemon.length;
+  let level = 0;
+  for (const pokemon of alivePokemon) {
+    level += pokemon.level;
+  }
+
+  const averageOfLevel = level / pokemonCount;
+
+  const start = await startTrainerAttack(
+    randomTrainer,
+    averageOfLevel,
+    '',
+    userId
+  );
+  if (!start.success) {
+    return res.json({
+      success: false,
+      message: start.message || "לא ניתן להתחיל את הקרב",
+    });
+  }
+  return res.json({
+    success: true,
+    redirect: "/attack/trainer",
+    data: start.data
+  });
+};
 
 export const getBattleData = async (battleLogId) => {
   const battleInit = await getBattleInfo(battleLogId);

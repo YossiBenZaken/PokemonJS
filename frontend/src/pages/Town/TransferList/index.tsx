@@ -23,7 +23,6 @@ import { CacheProvider } from "@emotion/react";
 import TabContext from "@mui/lab/TabContext";
 import TabList from "@mui/lab/TabList";
 import TabPanel from "@mui/lab/TabPanel";
-import axios from "axios";
 import createCache from "@emotion/cache";
 import { heIL } from "@mui/x-data-grid/locales";
 import { prefixer } from "stylis";
@@ -46,7 +45,6 @@ const TransferListPage: React.FC = () => {
     page: 0,
     pageSize: 20,
   });
-  const [rowCount, setRowCount] = useState(0);
 
   const [filters, setFilters] = useState({
     specie: "",
@@ -517,7 +515,6 @@ const TransferListPage: React.FC = () => {
                       paginationModel={paginationModel}
                       onPaginationModelChange={setPaginationModel}
                       pageSizeOptions={[5, 10, 15, 20, 25]}
-                      rowCount={rowCount}
                       paginationMode="server"
                       loading={loading}
                       sx={{

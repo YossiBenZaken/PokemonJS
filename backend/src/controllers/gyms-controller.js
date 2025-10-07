@@ -6,7 +6,7 @@ function possible(rank, act, next) {
 }
 
 // פונקציה מדומה שמתחילה קרב מול מנהיג מכון
-async function startTrainerAttack(gymLeader, trainerAveLevel, gebied, userId) {
+export async function startTrainerAttack(gymLeader, trainerAveLevel, gebied, userId) {
   const finalInfo = await startTrainerBattle({body: {
     trainer: gymLeader,
     trainerAveLevel,
