@@ -1,5 +1,7 @@
+import { ItemBox, calculateTotalItems } from "./market-controller.js";
 import { getRandomInt, highAmount } from "../helpers/battle-utils.js";
 
+import { Quests } from "../helpers/quests.js";
 import { query } from "../config/database.js";
 
 export const getOnlineUsers = async (req, res) => {
@@ -157,7 +159,7 @@ const addSilvers = async (userId, min = 500, max = 4999) => {
   const silvers = getRandomInt(min, max);
   await query(
     "UPDATE `gebruikers` SET `silver`=`silver`+? , `daily_bonus`=UNIX_TIMESTAMP() WHERE `user_id`=?",
-    [silvers,userId]
+    [silvers, userId]
   );
   return {
     success: true,
@@ -258,3 +260,373 @@ export const dailyBonus = async (req, res) => {
     }
   }
 };
+
+export const getDailyQuests = async (req, res) => {
+  try {
+    const userId = req.user?.user_id;
+
+    // קבלת נתוני המשתמש
+    const [user] = await query(
+      `
+      SELECT 
+        g.user_id, 
+        g.rank, 
+        gi.itembox, 
+        g.quest_1,
+        g.quest_2,
+        g.quest_1_req,
+        g.quest_2_req,
+        g.streak,
+        r.quest_r_1,
+        r.quest_r_2,
+        r.quest_r_master,
+        r.acc_id
+      FROM gebruikers g
+      LEFT JOIN rekeningen r ON g.acc_id = r.acc_id
+      INNER JOIN gebruikers_item AS gi ON g.user_id = gi.user_id
+      WHERE g.user_id = ?
+    `,
+      [userId]
+    );
+
+    if (!user || user.rank < 4) {
+      return res.status(403).json({
+        error: "RANK MÍNIMO PARA CUMPRIR AS MISSÕES DIÁRIAS: 4 - TRAINER",
+        minRank: 4,
+      });
+    }
+
+    const totalItems = await calculateTotalItems(userId);
+
+    // חישוב מקום פנוי בתיק
+    const itemsAvailable = (ItemBox[user.itembox] || 20) - totalItems;
+
+    // קבלת המשימות של היום
+    const quests = await Quests.getActualQuests();
+
+    if (quests.length < 2) {
+      return res.status(404).json({
+        error: "No quests available for today",
+      });
+    }
+
+    const [quest1, quest2] = quests;
+
+    // עיבוד משימה 1
+    const quest1Data = await processQuestData(quest1, user, 1);
+
+    // עיבוד משימה 2
+    const quest2Data = await processQuestData(quest2, user, 2);
+
+    res.json({
+      success: true,
+      data: {
+        streak: user.streak,
+        maxStreak: 7,
+        itemsAvailable,
+        quest1: quest1Data,
+        quest2: quest2Data,
+        canGetMasterBall:
+          user.streak === 6 && user.quest_1 === 1 && user.quest_2 === 1,
+        masterBallClaimed: user.quest_r_master === 1,
+        allQuestsCompleted: user.quest_1 === 1 && user.quest_2 === 1,
+        streakCompleted: user.streak === 7,
+      },
+    });
+  } catch (error) {
+    console.error("Error getting daily quests:", error);
+    res
+      .status(500)
+      .json({ error: "Internal server error", message: error.message });
+  }
+};
+
+export const completeQuests = async (req, res) => {
+  try {
+    const userId = req.user?.user_id;
+    const { questNumber } = req.params;
+    if (!["1", "2"].includes(questNumber)) {
+      return res.status(400).json({ error: "Invalid quest number" });
+    }
+    const [userData] = await query(
+      `
+      SELECT 
+        g.user_id, 
+        g.rank, 
+        gi.itembox, 
+        g.quest_1,
+        g.quest_2,
+        g.quest_1_req,
+        g.quest_2_req,
+        g.streak,
+        r.quest_r_1,
+        r.quest_r_2,
+        r.quest_r_master,
+        r.acc_id
+      FROM gebruikers g
+      LEFT JOIN rekeningen r ON g.acc_id = r.acc_id
+      INNER JOIN gebruikers_item AS gi ON g.user_id = gi.user_id
+      WHERE g.user_id = ?
+    `,
+      [userId]
+    );
+    const questField = `quest_${questNumber}`;
+    const questReqField = `quest_${questNumber}_req`;
+    const questRewardField = `quest_r_${questNumber}`;
+    const otherQuestField = questNumber === "1" ? "quest_2" : "quest_1";
+    // בדיקה שהמשימה טרם הושלמה
+    if (userData[questField] === 1) {
+      throw new Error("Quest already completed");
+    }
+    const actualQuest = await Quests.getActualQuests();
+    const questData = await Quests.getQuest(actualQuest[Number(questNumber) -1]);
+    // בדיקה שהמשימה הושלמה
+    if (userData[questReqField] < questData.quant_wid) {
+      throw new Error("Quest requirements not met");
+    }
+
+    const totalItems = await calculateTotalItems(userId);
+
+    // חישוב מקום פנוי בתיק
+    const itemsAvailable = (ItemBox[userData.itembox] || 20) - totalItems;
+
+    if (userData[questRewardField] === 0) {
+      if (questData.recomp_type === "item") {
+        if (itemsAvailable < questData.recomp_quant) {
+          throw new Error("Não há espaço na sua mochila!");
+        }
+
+        const [item] = await query(
+          `
+          SELECT naam FROM markt WHERE id = ?
+        `,
+          [questData.recomp_id]
+        );
+        const itemName = item.naam;
+        // בדיקה אם זה TM
+        if (itemName.includes("TM")) {
+          await query(
+            `
+            UPDATE gebruikers_tmhm 
+            SET \`${itemName}\` = \`${itemName}\` + ?
+            WHERE user_id = ?
+          `,
+            [questData.recomp_quant, userId]
+          );
+        } else {
+          await query(
+            `
+            UPDATE gebruikers_item 
+            SET \`${itemName}\` = \`${itemName}\` + ?
+            WHERE user_id = ?
+          `,
+            [questData.recomp_quant, userId]
+          );
+        }
+      } else if (questData.recomp_type === "gold") {
+        await query(
+          `
+          UPDATE rekeningen 
+          SET gold = gold + ?
+          WHERE acc_id = ?
+        `,
+          [questData.recomp_quant, userData.acc_id]
+        );
+      } else {
+        await query(
+          `
+          UPDATE gebruikers 
+          SET silver = silver + ?
+          WHERE user_id = ?
+        `,
+          [questData.recomp_quant, userId]
+        );
+      }
+
+      // עדכון שהפרס נדרש
+      await query(
+        `
+        UPDATE rekeningen 
+        SET ${questRewardField} = 1
+        WHERE acc_id = ?
+      `,
+        [userData.acc_id]
+      );
+    }
+
+    // עדכון שהמשימה הושלמה
+    await query(
+      `
+      UPDATE gebruikers 
+      SET ${questField} = 1, ${questReqField} = 0
+      WHERE user_id = ?
+    `,
+      [userId]
+    );
+
+    // עדכון streak אם שתי המשימות הושלמו
+    if (userData[otherQuestField] === 1) {
+      await query(
+        `
+        UPDATE gebruikers 
+        SET streak = streak + 1
+        WHERE user_id = ?
+      `,
+        [userId]
+      );
+
+      // בדיקה אם השלים 7 ימים - מתן Master Ball
+      if (userData.streak === 6 && userData.quest_r_master === 0) {
+        if (itemsAvailable < 1) {
+          throw new Error("Não há espaço na sua mochila para a Master Ball!");
+        }
+
+        await query(
+          `
+          UPDATE rekeningen 
+          SET quest_r_master = 1
+          WHERE acc_id = ?
+        `,
+          [userData.acc_id]
+        );
+
+        await query(
+          `
+          UPDATE gebruikers_item 
+          SET \`Master ball\` = \`Master ball\` + 1
+          WHERE user_id = ?
+        `,
+          [userId]
+        );
+
+        return res.json({
+          success: true,
+          message: `משימה ${questNumber} הושלמה!`,
+          data: {
+            questCompleted: true,
+            masterBallReceived: true,
+            streak: 7,
+          },
+        });
+      }
+    }
+
+    return res.json({
+      success: true,
+      message: `משימה ${questNumber} הושלמה!`,
+      data: {
+        questCompleted: true,
+        masterBallReceived: false,
+        streak: userData.streak + (userData[otherQuestField] === 1 ? 1 : 0),
+      }
+    });
+  } catch (error) {
+    console.error("Error getting daily quests:", error);
+    res
+      .status(500)
+      .json({ error: "Internal server error", message: error.message });
+  }
+};
+
+async function processQuestData(quest, user, questNumber) {
+  const questField = `quest_${questNumber}`;
+  const questReqField = `quest_${questNumber}_req`;
+  const questRewardField = `quest_r_${questNumber}`;
+  const questData = await Quests.getQuest(quest);
+
+  // קבלת תיאור המשימה
+  let description = questData.descr;
+  if (questData.type !== "catch_single") {
+    description = description.replace("%qnt%", questData.quant_wid);
+  } else {
+    const [wildPokemon] = await query(
+      `
+      SELECT naam FROM pokemon_wild WHERE wild_id = ?
+    `,
+      [questData.quant_wid]
+    );
+    description = description.replace(
+      "%qnt%",
+      wildPokemon?.naam || questData.quant_wid
+    );
+  }
+
+  // קבלת פרטי הפרס
+  let rewardDisplay = "";
+  let rewardItem = null;
+
+  if (questData.recomp_type === "item") {
+    const [item] = await query(
+      `
+      SELECT naam, soort FROM markt WHERE id = ?
+    `,
+      [questData.recomp_id]
+    );
+
+    if (item) {
+      rewardItem = item.naam;
+
+      // אם זה TM - קבלת סוג ההתקפה
+      if (item.soort === "tm") {
+        const [tmData] = await query(
+          `
+          SELECT omschrijving FROM tmhm WHERE naam = ?
+        `,
+          [item.naam]
+        );
+
+        if (tmData) {
+          const [attackData] = await query(
+            `
+            SELECT soort FROM aanval WHERE naam = ?
+          `,
+            [tmData.omschrijving]
+          );
+
+          rewardDisplay = {
+            quantity: questData.recomp_quant,
+            item: item.naam,
+            type: "tm",
+            attackType: attackData?.soort,
+          };
+        }
+      } else {
+        rewardDisplay = {
+          quantity: questData.recomp_quant,
+          item: item.naam,
+          type: "item",
+        };
+      }
+    }
+  } else if (questData.recomp_type === "gold") {
+    rewardDisplay = {
+      quantity: questData.recomp_quant,
+      type: "gold",
+    };
+  } else {
+    rewardDisplay = {
+      quantity: questData.recomp_quant,
+      type: "silver",
+    };
+  }
+
+  // בדיקת סטטוס המשימה
+  const isCompleted = user[questField] === 1;
+  const progress = user[questReqField];
+  const required = questData.quant_wid;
+  const canComplete = progress >= required && !isCompleted;
+  const rewardClaimed = user[questRewardField] === 1;
+
+  return {
+    questId: questData.quest_id,
+    type: questData.type,
+    description,
+    progress,
+    required,
+    isCompleted,
+    canComplete,
+    rewardClaimed,
+    reward: rewardDisplay,
+    rewardItem,
+  };
+}
