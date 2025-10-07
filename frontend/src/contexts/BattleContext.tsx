@@ -6,16 +6,16 @@ import { PostChallengeData } from "../api/gyms.api";
 
 interface BattleContextType {
   challengeData: PostChallengeData | undefined;
-  setChallengeData: (data: PostChallengeData) => void;
+  setChallengeData: React.Dispatch<React.SetStateAction<PostChallengeData | undefined>>;
 
   computerInfo: ComputerInfo | undefined;
-  setComputerInfo: (data: ComputerInfo) => void;
+  setComputerInfo: React.Dispatch<React.SetStateAction<ComputerInfo | undefined>>;
 
   pokemonInfo: PokemonInfo | undefined;
-  setPokemonInfo: (data: PokemonInfo) => void;
+  setPokemonInfo: React.Dispatch<React.SetStateAction<PokemonInfo | undefined>>;
 
   attackLog: AanvalLog | undefined;
-  setAttackLog: (data: AanvalLog) => void;
+  setAttackLog: React.Dispatch<React.SetStateAction<AanvalLog | undefined>>;
 
   battleState: BattleState;
   dispatchBattle: React.Dispatch<any>

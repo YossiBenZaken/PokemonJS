@@ -3,6 +3,7 @@ import {
   attackUsePotion,
   doTrainerAttack,
   finishTrainerBattle,
+  startRandomBattle,
   trainerAttackRun,
   trainerChangePokemon,
 } from "../controllers/trainer-controller.js";
@@ -30,5 +31,6 @@ router.post("/attack-use-pokeball", extractAccId, attackUsePokeball);
 router.post("/start-wild-battle", extractAccId, startWildBattle);
 router.post("/wild-finish", extractAccId, finishWildBattle);
 router.post("/wild-attack", extractAccId, doWildAttack);
+router.get("/startRandomBattle", extractAccId, startRandomBattle);
 
 export default router;
