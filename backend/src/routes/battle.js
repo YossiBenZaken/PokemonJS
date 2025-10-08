@@ -1,3 +1,4 @@
+import { InitBattle, currentBattle } from "../controllers/battle-controller.js";
 import {
   attackChangePokemon,
   attackUsePotion,
@@ -14,7 +15,6 @@ import {
   startWildBattle,
 } from "../controllers/wild-controller.js";
 
-import { InitBattle } from "../controllers/battle-controller.js";
 import express from "express";
 import { extractAccId } from "../middleware/auth.js";
 
@@ -32,5 +32,5 @@ router.post("/start-wild-battle", extractAccId, startWildBattle);
 router.post("/wild-finish", extractAccId, finishWildBattle);
 router.post("/wild-attack", extractAccId, doWildAttack);
 router.get("/startRandomBattle", extractAccId, startRandomBattle);
-
+router.get("/current-battle", extractAccId, currentBattle);
 export default router;

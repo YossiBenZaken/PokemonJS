@@ -449,3 +449,11 @@ export const startRandomTrainer = async(): Promise<PostChallengeResponse> => {
   const {data} = await axiosInstance.get<PostChallengeResponse>('/battle/startRandomBattle');
   return data;
 }
+
+export const getBattleLogId = async(): Promise<{
+  success: boolean,
+  attackLogId: number
+}> => {
+  const {data} = await axiosInstance.get('/battle/current-battle');
+  return data;
+}

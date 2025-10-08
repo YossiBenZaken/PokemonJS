@@ -41,7 +41,7 @@ export const getBattleInfo = async (aanval_log_id) => {
     computer_info,
     pokemon_info,
     aanval_log,
-  }
+  };
 };
 
 export const InitBattle = async (req, res) => {
@@ -56,6 +56,28 @@ export const InitBattle = async (req, res) => {
     pokemon_info,
     aanval_log,
   });
+};
+
+export const currentBattle = async (req, res) => {
+  const userId = req.user?.user_id;
+  const [logId] = await query(
+    "SELECT `id` FROM `aanval_log` WHERE `user_id`=?",
+    [userId]
+  );
+  if (logId) {
+    return res.json({
+      success: true,
+      attackLogId: logId.id,
+    });
+  } else {
+    await query(
+      "UPDATE `gebruikers` SET `pagina`='attack_start' WHERE `user_id`=?",
+      [userId]
+    );
+    return res.json({
+      success: false,
+    });
+  }
 };
 
 export function computerNaam(old) {

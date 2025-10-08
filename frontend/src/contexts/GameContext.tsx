@@ -86,6 +86,7 @@ interface GameProviderProps {
 }
 
 export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
+
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(
     null
   );
