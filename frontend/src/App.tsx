@@ -4,6 +4,7 @@ import AttackMap from "./pages/Attack/AttackMap";
 import { BadgeCase } from "./pages/Badges";
 import { BattleProvider } from "./contexts/BattleContext";
 import { ChoosePokemonPage } from "./pages/ChoosePokemon";
+import Cookies from "js-cookie";
 import DailyQuestsPage from "./pages/DailyQuests";
 import FishingPage from "./pages/Fishing";
 import { Footer } from "./layout/Footer/Footer";
@@ -29,6 +30,11 @@ import Safari from "./pages/Safari";
 import { TownRoutes } from "./pages/Town/routes";
 import TrainerAttack from "./pages/Attack/TrainerAttack";
 import WildAttack from "./pages/Attack/WildAttack";
+import { io } from "socket.io-client";
+
+export const socket = io("http://localhost:5000", { withCredentials: true,auth: {
+  token: Cookies.get("access_token")
+}});
 
 function App() {
   return (

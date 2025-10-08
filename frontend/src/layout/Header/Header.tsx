@@ -48,7 +48,7 @@ import { styled, useTheme } from "@mui/material/styles";
 import Alert from "@mui/material/Alert";
 import { AuthToken } from "../../api/auth.api";
 import { Box } from "@mui/system";
-import { getMyPokemons } from "../../api/character.api";
+import { socket } from "../../App";
 import { useGame } from "../../contexts/GameContext";
 
 const drawerWidth = 220;
@@ -136,7 +136,7 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
     { path: "/safari", label: "ספארי", icon: <Squirrel size={20} /> },
     { path: "/attack/map", label: "מפה", icon: <Map size={20} /> },
     { path: "/information", label: "מידע", icon: <Info size={20} /> },
-    { path: '/npc', label: 'קרב עם מאמן', icon: <Swords size={20} />}
+    { path: "/npc", label: "קרב עם מאמן", icon: <Swords size={20} /> },
   ];
 
   useEffect(() => {
@@ -157,6 +157,14 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
   }, [setSelectedCharacter, setIsLoggedIn]);
 
   useEffect(() => {
+    let interval: NodeJS.Timer;
+    if (isLoggedIn) {
+      interval = setInterval(updateCharacter, 1e4); // כל 10 שניות
+    }
+    return () => clearInterval(interval);
+  }, [isLoggedIn]);
+
+  useEffect(() => {
     getAssets().then((res) => {
       setRanks(res.data.ranks);
       setKarakters(res.data.karakters);
@@ -169,11 +177,45 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
 
   useEffect(() => {
     if (selectedCharacter?.user_id) {
-      getMyPokemons(selectedCharacter?.user_id).then((res) => {
-        setMyPokemons(res.data.myPokemon);
-      });
+      socket.emit(
+        "getMyPokemons",
+        selectedCharacter.user_id,
+        (response: any) => {
+          setMyPokemons(response.data.myPokemon);
+        }
+      );
     }
   }, [selectedCharacter, setMyPokemons]);
+
+  useEffect(() => {
+    if (selectedCharacter) {
+      if (
+        selectedCharacter.pagina === "trainer-attack" &&
+        location.pathname !== "/attack/trainer"
+      ) {
+        navigate("/attack/trainer");
+      } else if (
+        selectedCharacter.pagina === "attack" &&
+        location.pathname !== "/attack/wild"
+      ) {
+        navigate("/attack/wild");
+      }
+    }
+  }, [selectedCharacter, location.pathname, navigate]);
+
+  const updateCharacter = async () => {
+    socket.emit("getUserInfo", selectedCharacter?.user_id, (response: any) => {
+      if (response.success) {
+        setNotification(response.data.eventsCount);
+        seUnreadMessages(response.data.unreadMessage);
+        setSelectedCharacter(response.data.user);
+        setIsLoggedIn(true);
+      } else {
+        setSelectedCharacter(null);
+        setIsLoggedIn(false);
+      }
+    });
+  };
 
   const isActiveRoute = (path: string) => {
     if (path === "/" && location.pathname === "/") return true;

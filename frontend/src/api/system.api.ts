@@ -83,11 +83,6 @@ export interface DailyQuestsData {
   streakCompleted: boolean;
 }
 
-export const getOnlineUsers = async (): Promise<GetOnlineUsersResponse> => {
-  const { data } = await axiosInstance.get("/system/online");
-  return data;
-};
-
 export const dailyBonus = async (): Promise<DailyBonusResponse> => {
   const { data } = await axiosInstance.get<DailyBonusResponse>(
     "/system/daily-bonus"

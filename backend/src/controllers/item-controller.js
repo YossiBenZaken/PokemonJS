@@ -210,7 +210,7 @@ const sellItem = async (req, res) => {
 const useItem = async (req, res) => {
   try {
     const { name, soort, equip } = req.body;
-    const userId = req.user.id;
+    const userId = req.user.user_id;
 
     if (!name || !soort) {
       return res.status(400).json({
@@ -220,12 +220,12 @@ const useItem = async (req, res) => {
     }
 
     // בדיקה אם המשתמש יש לו את הפריט
-    const userItemData = await DB.query(
+    const [userItemData] = await DB.query(
       "SELECT * FROM gebruikers_item WHERE user_id = ?",
       [userId]
     );
 
-    const userTMHMData = await DB.query(
+    const [userTMHMData] = await DB.query(
       "SELECT * FROM gebruikers_tmhm WHERE user_id = ?",
       [userId]
     );

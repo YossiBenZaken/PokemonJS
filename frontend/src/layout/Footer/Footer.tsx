@@ -4,11 +4,13 @@ import {
   OnlineSection,
   OnlineUserName,
 } from "./styled";
-import { OnlineUser, getOnlineUsers } from "../../api/system.api";
+import { GetOnlineUsersResponse, OnlineUser } from "../../api/system.api";
 import React, { useEffect, useState } from "react";
 
 import dv from "../../assets/images/icons/dv.png";
 import elite from "../../assets/images/icons/elite.png";
+import { socket } from "../../App";
+import { useGame } from "../../contexts/GameContext";
 import { useNavigate } from "react-router-dom";
 import userIcon from "../../assets/images/icons/user.png";
 import userSuit from "../../assets/images/icons/user_suit.png";
@@ -18,22 +20,28 @@ export const Footer: React.FC = () => {
   const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([]);
   const [total, setTotal] = useState(0);
   const navigate = useNavigate();
+  const { isLoggedIn } = useGame();
 
   useEffect(() => {
-    loadOnline();
-    const interval = setInterval(loadOnline, 30000); // רענון כל 30 שניות
-    return () => clearInterval(interval);
-  }, []);
+    if (isLoggedIn) {
+      loadOnline();
+      const interval = setInterval(loadOnline, 30000); // רענון כל 30 שניות
+      return () => clearInterval(interval);
+    }
+  }, [isLoggedIn]);
 
   const loadOnline = async () => {
     try {
-      const res = await getOnlineUsers();
-      if (res.success) {
-        setOnlineUsers(res.users);
-        setTotal(res.total);
-      }
+      socket.emit("getOnline",(response: GetOnlineUsersResponse) => {
+        if (response.success) {
+          setOnlineUsers(response.users);
+          setTotal(response.total);
+        }
+      })
     } catch {}
   };
+
+  if(!isLoggedIn) return null;
 
   return (
     <FooterContainer>

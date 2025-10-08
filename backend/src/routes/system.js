@@ -4,7 +4,6 @@ import {
   getAssets,
   getDailyQuests,
   getOfficialMessages,
-  getOnlineUsers,
   updateTickets,
 } from "../controllers/system-controllers.js";
 import {
@@ -18,7 +17,6 @@ import { extractAccId } from "../middleware/auth.js";
 
 const router = express.Router();
 
-router.get("/online", getOnlineUsers);
 router.get("/assets", getAssets);
 router.post("/heal", healPokemons);
 router.get("/pc/hand", getHandPokemons);

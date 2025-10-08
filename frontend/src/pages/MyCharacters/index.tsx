@@ -76,6 +76,7 @@ export interface Character {
   quest_1: number;
   quest_2: number;
   daily_bonus: number;
+  pagina: string;
 }
 
 

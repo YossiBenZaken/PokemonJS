@@ -4,32 +4,6 @@ import { getRandomInt, highAmount } from "../helpers/battle-utils.js";
 import { Quests } from "../helpers/quests.js";
 import { query } from "../config/database.js";
 
-export const getOnlineUsers = async (req, res) => {
-  try {
-    const acc_id = req?.user?.acc_id;
-    // 15 דקות אחרונות (900 שניות)
-    const result = await query(
-      `SELECT user_id, username, premiumaccount, admin, rang, dv 
-           FROM gebruikers 
-           WHERE (online + 900) >= UNIX_TIMESTAMP() AND banned = 'N'
-           ORDER BY admin DESC, points DESC, rang ASC, user_id ASC`
-    );
-    if (acc_id) {
-      await query(
-        `UPDATE gebruikers SET online = UNIX_TIMESTAMP() WHERE acc_id = ?`,
-        [acc_id]
-      );
-    }
-    res.json({ success: true, users: result, total: result.length });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "שגיאה בקבלת משתמשים מחוברים",
-      error: error.message,
-    });
-  }
-};
-
 export const getAssets = async (req, res) => {
   try {
     const ranks = await query("SELECT * FROM `rank`");

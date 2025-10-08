@@ -11,6 +11,8 @@ import {
   attackChangePokemon,
   attackUsePokeball,
   attackUsePotion,
+  getBattleLogId,
+  initBattle,
   trainerAttackRun,
   wildAttack,
   wildFinish,
@@ -60,6 +62,8 @@ const WildAttack: React.FC = () => {
     dispatchBattle,
     pokemonInfo,
     setPokemonInfo,
+    setAttackLog,
+    setComputerInfo
   } = useBattle();
 
   const { selectedCharacter, myPokemons, itemInfo, attacks } = useGame();
@@ -77,14 +81,28 @@ const WildAttack: React.FC = () => {
   );
 
   useEffect(() => {
-    const initializeBattleState = () => {
-      if (!attackLog) return;
+    const initializeBattleState = async () => {
+      let attackLogInEffect = attackLog;
+      if (!attackLogInEffect) {
+        const logId = await getBattleLogId();
+        const {attackLogId,success} = logId;
+        if(!success) {
+          navigate('/');
+          return;
+        }
+
+        const {aanval_log,computer_info,pokemon_info} = await initBattle(attackLogId);
+        setAttackLog(aanval_log);
+        setComputerInfo(computer_info);
+        setPokemonInfo(pokemon_info);
+        attackLogInEffect = aanval_log;
+      }
 
       let spelerAttack = false;
       let spelerWissel = false;
       let message = "";
 
-      switch (attackLog.laatste_aanval) {
+      switch (attackLogInEffect.laatste_aanval) {
         case "spelereersteaanval":
           spelerAttack = true;
           message = "Your turn to attack!";
@@ -123,7 +141,7 @@ const WildAttack: React.FC = () => {
           showEndScreen("חכו עד שהקרב יסתיים.");
           break;
         default:
-          message = `Error: ${attackLog.laatste_aanval}`;
+          message = `Error: ${attackLogInEffect.laatste_aanval}`;
       }
 
       dispatchBattle({ type: "SET_SPELER_ATTACK", value: spelerAttack });
@@ -132,12 +150,12 @@ const WildAttack: React.FC = () => {
 
       // Handle weather
       if (
-        attackLog.weather &&
-        battleState.currentWeather.includes(attackLog.weather)
+        attackLogInEffect.weather &&
+        battleState.currentWeather.includes(attackLogInEffect.weather)
       ) {
         document
           .getElementById("weather")
-          ?.classList.add("weather", attackLog.weather);
+          ?.classList.add("weather", attackLogInEffect.weather);
       } else {
         document.getElementById("weather")?.classList.remove("weather");
       }

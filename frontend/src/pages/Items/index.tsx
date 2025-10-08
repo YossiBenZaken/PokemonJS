@@ -121,7 +121,7 @@ const ItemsPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [currentCategory, selectedCharacter]);
+  }, [currentCategory]);
 
   useEffect(() => {
     loadItems();

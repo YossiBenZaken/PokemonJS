@@ -41,27 +41,6 @@ const Title = styled.h2`
   text-shadow: 1px 1px 3px #000;
 `;
 
-const Button = styled.button`
-  margin-top: 16px;
-  padding: 8px 18px;
-  border: none;
-  border-radius: 6px;
-  background: linear-gradient(45deg, #2196f3, #0d47a1);
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
-  transition: 0.2s;
-
-  &:disabled {
-    background: #555;
-    cursor: not-allowed;
-  }
-
-  &:hover:enabled {
-    transform: scale(1.05);
-  }
-`;
-
 const TERRAINS: Record<TerrainType, TerrainConfig> = {
   1: { id: 1, name: "Lavagrot", hebrewName: "מערת לבה" },
   2: { id: 2, name: "Vechtschool", hebrewName: "דוג'ו לחימה" },
