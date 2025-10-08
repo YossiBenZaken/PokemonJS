@@ -31,7 +31,7 @@ export function initializeSocket(io) {
       );
       socket.emit("sessionExpired", { reason: "timeout" });
       socket.disconnect(true);
-    }, 1 * 60 * 1000); // 10 דקות
+    }, 10 * 60 * 1000); // 10 דקות
 
     // 2️⃣ אם יש פעילות – נאפס את הטיימר
     socket.onAny(() => {

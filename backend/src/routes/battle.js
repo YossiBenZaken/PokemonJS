@@ -1,4 +1,4 @@
-import { InitBattle, currentBattle } from "../controllers/battle-controller.js";
+import { InitBattle, acceptEvolution, currentBattle, getDataGrow } from "../controllers/battle-controller.js";
 import {
   attackChangePokemon,
   attackUsePotion,
@@ -33,4 +33,6 @@ router.post("/wild-finish", extractAccId, finishWildBattle);
 router.post("/wild-attack", extractAccId, doWildAttack);
 router.get("/startRandomBattle", extractAccId, startRandomBattle);
 router.get("/current-battle", extractAccId, currentBattle);
+router.post("/accept-evo", extractAccId, acceptEvolution);
+router.get('/getDataGrow', extractAccId, getDataGrow);
 export default router;

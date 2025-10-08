@@ -233,6 +233,7 @@ export interface WildFinishResponse {
   text: boolean;
   money: number;
   drop: boolean;
+  dataOfLevelGrow: DataGrow;
 }
 
 export interface AttackChangePokemonResponse {
@@ -270,15 +271,41 @@ export interface AttackUsePotionResponse {
 }
 
 export interface AttackUsePokeballResponse {
-  message:   string;
-  ballLeft:  number;
-  good:      boolean;
+  message: string;
+  ballLeft: number;
+  good: boolean;
   option_id: number;
-  name:      string;
-  type:      string;
-  drop:      boolean;
+  name: string;
+  type: string;
+  drop: boolean;
 }
 
+export interface DataGrow {
+  evolutionOptions: EvolutionOption[];
+  needsAttention: boolean;
+  newAttack: null;
+}
+
+export interface EvolutionOption {
+  pokemonId: number;
+  newPokemonId: number;
+  evolutionData: EvolutionData;
+}
+
+export interface EvolutionData {
+  id: number;
+  level: number;
+  stone: string;
+  trade: number;
+  wild_id: number;
+  wat: string;
+  nieuw_id: number;
+  aanval: string;
+  gender: string;
+  region: string;
+  time: string;
+  item: string;
+}
 
 export const startWildBattleApi = async (
   pokemonId: number | undefined,
@@ -431,7 +458,7 @@ export const attackUsePokeball = async (
   aanval_log_id: number,
   item: string,
   option_id: string,
-  computerEffect: string,
+  computerEffect: string
 ): Promise<AttackUsePokeballResponse> => {
   const { data } = await axiosInstance.post<AttackUsePokeballResponse>(
     "/battle/attack-use-pokeball",
@@ -445,15 +472,35 @@ export const attackUsePokeball = async (
   return data;
 };
 
-export const startRandomTrainer = async(): Promise<PostChallengeResponse> => {
-  const {data} = await axiosInstance.get<PostChallengeResponse>('/battle/startRandomBattle');
+export const startRandomTrainer = async (): Promise<PostChallengeResponse> => {
+  const { data } = await axiosInstance.get<PostChallengeResponse>(
+    "/battle/startRandomBattle"
+  );
   return data;
-}
+};
 
-export const getBattleLogId = async(): Promise<{
-  success: boolean,
-  attackLogId: number
+export const getBattleLogId = async (): Promise<{
+  success: boolean;
+  attackLogId: number;
 }> => {
-  const {data} = await axiosInstance.get('/battle/current-battle');
+  const { data } = await axiosInstance.get("/battle/current-battle");
+  return data;
+};
+
+export const acceptEvolution = async (
+  pokemonId: number,
+  evoId: number,
+  decision: boolean = true
+): Promise<{ success: boolean }> => {
+  const { data } = await axiosInstance.post("/battle/accept-evo", {
+    pokemonId,
+    evoId,
+    decision
+  });
+  return data;
+};
+
+export const getDataGrow = async(): Promise<DataGrow> => {
+  const { data } = await axiosInstance.get("/battle/getDataGrow");
   return data;
 }

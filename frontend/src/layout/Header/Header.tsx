@@ -48,7 +48,9 @@ import { styled, useTheme } from "@mui/material/styles";
 import Alert from "@mui/material/Alert";
 import { AuthToken } from "../../api/auth.api";
 import { Box } from "@mui/system";
+import { getDataGrow } from "../../api/battle.api";
 import { socket } from "../../App";
+import { useBattle } from "../../contexts/BattleContext";
 import { useGame } from "../../contexts/GameContext";
 
 const drawerWidth = 220;
@@ -119,6 +121,7 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
     setConfig,
     config,
   } = useGame();
+  const {setPokemonEvolve} = useBattle();
   const navigationItems = [
     { path: "/", label: "בית", icon: <Home size={20} /> },
     { path: "/box", label: "הפוקימונים", icon: <Computer size={20} /> },
@@ -181,7 +184,18 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
         "getMyPokemons",
         selectedCharacter.user_id,
         (response: any) => {
+          const haveDecision = response.data.myPokemon.find(
+            (poke: any) => poke.decision != null && poke.decision !== ""
+          );
           setMyPokemons(response.data.myPokemon);
+          if (haveDecision) {
+            getDataGrow().then(res => {
+              setPokemonEvolve(res);
+              if (haveDecision.decision === "waiting_evo") {
+                navigate("/poke-evolve");
+              }
+            })
+          }
         }
       );
     }

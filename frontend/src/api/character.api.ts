@@ -89,8 +89,8 @@ export interface StarterPokemon {
   attack_base: number;
   defence_base: number;
   speed_base: number;
-  spc_attack_base: number;
-  spc_defence_base: number;
+  'spc.attack_base': number;
+  'spc.defence_base': number;
   hp_base: number;
   aanval_1: string;
   aanval_2: string;

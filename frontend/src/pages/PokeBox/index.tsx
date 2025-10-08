@@ -88,7 +88,7 @@ const PokeBox: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [selectedCharacter, currentBox]);
+  }, [currentBox]);
 
   const loadBoxPokemons = useCallback(async () => {
     if (!selectedCharacter) return;
@@ -104,7 +104,7 @@ const PokeBox: React.FC = () => {
     } catch (error) {
       setMessage({ type: "error", text: "שגיאה בטעינת פוקימוני הקופסה" });
     }
-  }, [selectedCharacter, currentBox]);
+  }, [currentBox]);
 
   useEffect(() => {
     loadBoxInfo();

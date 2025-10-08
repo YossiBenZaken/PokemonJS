@@ -585,12 +585,12 @@ export const chooseStarterPokemon = async (req, res) => {
       (((speed_iv + 2 * pokemon.speed_base) * 5) / 100 + 5) * trait.speed_add
     );
     const spcattackstat = Math.round(
-      (((spcattack_iv + 2 * pokemon.spc_attack_base) * 5) / 100 + 5) *
-        trait.spc_attack_add
+      (((spcattack_iv + 2 * pokemon[`spc.attack_base`]) * 5) / 100 + 5) *
+        trait[`spc.attack_add`]
     );
     const spcdefencestat = Math.round(
-      (((spcdefence_iv + 2 * pokemon.spc_defence_base) * 5) / 100 + 5) *
-        trait.spc_defence_add
+      (((spcdefence_iv + 2 * pokemon[`spc.defence_base`]) * 5) / 100 + 5) *
+        trait[`spc.defence_add`]
     );
     const hpstat = Math.round(
       ((hp_iv + 2 * pokemon.hp_base) * 5) / 100 + 10 + 5

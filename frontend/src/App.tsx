@@ -23,6 +23,7 @@ import { NewCharacterPage } from "./pages/NewCharacter";
 import Notifications from "./pages/Notifications";
 import NpcPage from "./pages/Npc";
 import PokeBox from "./pages/PokeBox";
+import PokeEvolvePage from "./pages/PokeEvolve";
 import PokedexPage from "./pages/Pokedex";
 import PrivateRoute from "./components/PrivateRoute";
 import { ProfilePage } from "./pages/Profile";
@@ -58,6 +59,14 @@ function App() {
                 element={
                   <PrivateRoute>
                     <NpcPage />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/poke-evolve"
+                element={
+                  <PrivateRoute>
+                    <PokeEvolvePage />
                   </PrivateRoute>
                 }
               />
