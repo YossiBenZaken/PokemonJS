@@ -132,8 +132,7 @@ export const finishWildBattle = async (req, res) => {
   }
   await pokemonPlayerHandUpdate(userId);
 
-  await pokemon_grow(userId);
-
+  const dataOfLevelGrow = await pokemon_grow(userId);
   // מחיקה של הקרב
   await removeAttack(userId, aanval_log.id);
 
@@ -143,6 +142,7 @@ export const finishWildBattle = async (req, res) => {
       text,
       money,
       drop,
+      dataOfLevelGrow
     },
   });
 };

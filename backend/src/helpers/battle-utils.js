@@ -315,7 +315,7 @@ export const pokemon_grow = async (userId) => {
 `;
 
   const pokemons = await query(sql, [userId]);
-
+  let dataOfLevelGrow = {};
   for (const select of pokemons) {
     count++;
 
@@ -356,7 +356,7 @@ export const pokemon_grow = async (userId) => {
         const expnodig = await nieuweStats(real, levelNieuw, real.exp);
 
         // בדיקה אם הפוקימון עולה level
-        await levelGroei(levelNieuw, real, userId);
+        dataOfLevelGrow = await levelGroei(levelNieuw, real, userId);
 
         // יצירת log
         const pokemonNaamEscaped = escapeHtml(naamGoed);
@@ -381,6 +381,8 @@ export const pokemon_grow = async (userId) => {
       }
     }
   }
+
+  return dataOfLevelGrow;
 };
 
 async function nieuweStats(pokemon, levelNieuw, nieuweXp) {
@@ -533,7 +535,7 @@ async function nieuweStats(pokemon, levelNieuw, nieuweXp) {
   }
 }
 
-async function levelGroei(levelNieuw, pokemon, userId) {
+export async function levelGroei(levelNieuw, pokemon, userId) {
   try {
     const levelenQuery = `SELECT * FROM levelen WHERE wild_id = ?`;
     const levelenResults = await query(levelenQuery, [pokemon.wild_id]);
@@ -571,6 +573,7 @@ async function levelGroei(levelNieuw, pokemon, userId) {
             } else {
               // אין מקום - שמור למשתמש להחליט מאוחר יותר
               newAttack = levelen.aanval;
+              await query("UPDATE `pokemon_speler` SET `decision` = 'waiting_attack' WHERE `id`=?", [pokemon.id]);
             }
           }
         }
@@ -617,6 +620,7 @@ async function levelGroei(levelNieuw, pokemon, userId) {
                 newPokemonId: newId,
                 evolutionData: levelen,
               });
+              await query("UPDATE `pokemon_speler` SET `decision` = 'waiting_evo' WHERE `id`=?", [pokemon.id]);
             }
           }
         }
@@ -1573,12 +1577,12 @@ export const rankerbij = async (type, userId, acc_id) => {
             trait.speed_add
         );
         const spcattackstat = Math.round(
-          (((spcattack_iv + 2 * pokemon.spc_attack_base) * 5) / 100 + 5) *
-            trait.spc_attack_add
+          (((spcattack_iv + 2 * pokemon[`spc.attack_base`]) * 5) / 100 + 5) *
+            trait[`spc.attack_add`]
         );
         const spcdefencestat = Math.round(
-          (((spcdefence_iv + 2 * pokemon.spc_defence_base) * 5) / 100 + 5) *
-            trait.spc_defence_add
+          (((spcdefence_iv + 2 * pokemon[`spc.defence_base`]) * 5) / 100 + 5) *
+            trait[`spc.defence_add`]
         );
         const hpstat = Math.round(
           ((hp_iv + 2 * pokemon.hp_base) * 5) / 100 + 10 + 5

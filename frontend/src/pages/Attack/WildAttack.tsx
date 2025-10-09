@@ -42,7 +42,6 @@ import {
   OpponentWrapper,
   PokemonImage,
   Progress,
-  TableDuelArena,
   TextBox,
   Title,
   Weather,
@@ -63,7 +62,8 @@ const WildAttack: React.FC = () => {
     pokemonInfo,
     setPokemonInfo,
     setAttackLog,
-    setComputerInfo
+    setComputerInfo,
+    setPokemonEvolve
   } = useBattle();
 
   const { selectedCharacter, myPokemons, itemInfo, attacks } = useGame();
@@ -352,7 +352,16 @@ const WildAttack: React.FC = () => {
 
         // Redirect after delay
         setTimeout(() => {
-          navigate("/attack/map");
+          if(response.dataOfLevelGrow.needsAttention) {
+            if(response.dataOfLevelGrow.newAttack) {
+              // navigate to new attack
+            } else {
+              setPokemonEvolve(response.dataOfLevelGrow);
+              navigate('/poke-evolve');
+            }
+          } else {
+            navigate("/attack/map");
+          }
         }, 7500);
       } catch (error) {
         console.error("End screen failed:", error);

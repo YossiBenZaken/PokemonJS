@@ -240,11 +240,15 @@ export const startRandomBattle = async (req, res) => {
 
 export const getBattleData = async (battleLogId) => {
   const battleInit = await getBattleInfo(battleLogId);
-  return {
-    battleLog: battleInit.aanval_log,
-    playerPokemon: battleInit.pokemon_info,
-    computerPokemon: battleInit.computer_info,
-  };
+  if(battleInit) {
+    return {
+      battleLog: battleInit.aanval_log,
+      playerPokemon: battleInit.pokemon_info,
+      computerPokemon: battleInit.computer_info,
+    };
+  } else {
+    return undefined;
+  }
 };
 
 // Main attack handler
@@ -1258,7 +1262,7 @@ export const finishTrainerBattle = async (req, res) => {
     // עדכון סטטיסטיקות פוקימונים
     await pokemonPlayerHandUpdate(userId);
 
-    await pokemon_grow(userId);
+    const dataOfLevelGrow = await pokemon_grow(userId);
 
     // מחיקה של הקרב
     await removeAttack(userId, logs.id);
@@ -1269,6 +1273,7 @@ export const finishTrainerBattle = async (req, res) => {
         reward,
         hm,
         victory,
+        dataOfLevelGrow
       },
     });
   } catch (err) {

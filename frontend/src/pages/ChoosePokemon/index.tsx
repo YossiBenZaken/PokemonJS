@@ -382,14 +382,14 @@ export const ChoosePokemonPage: React.FC = () => {
                 <Activity size={16} />
                 Sp. Atk
               </PokemonStatLabel>
-              <PokemonStatValue>{selectedPokemon.spc_attack_base}</PokemonStatValue>
+              <PokemonStatValue>{selectedPokemon["spc.attack_base"]}</PokemonStatValue>
             </PokemonStat>
             <PokemonStat>
               <PokemonStatLabel>
                 <Shield size={16} />
                 Sp. Def
               </PokemonStatLabel>
-              <PokemonStatValue>{selectedPokemon.spc_defence_base}</PokemonStatValue>
+              <PokemonStatValue>{selectedPokemon["spc.defence_base"]}</PokemonStatValue>
             </PokemonStat>
           </PokemonStats>
         )}
