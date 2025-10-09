@@ -188,7 +188,7 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
             (poke: any) => poke.decision != null && poke.decision !== ""
           );
           setMyPokemons(response.data.myPokemon);
-          if (haveDecision) {
+          if (haveDecision && !['/attack/wild', '/attack/trainer'].includes(location.pathname)) {
             getDataGrow().then(res => {
               setPokemonEvolve(res);
               if (haveDecision.decision === "waiting_evo") {
