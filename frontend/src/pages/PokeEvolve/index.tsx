@@ -28,13 +28,15 @@ const PokeEvolvePage: React.FC = () => {
     return matches;
   }
 
+  if(!pokemonEvolve) return null;
+
   const result = findPokemonByEvolution(myPokemons, pokemonEvolve);
   const cancelEvo = async (pokemonId: number, fromAccept: boolean = false) => {
     const filteredPokemon = pokemonEvolve.evolutionOptions.filter(
       (evo) => evo.pokemonId !== pokemonId
     );
     setPokemonEvolve((prev) => ({
-      ...prev,
+      ...prev!,
       evolutionOptions: filteredPokemon,
     }));
     if (!fromAccept) {

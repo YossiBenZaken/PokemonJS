@@ -36,8 +36,8 @@ interface BattleContextType {
   attackLog: AanvalLog | undefined;
   setAttackLog: React.Dispatch<React.SetStateAction<AanvalLog | undefined>>;
 
-  pokemonEvolve: DataGrow;
-  setPokemonEvolve: React.Dispatch<React.SetStateAction<DataGrow>>;
+  pokemonEvolve: DataGrow | undefined;
+  setPokemonEvolve: React.Dispatch<React.SetStateAction<DataGrow|undefined>>;
 
   battleState: BattleState;
   dispatchBattle: React.Dispatch<any>;
@@ -55,30 +55,7 @@ export const BattleProvider: React.FC<BattleProviderProps> = ({ children }) => {
   const [computerInfo, setComputerInfo] = useState<ComputerInfo>();
   const [pokemonInfo, setPokemonInfo] = useState<PokemonInfo>();
   const [attackLog, setAttackLog] = useState<AanvalLog>();
-  const [pokemonEvolve, setPokemonEvolve] = useState<DataGrow>({
-    evolutionOptions: [
-      {
-        pokemonId: 5,
-        newPokemonId: 5,
-        evolutionData: {
-          id: 28,
-          level: 16,
-          stone: "",
-          trade: 0,
-          wild_id: 4,
-          wat: "evo",
-          nieuw_id: 5,
-          aanval: "",
-          gender: "",
-          region: "",
-          time: "",
-          item: "",
-        },
-      },
-    ],
-    needsAttention: true,
-    newAttack: null,
-  });
+  const [pokemonEvolve, setPokemonEvolve] = useState<DataGrow>();
 
   const [battleState, dispatchBattle] = useReducer(
     battleReducer,

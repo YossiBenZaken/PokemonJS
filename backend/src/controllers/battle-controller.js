@@ -191,6 +191,35 @@ export const acceptEvolution = async (req, res) => {
   });
 };
 
+export const learnNewAttack = async (req, res) => {
+  const { pokemonId, oldAttack, newAttack } = req.body;
+  const userId = req.user?.user_id;
+
+  const [pokemon] = await query(
+    "SELECT * FROM `pokemon_speler` WHERE `user_id`=? AND `id`=?",
+    [userId, pokemonId]
+  );
+  if (!pokemon) {
+    return res.json({
+      success: false,
+    });
+  }
+  await query("UPDATE `pokemon_speler` SET `decision`=NULL WHERE `id`=?", [
+    pokemonId,
+  ]);
+
+  if (oldAttack) {
+    await query(`UPDATE \`pokemon_speler\` SET ${oldAttack}=? WHERE id=?`, [
+      newAttack,
+      pokemonId,
+    ]);
+  }
+
+  return res.json({
+    success: true,
+  });
+};
+
 export const getDataGrow = async (req, res) => {
   const userId = req.user?.user_id;
   const myPokemons = await query(
@@ -201,14 +230,10 @@ export const getDataGrow = async (req, res) => {
   );
 
   for (const pokemon of myPokemons) {
-    const { needsAttention, evolutionOptions, newAttack } = await levelGroei(
-      pokemon.level,
-      pokemon,
-      userId
-    );
-    return res.json({ needsAttention, evolutionOptions, newAttack });
+    const { needsAttention, evolutionOptions, newAttack, pokemonId } =
+      await levelGroei(pokemon.level, pokemon, userId);
+    return res.json({ needsAttention, evolutionOptions, newAttack, pokemonId });
   }
-
 };
 
 export function computerNaam(old) {

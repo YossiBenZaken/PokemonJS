@@ -283,7 +283,8 @@ export interface AttackUsePokeballResponse {
 export interface DataGrow {
   evolutionOptions: EvolutionOption[];
   needsAttention: boolean;
-  newAttack: null;
+  newAttack: string;
+  pokemonId: number;
 }
 
 export interface EvolutionOption {
@@ -495,12 +496,25 @@ export const acceptEvolution = async (
   const { data } = await axiosInstance.post("/battle/accept-evo", {
     pokemonId,
     evoId,
-    decision
+    decision,
   });
   return data;
 };
 
-export const getDataGrow = async(): Promise<DataGrow> => {
+export const learnNewAttack = async (
+  pokemonId: number,
+  oldAttack: string | undefined,
+  newAttack: string
+): Promise<{ success: boolean }> => {
+  const { data } = await axiosInstance.post("/battle/learn-new-attack", {
+    pokemonId,
+    oldAttack,
+    newAttack,
+  });
+  return data;
+};
+
+export const getDataGrow = async (): Promise<DataGrow> => {
   const { data } = await axiosInstance.get("/battle/getDataGrow");
   return data;
-}
+};
