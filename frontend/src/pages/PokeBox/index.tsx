@@ -12,10 +12,8 @@ import {
   getHouseUpgradeMessage,
   getPokemonDisplayName,
   getPokemonImageUrl,
-  getTopMedalIcon,
   movePokemon,
   releasePokemon,
-  sellPokemon,
 } from "../../api/pokebox.api";
 import React, { useCallback, useEffect, useState } from "react";
 
@@ -266,7 +264,7 @@ const PokeBox: React.FC = () => {
 
         {/* Action menu overlay */}
         {showMenu && (
-          <div className="absolute inset-0 bg-black bg-opacity-80 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-center items-center rounded-lg text-xs gap-1">
+          <div className="absolute inset-0 bg-black bg-opacity-80 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-start items-center rounded-lg text-xs gap-1 top-[3.5rem]">
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -405,7 +403,7 @@ const PokeBox: React.FC = () => {
   );
 
   const renderTeamSection = () => (
-    <div className="bg-white rounded-lg shadow-lg p-6">
+    <div className="bg-white rounded-lg shadow-lg p-6 mb-[6rem]">
       <h3 className="text-xl font-bold mb-4 text-gray-800">הצוות הנוכחי:</h3>
       <div className="grid grid-cols-6 gap-3">
         {boxInfo!.teamPokemons.map((pokemon) => renderPokemon(pokemon))}
@@ -605,6 +603,21 @@ const PokeBox: React.FC = () => {
                 <span>
                   {selectedPokemon.type1}
                   {selectedPokemon.type2 ? `/${selectedPokemon.type2}` : ""}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="font-medium">התקפות:</span>
+                <span>
+                  {selectedPokemon.aanval_1}
+                  {selectedPokemon.aanval_2 ? `/${selectedPokemon.aanval_2}` : ""}
+                  {selectedPokemon.aanval_3 ? `/${selectedPokemon.aanval_3}` : ""}
+                  {selectedPokemon.aanval_4 ? `/${selectedPokemon.aanval_4}` : ""}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="font-medium">כוח:</span>
+                <span>
+                  {selectedPokemon.attack + selectedPokemon.defence + selectedPokemon.speed + selectedPokemon["spc.attack"] + selectedPokemon["spc.defence"]}
                 </span>
               </div>
               {selectedPokemon.shiny === 1 && (

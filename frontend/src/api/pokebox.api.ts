@@ -14,6 +14,15 @@ export interface Pokemon {
   roepnaam?: string;
   item?: string;
   top3?: string;
+  aanval_1: string;
+  aanval_2: string;
+  aanval_3: string;
+  aanval_4: string;
+  attack: number;
+  defence: number;
+  speed: number;
+  'spc.attack': number;
+  'spc.defence': number;
 }
 
 export interface BoxSlot {
