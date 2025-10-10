@@ -227,6 +227,7 @@ export interface TrainerFinishResponse {
   reward: number;
   hm: string;
   badge?: string;
+  dataOfLevelGrow: DataGrow;
 }
 
 export interface WildFinishResponse {

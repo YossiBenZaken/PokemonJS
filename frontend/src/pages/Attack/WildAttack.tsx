@@ -353,10 +353,10 @@ const WildAttack: React.FC = () => {
         // Redirect after delay
         setTimeout(() => {
           if(response.dataOfLevelGrow.needsAttention) {
+            setPokemonEvolve(response.dataOfLevelGrow);
             if(response.dataOfLevelGrow.newAttack) {
-              // navigate to new attack
+              navigate('/poke-new-attack')
             } else {
-              setPokemonEvolve(response.dataOfLevelGrow);
               navigate('/poke-evolve');
             }
           } else {

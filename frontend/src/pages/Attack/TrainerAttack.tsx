@@ -60,6 +60,7 @@ const TrainerAttack: React.FC = () => {
     battleState,
     dispatchBattle,
     setPokemonInfo,
+    setPokemonEvolve
   } = useBattle();
   const { attacks, myPokemons, selectedCharacter, itemInfo } = useGame();
   const navigate = useNavigate();
@@ -384,6 +385,16 @@ const TrainerAttack: React.FC = () => {
 
       // Redirect after delay
       setTimeout(() => {
+        if(response.dataOfLevelGrow.needsAttention) {
+          setPokemonEvolve(response.dataOfLevelGrow);
+          if(response.dataOfLevelGrow.newAttack) {
+            navigate('/poke-new-attack')
+          } else {
+            navigate('/poke-evolve');
+          }
+        } else {
+          navigate("/attack/map");
+        }
         navigate("/");
       }, 7500);
     } catch (error) {

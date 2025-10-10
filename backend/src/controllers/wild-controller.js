@@ -615,12 +615,12 @@ export const doWildAttack = async (req, res) => {
 
     // Calculate damage
     if (attackInfo.sterkte > 0) {
-      lifeDecrease = damageController(
+      lifeDecrease = (await damageController(
         attackerInfo,
         opponentInfo,
         attackInfo,
         battleLog.weather
-      );
+      )).damage;
     } else if (attackInfo.hp_schade > 0) {
       lifeDecrease = attackInfo.hp_schade;
     }

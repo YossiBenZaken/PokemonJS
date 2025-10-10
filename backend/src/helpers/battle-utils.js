@@ -573,7 +573,10 @@ export async function levelGroei(levelNieuw, pokemon, userId) {
             } else {
               // אין מקום - שמור למשתמש להחליט מאוחר יותר
               newAttack = levelen.aanval;
-              await query("UPDATE `pokemon_speler` SET `decision` = 'waiting_attack' WHERE `id`=?", [pokemon.id]);
+              await query(
+                "UPDATE `pokemon_speler` SET `decision` = 'waiting_attack' WHERE `id`=?",
+                [pokemon.id]
+              );
             }
           }
         }
@@ -620,7 +623,10 @@ export async function levelGroei(levelNieuw, pokemon, userId) {
                 newPokemonId: newId,
                 evolutionData: levelen,
               });
-              await query("UPDATE `pokemon_speler` SET `decision` = 'waiting_evo' WHERE `id`=?", [pokemon.id]);
+              await query(
+                "UPDATE `pokemon_speler` SET `decision` = 'waiting_evo' WHERE `id`=?",
+                [pokemon.id]
+              );
             }
           }
         }
@@ -820,126 +826,6 @@ export const getAttackInfo = async (attackName) => {
   ]);
 
   return attack || null;
-};
-
-// Helper functions for battle calculations
-export const damageController = (
-  attackerInfo,
-  opponentInfo,
-  attackInfo,
-  weather
-) => {
-  // Implement damage calculation from PHP damage_controller function
-  let damage = 0;
-
-  // Base damage calculation
-  if (attackInfo.sterkte > 0) {
-    const level = attackerInfo.level;
-    const attackStat =
-      attackInfo.tipo === "Physical"
-        ? attackerInfo.attack
-        : attackerInfo["spc.attack"];
-    const defenseStat =
-      attackInfo.tipo === "Physical"
-        ? opponentInfo.defence
-        : opponentInfo["spc.defence"];
-
-    // Pokemon damage formula
-    damage = Math.floor(
-      ((((((2 * level) / 5 + 2) * attackStat) / defenseStat) *
-        attackInfo.sterkte) /
-        50 +
-        2) *
-        (Math.random() * 0.15 + 0.85) // Random factor 85-100%
-    );
-
-    // STAB (Same Type Attack Bonus)
-    if (
-      attackInfo.soort === attackerInfo.type1 ||
-      attackInfo.soort === attackerInfo.type2
-    ) {
-      damage = Math.floor(damage * 1.5);
-    }
-
-    // Type effectiveness
-    const effectiveness = getTypeEffectiveness(attackInfo.soort, opponentInfo);
-    damage = Math.floor(damage * effectiveness);
-
-    // Weather effects
-    if (weather) {
-      damage = applyWeatherEffects(damage, attackInfo, weather);
-    }
-  } else if (attackInfo.hp_schade > 0) {
-    damage = attackInfo.hp_schade;
-  }
-
-  return Math.max(0, damage);
-};
-
-const getTypeEffectiveness = (attackType, defender) => {
-  // Simplified type effectiveness chart
-  const typeChart = {
-    Water: { Fire: 2, Ground: 2, Rock: 2, Grass: 0.5, Dragon: 0.5, Water: 0.5 },
-    Fire: {
-      Grass: 2,
-      Ice: 2,
-      Bug: 2,
-      Steel: 2,
-      Water: 0.5,
-      Fire: 0.5,
-      Rock: 0.5,
-    },
-    Electric: { Water: 2, Flying: 2, Electric: 0.5, Grass: 0.5, Ground: 0 },
-    Grass: { Water: 2, Ground: 2, Rock: 2, Fire: 0.5, Grass: 0.5, Flying: 0.5 },
-    Psychic: { Fighting: 2, Poison: 2, Psychic: 0.5, Steel: 0.5, Dark: 0 },
-    Fighting: {
-      Normal: 2,
-      Ice: 2,
-      Rock: 2,
-      Dark: 2,
-      Steel: 2,
-      Flying: 0.5,
-      Psychic: 0.5,
-      Ghost: 0,
-    },
-    Normal: { Rock: 0.5, Steel: 0.5, Ghost: 0 },
-  };
-
-  let effectiveness = 1;
-
-  if (typeChart[attackType]?.[defender.type1]) {
-    effectiveness *= typeChart[attackType][defender.type1];
-  }
-
-  if (defender.type2 && typeChart[attackType]?.[defender.type2]) {
-    effectiveness *= typeChart[attackType][defender.type2];
-  }
-
-  return effectiveness;
-};
-
-const applyWeatherEffects = (damage, attackInfo, weather) => {
-  switch (weather) {
-    case "rain":
-    case "heavy_rain":
-      if (attackInfo.soort === "Water") return Math.floor(damage * 1.5);
-      if (attackInfo.soort === "Fire") return Math.floor(damage * 0.5);
-      break;
-    case "harsh_sunlight":
-    case "extremely_harsh_sunlight":
-      if (attackInfo.soort === "Fire") return Math.floor(damage * 1.5);
-      if (attackInfo.soort === "Water") return Math.floor(damage * 0.5);
-      break;
-    case "sandstorm":
-      if (
-        attackInfo.naam === "Solar Beam" ||
-        attackInfo.naam === "Solar Blade"
-      ) {
-        return Math.floor(damage * 0.5);
-      }
-      break;
-  }
-  return damage;
 };
 
 export const multipleHits = (attackInfo, damage) => {
@@ -1678,4 +1564,679 @@ function escapeHtml(str) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
+}
+
+export const damageController = async (
+  attackerInfo,
+  opponentInfo,
+  attackInfo,
+  weather = ""
+) => {
+  const messages = []; // Store battle messages
+
+  let ab1 = attackerInfo.ability;
+  let ab2 = opponentInfo.ability;
+
+  // Get ability names (assuming ability() function exists)
+  let ability =
+    (await query("SELECT * FROM `abilities` WHERE id=?", [ab1]))?.name || "";
+  let ability2 =
+    (await query("SELECT * FROM `abilities` WHERE id=?", [ab2]))?.name || "";
+
+  // Klutz removes attacker's item
+  if (ability2 === "Klutz") {
+    attackerInfo.item = "";
+  }
+
+  const atkName = attackInfo.naam;
+  const basedOn = getAttackCategory(atkName); // Get move category
+
+  // Mold Breaker abilities
+  const moldBreakerAbilities = ["Mold Breaker", "Teravolt", "Turboblaze"];
+  const moldBreakerImmune = [
+    "Aura Break",
+    "Magic Guard",
+    "Comatose",
+    "Shields Down",
+    "Full Metal Body",
+    "Shadow Shield",
+    "Prism Armor",
+  ];
+
+  if (
+    moldBreakerAbilities.includes(ability) &&
+    !moldBreakerImmune.includes(ability2)
+  ) {
+    ability2 = "";
+    messages.push(
+      `A Ability ${ability} de ${attackerInfo.naam} cancelou a Ability de ${opponentInfo.naam}!`
+    );
+  }
+
+  // Moves that ignore abilities
+  const abilityIgnoringMoves = [
+    "Moongeist Beam",
+    "Sunsteel Strike",
+    "Searing Sunraze Smash",
+    "Menacing Moonraze Maelstrom",
+    "Light That Burns the Sky",
+  ];
+  if (abilityIgnoringMoves.includes(atkName)) {
+    ability2 = "";
+    messages.push(
+      `O Move ${atkName} cancelou a Ability de ${opponentInfo.naam}!`
+    );
+  }
+
+  // Power calculation based on move
+  let power;
+
+  if (atkName === "Eruption" || atkName === "Water Spout") {
+    power = 150 * (attackerInfo.leven / attackerInfo.levenmax);
+  } else if (atkName === "Crush Grip" || atkName === "Wring Out") {
+    power = 120 * (opponentInfo.leven / opponentInfo.levenmax);
+  } else if (
+    atkName === "Brine" &&
+    opponentInfo.leven / opponentInfo.levenmax <= 0.5
+  ) {
+    power = 130;
+  } else if (atkName === "Venoshock" && opponentInfo.effect === "Poison") {
+    power = 130;
+  } else if (atkName === "Flail" || atkName === "Reversal") {
+    const hp = (opponentInfo.leven / opponentInfo.levenmax) * 100;
+    if (hp >= 69) power = 20;
+    else if (hp > 35 && hp < 69) power = 40;
+    else if (hp > 20 && hp < 35) power = 80;
+    else if (hp > 10 && hp < 20) power = 100;
+    else if (hp > 4 && hp < 10) power = 150;
+    else power = 200;
+  } else if (atkName === "Magnitude") {
+    const magnitudes = [10, 30, 50, 70, 90, 110, 150];
+    power = magnitudes[Math.floor(Math.random() * magnitudes.length)];
+  } else {
+    power = attackInfo.sterkte;
+  }
+
+  // Attack type
+  const tipo = attackInfo.tipo;
+
+  // Foul Play uses opponent's attack stats
+  if (atkName === "Foul Play") {
+    attackerInfo.attack = opponentInfo.attack;
+    attackerInfo["spc.attack"] = opponentInfo["spc.attack"];
+  }
+
+  // Determine attack and defense stats
+  let atk, def;
+
+  if (atkName === "Photon Geyser" || atkName === "Light That Burns the Sky") {
+    if (attackerInfo.attack > attackerInfo["spc.attack"]) {
+      def = Math.max(opponentInfo.defence, 1);
+      atk = attackerInfo.attack;
+    } else {
+      def = Math.max(opponentInfo["spc.defence"], 1);
+      atk = attackerInfo["spc.attack"];
+    }
+  } else {
+    if (tipo === "Physical") {
+      def = Math.max(opponentInfo.defence, 1);
+      atk = attackerInfo.attack;
+    } else {
+      def = Math.max(opponentInfo["spc.defence"], 1);
+      atk = attackerInfo["spc.attack"];
+    }
+  }
+
+  // Item boosts for specific Pokemon
+  const pikachuFamily = ["25", "923", "967", "968", "966", "965"];
+  const marowakFamily = ["104", "105"];
+
+  if (
+    attackerInfo.item === "Light Ball" &&
+    pikachuFamily.includes(String(attackerInfo.wild_id))
+  ) {
+    atk *= 1.5;
+  } else if (
+    attackerInfo.item === "Thick Club" &&
+    marowakFamily.includes(String(attackerInfo.wild_id)) &&
+    tipo === "Physical"
+  ) {
+    atk *= 1.5;
+  }
+
+  // Move type
+  const golpeType = attackInfo.soort;
+
+  // Abilities affecting power (#1)
+  const typeChangeAbilities = [
+    "Refrigerate",
+    "Pixilate",
+    "Aerilate",
+    "Galvanize",
+  ];
+  if (typeChangeAbilities.includes(ability) && golpeType === "Normal") {
+    power *= 1.2;
+  } else if (ability === "Normalize") {
+    power *= 1.2;
+  } else if (ability === "Technician" && power <= 60) {
+    power *= 1.5;
+  } else if (ability === "Water Bubble" && golpeType === "Water") {
+    power *= 1.5;
+  } else if (ability === "Flash Fire" && golpeType === "Fire") {
+    power *= 1.5;
+  } else if (ability === "Tough Claws" && attackInfo.makes_contact === 1) {
+    power = Math.round(power + power / 3.3);
+  } else if (ability === "Strong Jaw" && basedOn === "bite") {
+    power = Math.round(power + power / 2);
+  } else if (ability === "Mega Launcher" && basedOn === "aura, pulse") {
+    power = Math.round(power + power / 2);
+  } else if (ability === "Iron Fist" && basedOn === "punch") {
+    power = Math.round(power + power / 5);
+  }
+
+  // Type-boosting items
+  const typeBoostItems = {
+    "Hard Stone": "Rock",
+    "Black Belt": "Fighting",
+    "Black Glasses": "Dark",
+    "Black Sludge": "Poison",
+    Charcoal: "Fire",
+    "Dragon Fang": "Dragon",
+    Magnet: "Electric",
+    "Miracle Seed": "Grass",
+    "Mystic Water": "Water",
+    "Never-Melt Ice": "Ice",
+    "Twisted Spoon": "Psychic",
+    "Sharp Beak": "Flying",
+    "Silk Scarf": "Normal",
+    "Silver Powder": "Bug",
+    "Soft Sand": "Ground",
+    "Spell Tag": "Ghost",
+    "Metal Powder": "Steel",
+    Eviolite: "Fairy",
+  };
+
+  if (typeBoostItems[attackerInfo.item] === golpeType) {
+    power = Math.round(power + power / 5);
+  }
+
+  // Soul Dew boost
+  const latiFamily = ["381", "842", "841", "380"];
+  if (
+    attackerInfo.item === "Soul Dew" &&
+    latiFamily.includes(String(attackerInfo.wild_id)) &&
+    ["Dragon", "Psychic"].includes(golpeType)
+  ) {
+    power *= 1.45;
+  }
+
+  // Opponent defensive abilities
+  const fullBodyAbilities = ["Full Metal Body", "Clear Body"];
+  if (ability2 === "Thick Fat" && !fullBodyAbilities.includes(ability)) {
+    if (golpeType === "Fire" || golpeType === "Ice") {
+      atk *= 0.5;
+    }
+  } else if (
+    ability2 === "Intimidate" &&
+    !fullBodyAbilities.includes(ability)
+  ) {
+    atk *= 0.5;
+  }
+
+  // Aura abilities
+  const hasAuraBreak = ability === "Aura Break" || ability2 === "Aura Break";
+  if ((ability === "Dark Aura" || ability2 === "Dark Aura") && !hasAuraBreak) {
+    if (golpeType === "Dark") {
+      atk = Math.round(atk + atk / 3);
+    }
+  }
+  if (
+    (ability === "Fairy Aura" || ability2 === "Fairy Aura") &&
+    !hasAuraBreak
+  ) {
+    if (golpeType === "Fairy") {
+      atk = Math.round(atk + atk / 3);
+    }
+  }
+  if (hasAuraBreak && ["Dark", "Fairy"].includes(golpeType)) {
+    atk = Math.round(atk - atk / 3);
+  }
+
+  // Defense modifications
+  if (ability2 === "Fur Coat" && tipo === "Physical") {
+    def = def * 2;
+  } else if (ability2 === "Marvel Scale" && opponentInfo.effect) {
+    def *= 1.5;
+  }
+
+  // Attack modifications
+  if (
+    ability === "Huge Power" ||
+    (ability === "Pure Power" && tipo === "Physical")
+  ) {
+    atk *= 2;
+  } else if (
+    ability === "Guts" &&
+    attackerInfo.effect &&
+    attackerInfo.effect !== "Frozen" &&
+    tipo === "Physical"
+  ) {
+    atk *= 2;
+  } else if (
+    ability === "Toxic Boost" &&
+    attackerInfo.effect === "Poison" &&
+    tipo === "Physical"
+  ) {
+    atk = Math.round(atk + atk / 2);
+  } else if (
+    ability === "Flare Boost" &&
+    attackerInfo.effect === "Burn" &&
+    tipo === "Special"
+  ) {
+    atk = Math.round(atk + atk / 2);
+  }
+
+  // Type-based ability boosts
+  const hpThreshold = attackerInfo.leven / attackerInfo.levenmax <= 0.5;
+  if (ability === "Overgrow" && hpThreshold && golpeType === "Grass") {
+    power = Math.round(power + power / 2);
+  } else if (ability === "Blaze" && hpThreshold && golpeType === "Fire") {
+    power = Math.round(power + power / 2);
+  } else if (ability === "Torrent" && hpThreshold && golpeType === "Water") {
+    power = Math.round(power + power / 2);
+  } else if (ability === "Swarm" && hpThreshold && golpeType === "Bug") {
+    power = Math.round(power + power / 2);
+  } else if (ability === "Steelworker" && golpeType === "Steel") {
+    power *= 1.5;
+  } else if (ability === "Hustle" && tipo === "Physical") {
+    power *= 1.5;
+  }
+
+  // Item power boosts
+  if (attackerInfo.item === "Expert Belt") {
+    power = Math.round(power + power / 5);
+  } else if (attackerInfo.item === "Muscle Band" && tipo === "Physical") {
+    power = Math.round(power + power / 10);
+  } else if (attackerInfo.item === "Wise Glasses" && tipo === "Special") {
+    power = Math.round(power + power / 10);
+  } else if (
+    attackerInfo.item === "Metronome" &&
+    attackInfo.aantalkeer !== "1"
+  ) {
+    power *= 1.3;
+  }
+
+  // Type advantage
+  let attackAdv = await attackToDefenderAdvantage(golpeType, opponentInfo);
+
+  // Scrappy ability
+  if (
+    ability === "Scrappy" &&
+    (opponentInfo.type1 === "Ghost" || opponentInfo.type2 === "Ghost") &&
+    ["Normal", "Fighting"].includes(golpeType)
+  ) {
+    attackAdv = 1;
+  } else if (ability === "Neuroforce" && attackAdv >= 2) {
+    power = Math.round(power + power / 5);
+  }
+
+  // Weather effects on Flying types
+  if (
+    weather === "mysterious_air_current" &&
+    (opponentInfo.type1 === "Flying" || opponentInfo.type2 === "Flying")
+  ) {
+    attackAdv = 1;
+  }
+
+  // Random factor
+  const luck = Math.floor(Math.random() * 57) + 200; // 200-256
+
+  // STAB (Same Type Attack Bonus)
+  let stab = 1;
+  if (
+    golpeType === attackerInfo.type1 ||
+    (attackerInfo.type2 && golpeType === attackerInfo.type2)
+  ) {
+    stab = 1.5;
+    if (ability === "Adaptability") stab = 2;
+  }
+
+  // Weather effects
+  let w = 1;
+  const weatherImmune = ["Air Lock", "Cloud Nine"];
+  if (!weatherImmune.includes(ability) && !weatherImmune.includes(ability2)) {
+    if (weather === "rain" || weather === "heavy_rain") {
+      if (golpeType === "Water") w = 1.5;
+      else if (golpeType === "Fire") w = 0.5;
+    } else if (
+      weather === "harsh_sunlight" ||
+      weather === "extremely_harsh_sunlight"
+    ) {
+      if (
+        ability === "Flower Gift" ||
+        (ability === "Solar Power" && tipo === "Special")
+      ) {
+        atk = atk * 1.5;
+      }
+      if (ability2 === "Flower Gift") {
+        def *= 1.5;
+      }
+      if (golpeType === "Water") w = 0.5;
+      else if (golpeType === "Fire") w = 1.5;
+    } else if (weather === "sandstorm") {
+      if (
+        ability === "Sand Force" &&
+        ["Rock", "Ground", "Steel"].includes(golpeType)
+      ) {
+        power = Math.round(power + power / 3);
+      }
+      if (tipo === "Special") {
+        def *= 1.5;
+      }
+      if (atkName === "Solar Beam" || atkName === "Solar Blade") {
+        power /= 2;
+      }
+    } else if (weather === "hail") {
+      if (atkName === "Solar Beam" || atkName === "Solar Blade") {
+        power /= 2;
+      }
+    }
+  }
+
+  // Damage formula
+  let dano = 0;
+
+  if (attackAdv > 0) {
+    const oneHitKOMoves = ["Fissure", "Guillotine", "Horn Drill", "Sheer Cold"];
+
+    if (oneHitKOMoves.includes(atkName)) {
+      dano = opponentInfo.leven;
+    } else if (atkName === "Dragon Rage") {
+      dano = 40;
+    } else if (atkName === "Sonic Boom") {
+      dano = 20;
+    } else if (atkName === "Psywave") {
+      dano = Math.floor((Math.random() * 0.1 + 0.5) * 100);
+    } else if (atkName === "Guardian of Alola") {
+      dano = Math.max(Math.round(opponentInfo.leven * 0.75), 1);
+    } else if (["Seismic Toss", "Night Shade"].includes(atkName)) {
+      dano = attackerInfo.level;
+    } else if (["Super Fang", "Natures Madness"].includes(atkName)) {
+      dano = Math.max(Math.round(opponentInfo.leven * 0.5), 1);
+    } else if (atkName === "Endeavor") {
+      dano = attackerInfo.levenmax - attackerInfo.leven;
+    } else {
+      if (attackInfo.sterkte > 0) {
+        dano = Math.round(
+          (((((2 * attackerInfo.level) / 5 + 2) * (atk / def) * power) / 50 +
+            2) *
+            stab *
+            attackAdv *
+            luck *
+            w) /
+            255
+        );
+      } else {
+        dano = 0;
+      }
+    }
+  }
+
+  // Defensive abilities and items
+  if (ability2 === "Water Bubble" && golpeType === "Fire") {
+    dano /= 2;
+  } else if (ability2 === "Flash Fire" && golpeType === "Fire") {
+    dano = 0;
+  } else if (
+    ["Filter", "Solid Rock", "Prism Armor"].includes(ability2) &&
+    attackAdv >= 2
+  ) {
+    dano *= 0.75;
+  } else if (
+    ["Shadow Shield", "Multiscale"].includes(ability2) &&
+    opponentInfo.leven / opponentInfo.levenmax === 1
+  ) {
+    dano /= 2;
+  } else if (ability2 === "Wonder Guard" && attackAdv < 2) {
+    dano = 0;
+  } else if (ability2 === "Levitate" && golpeType === "Ground") {
+    dano = 0;
+  } else if (
+    ability2 === "Damp" &&
+    ["Self-Destruct", "Explosion", "Mind Blown"].includes(atkName)
+  ) {
+    dano = 0;
+  } else if (ability2 === "Heatproof" && golpeType === "Fire") {
+    dano = Math.round(dano / 2);
+  } else if (
+    (ability2 === "Sturdy" || opponentInfo.item === "Focus Sash") &&
+    opponentInfo.leven === opponentInfo.levenmax &&
+    dano >= opponentInfo.leven
+  ) {
+    dano = opponentInfo.leven - 1;
+  } else if (
+    opponentInfo.item === "Focus Band" &&
+    opponentInfo.leven === opponentInfo.levenmax &&
+    dano >= opponentInfo.leven &&
+    Math.random() < 0.15
+  ) {
+    dano = opponentInfo.leven - 1;
+  } else if (ability2 === "Volt Absorb" && golpeType === "Electric") {
+    dano = 0;
+  } else if (ability2 === "Water Absorb" && golpeType === "Water") {
+    dano = 0;
+  } else if (ability2 === "Disguise" && Math.random() < 0.0625) {
+    messages.push("Mimikyu não tomou dano por causa de sua Ability, Disguise!");
+    dano = 0;
+  } else if (ability2 === "Bulletproof" && basedOn === "ball, bomb") {
+    dano = 0;
+  } else if (ability2 === "Soundproof" && basedOn === "sound") {
+    dano = 0;
+  }
+
+  // Tinted Lens
+  if (ability === "Tinted Lens" && attackAdv > 0 && attackAdv <= 0.5) {
+    dano *= 2;
+  }
+
+  // Air Balloon
+  if (
+    opponentInfo.item === "Air Balloon" &&
+    golpeType === "Ground" &&
+    Math.random() < 0.5
+  ) {
+    dano = 0;
+  }
+
+  // Extreme weather
+  if (weather === "extremely_harsh_sunlight" && golpeType === "Water") {
+    messages.push("Ataques tipo água evaporam por conta desse calor!");
+    dano = 0;
+  } else if (weather === "heavy_rain" && golpeType === "Fire") {
+    messages.push(
+      "Ataques tipo fogo dispersam-se por conta dessa chuva pesada!"
+    );
+    dano = 0;
+  }
+
+  return {
+    damage: Math.round(dano),
+    messages,
+  };
+};
+function getAttackCategory(attackName) {
+  let category = "normal";
+
+  if (
+    [
+      "Bite",
+      "Crunch",
+      "Fire Fang",
+      "Hyper Fang",
+      "Ice Fang",
+      "Poison Fang",
+      "Psychic Fangs",
+      "Thunder Fang",
+    ].includes(attackName)
+  ) {
+    category = "bite";
+  } else if (
+    [
+      "Aura Sphere",
+      "Dark Pulse",
+      "Heal Pulse",
+      "Origin Pulse",
+      "Water Pulse",
+    ].includes(attackName)
+  ) {
+    category = "aura, pulse";
+  } else if (
+    [
+      "Acid Spray",
+      "Aura Sphere",
+      "Barrage",
+      "Beak Blast",
+      "Bullet Seed",
+      "Egg Bomb",
+      "Electro Ball",
+      "Energy Ball",
+      "Focus Blast",
+      "Gyro Ball",
+      "Ice Ball",
+      "Magnet Bomb",
+      "Mist Ball",
+      "Mud Bomb",
+      "Octazooka",
+      "Pollen Puff",
+      "Rock Blast",
+      "Rock Wrecker",
+      "Searing Shot",
+      "Seed Bomb",
+      "Shadow Ball",
+      "Sludge Bomb",
+      "Weather Ball",
+      "Zap Cannon",
+    ].includes(attackName)
+  ) {
+    category = "ball, bomb";
+  } else if (
+    [
+      "Dragon Dance",
+      "Feather Dance",
+      "Fiery Dance",
+      "Lunar Dance",
+      "Petal Dance",
+      "Quiver Dance",
+      "Revelation Dance",
+      "Swords Dance",
+      "Teeter Dance",
+    ].includes(attackName)
+  ) {
+    category = "dance";
+  } else if (
+    [
+      "Cotton Spore",
+      "Poison Powder",
+      "Powder",
+      "Rage Powder",
+      "Sleep Powder",
+      "Spore",
+      "Stun Spore",
+    ].includes(attackName)
+  ) {
+    category = "powder, spore";
+  } else if (
+    [
+      "Bullet Punch",
+      "Comet Punch",
+      "Dizzy Punch",
+      "Drain Punch",
+      "Dynamic Punch",
+      "Fire Punch",
+      "Focus Punch",
+      "Hammer Arm",
+      "Ice Hammer",
+      "Ice Punch",
+      "Mach Punch",
+      "Mega Punch",
+      "Meteor Mash",
+      "Power-Up Punch",
+      "Shadow Punch",
+      "Sky Uppercut",
+      "Thunder Punch",
+    ].includes(attackName)
+  ) {
+    category = "punch";
+  } else if (
+    [
+      "Boomburst",
+      "Bug Buzz",
+      "Chatter",
+      "Clanging Scales",
+      "Confide",
+      "Disarming Voice",
+      "Echoed Voice",
+      "Grass Whistle",
+      "Growl",
+      "Heal Bell",
+      "Hyper Voice",
+      "Metal Sound",
+      "Noble Roar",
+      "Parting Shot",
+      "Perish Song",
+      "Relic Song",
+      "Roar",
+      "Round",
+      "Screech",
+      "Shadow Panic",
+      "Sing",
+      "Snarl",
+      "Snore",
+      "Sparkling Aria",
+      "Supersonic",
+      "Uproar",
+      "Clangorous Soulblaze",
+    ].includes(attackName)
+  ) {
+    category = "sound";
+  }
+
+  return category;
+}
+
+class Retornoo {
+  vlr;
+  vlr2;
+  vlr3;
+}
+
+async function attackToDefenderAdvantage(type, defender) {
+  const ret = new Retornoo();
+  let [advantage2] = await query(
+    "SELECT `krachtiger` FROM `voordeel` WHERE `aanval`=? AND `verdediger`=?",
+    [type, ucfirst(defender["type1"])]
+  );
+  let [advantage3] = await query(
+    "SELECT `krachtiger` FROM `voordeel` WHERE `aanval`=? AND `verdediger`=?",
+    [type, ucfirst(defender["type2"])]
+  );
+
+  if (!advantage2) {
+    advantage2 = {
+      krachtiger: 1,
+    };
+  }
+  if (!advantage3) {
+    advantage3 = {
+      krachtiger: 1,
+    };
+  }
+
+  const advantage = advantage2.krachtiger * advantage3.krachtiger;
+  return advantage;
+}
+
+function ucfirst(str) {
+  if (!str) return str;
+  return str.charAt(0).toUpperCase() + str.slice(1);
 }

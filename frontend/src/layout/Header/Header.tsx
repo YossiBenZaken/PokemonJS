@@ -121,7 +121,7 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
     setConfig,
     config,
   } = useGame();
-  const {setPokemonEvolve} = useBattle();
+  const { setPokemonEvolve } = useBattle();
   const navigationItems = [
     { path: "/", label: "בית", icon: <Home size={20} /> },
     { path: "/box", label: "הפוקימונים", icon: <Computer size={20} /> },
@@ -188,15 +188,23 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
             (poke: any) => poke.decision != null && poke.decision !== ""
           );
           setMyPokemons(response.data.myPokemon);
-          if (haveDecision && !['/attack/wild', '/attack/trainer','/poke-new-attack','/poke-evolve'].includes(location.pathname)) {
-            getDataGrow().then(res => {
+          if (
+            haveDecision &&
+            ![
+              "/attack/wild",
+              "/attack/trainer",
+              "/poke-new-attack",
+              "/poke-evolve",
+            ].includes(location.pathname)
+          ) {
+            getDataGrow().then((res) => {
               setPokemonEvolve(res);
               if (haveDecision.decision === "waiting_evo") {
                 navigate("/poke-evolve");
-              } else if(haveDecision.decision === 'waiting_attack') {
-                navigate('/poke-new-attack');
+              } else if (haveDecision.decision === "waiting_attack") {
+                navigate("/poke-new-attack");
               }
-            })
+            });
           }
         }
       );

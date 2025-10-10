@@ -113,7 +113,7 @@ const PokedexPage: React.FC = () => {
       }
     };
     load();
-  }, [selectedCharacter]);
+  }, [selectedCharacter?.user_id]);
 
   useEffect(() => {
     const loadPoke = async () => {
