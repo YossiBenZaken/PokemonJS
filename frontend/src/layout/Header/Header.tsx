@@ -32,6 +32,7 @@ import {
   Package,
   Squirrel,
   Swords,
+  UserStar,
   Users,
 } from "lucide-react";
 import { Badges, Events, UserMenu, UserMenuItem } from "./styled";
@@ -122,7 +123,7 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
     config,
   } = useGame();
   const { setPokemonEvolve } = useBattle();
-  const navigationItems = [
+  const navigationItems: { path: string; label: string; icon: any }[] = [
     { path: "/", label: "בית", icon: <Home size={20} /> },
     { path: "/box", label: "הפוקימונים", icon: <Computer size={20} /> },
     { path: "/town", label: "מחוז", icon: <Map size={20} /> },
@@ -141,6 +142,14 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
     { path: "/information", label: "מידע", icon: <Info size={20} /> },
     { path: "/npc", label: "קרב עם מאמן", icon: <Swords size={20} /> },
   ];
+
+  if (selectedCharacter && selectedCharacter.admin! > 0) {
+    navigationItems.push({
+      path: "/admin",
+      label: "פאנל ניהול",
+      icon: <UserStar size={20} />,
+    });
+  }
 
   useEffect(() => {
     const checkAuth = async () => {

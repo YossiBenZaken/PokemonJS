@@ -1,5 +1,7 @@
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 
+import AdminPage from "./pages/Admin";
+import { AdminRoutes } from "./pages/Admin/routes";
 import AttackMap from "./pages/Attack/AttackMap";
 import { BadgeCase } from "./pages/Badges";
 import { BattleProvider } from "./contexts/BattleContext";
@@ -34,9 +36,12 @@ import TrainerAttack from "./pages/Attack/TrainerAttack";
 import WildAttack from "./pages/Attack/WildAttack";
 import { io } from "socket.io-client";
 
-export const socket = io("http://localhost:5000", { withCredentials: true,auth: {
-  token: Cookies.get("access_token")
-}});
+export const socket = io("http://localhost:5000", {
+  withCredentials: true,
+  auth: {
+    token: Cookies.get("access_token"),
+  },
+});
 
 function App() {
   return (
@@ -63,6 +68,16 @@ function App() {
                   </PrivateRoute>
                 }
               />
+              <Route
+                path="/admin"
+                element={
+                  <PrivateRoute admin={true}>
+                    <AdminPage />
+                  </PrivateRoute>
+                }
+              >
+                {AdminRoutes()}
+              </Route>
               <Route
                 path="/poke-evolve"
                 element={
