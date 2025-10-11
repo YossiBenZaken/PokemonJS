@@ -243,6 +243,9 @@ const useItem = async (req, res) => {
         message: "You do not have this item",
       });
     }
+
+    // TODO: Add TM/HM and use spcItem
+
     if (soort === "stones") {
       const result = await useStone(req, userItems);
       return res.json(result);
