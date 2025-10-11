@@ -246,9 +246,17 @@ const useItem = async (req, res) => {
     if (soort === "stones") {
       const result = await useStone(req, userItems);
       return res.json(result);
+    } else if (soort === "potions") {
+      const result = await usePotions(req, userItems);
+      return res.json(result);
     } else if (name === "Rare candy") {
       const result = await useRareCandy(req, userItems);
       return res.json(result);
+    } else {
+      if (equip) {
+        const result = await useEquipItem(req, userItems);
+        return res.json(result);
+      }
     }
 
     res.json({
@@ -427,6 +435,162 @@ const useStone = async (req, userItems) => {
     );
   }
 };
+
+const usePotions = async (req, userItems) => {
+  const { pokemonId, name } = req.body;
+  const [{ naam, kracht, apart }] = await query(
+    "SELECT * FROM `items` WHERE `naam`=?",
+    [name]
+  );
+  if (userItems[name] < 1) {
+    return {
+      success: false,
+      message: "אין לך את הכמות הזו!",
+    };
+  }
+  let [{ leven, effect, levenmax }] = await query(
+    "SELECT pokemon_wild.*,pokemon_speler.* FROM pokemon_wild INNER JOIN pokemon_speler ON pokemon_speler.wild_id = pokemon_wild.wild_id WHERE pokemon_speler.id=?",
+    [pokemonId]
+  );
+  let life = false,
+    status = false,
+    finish = false,
+    newLife = leven;
+
+  if (apart == "nee") life = true;
+  else if (apart == "ja") status = true;
+
+  if (life) {
+    if (leven == levenmax)
+      return { success: false, message: "הפוקימון עם 100% חיים" };
+    else {
+      newLife = leven + Number(kracht);
+      if (newLife > levenmax) newLife = levenmax;
+      await query("UPDATE `pokemon_speler` SET `leven`=? WHERE `id`=?", [
+        newLife,
+        pokemonId,
+      ]);
+      finish = true;
+    }
+  } else if (status) {
+    if (naam === "Full heal") effect = "";
+    else if (leven == 0) {
+      if (naam == "Revive") newLife = Math.round(levenmax / 2);
+      else if (naam == "Max revive") newLife = levenmax;
+      await query(
+        "UPDATE `pokemon_speler` SET `leven`=?,`effect`=? WHERE `id`=?",
+        [newLife, effect, pokemonId]
+      );
+      finish = true;
+    } else {
+      return {
+        success: true,
+        message: "חלק מהפונקציות של הפוקימון הושלמו במהלך החיים.",
+      };
+    }
+  }
+  if (finish) {
+    await query(
+      `UPDATE \`gebruikers_item\` SET \`${name}\`=\`${name}\`-1 WHERE \`user_id\`=?`,
+      [req.user.user_id]
+    );
+  }
+  return {
+    success: true,
+  };
+};
+
+const useEquipItem = async (req, userItems) => {
+  const { pokemonId, name } = req.body;
+  let [{ wild_id, item }] = await query(
+    "SELECT pokemon_wild.*,pokemon_speler.* FROM pokemon_wild INNER JOIN pokemon_speler ON pokemon_speler.wild_id = pokemon_wild.wild_id WHERE pokemon_speler.id=?",
+    [pokemonId]
+  );
+  if (userItems[name] < 1) {
+    return {
+      success: false,
+      message: "אין לך את הכמות הזו!",
+    };
+  } else if (!canPokemonEquip(wild_id, name)) {
+    return {
+      success: false,
+      message: "פריט זה לא יכול להיות מצויד בפוקימון זה!",
+    };
+  } else if (item != "" && item!=null) {
+    return {
+      success: false,
+      message: "לפוקימון כבר יש פריט זה מצויד!",
+    };
+  }
+  await query(
+    `UPDATE \`gebruikers_item\` SET \`${name}\`=\`${name}\`-1 WHERE \`user_id\`=?`,
+    [req.user.user_id]
+  );
+  await query("UPDATE `pokemon_speler` SET `item`=? WHERE id=?", [
+    name,
+    pokemonId,
+  ]);
+};
+
+async function canPokemonEquip(pokemonId, item) {
+  pokemonId = String(pokemonId);
+
+  if (
+    ["Burn Drive", "Chill Drive", "Douse Drive", "Shock Drive"].includes(item)
+  ) {
+    if (pokemonId !== "649") return false;
+  } else if (item === "Dragon Scale") {
+    if (pokemonId !== "117") return false;
+  } else if (item === "Metal Coat") {
+    if (!["95", "123"].includes(pokemonId)) return false;
+  } else if (item === "Kings Rock") {
+    if (!["79", "61"].includes(pokemonId)) return false;
+  } else if (item === "Whipped Dream") {
+    if (pokemonId !== "684") return false;
+  } else if (item === "Dubious Disc") {
+    if (pokemonId !== "233") return false;
+  } else if (item === "Up-Grade") {
+    if (pokemonId !== "137") return false;
+  } else if (item === "Sachet") {
+    if (pokemonId !== "682") return false;
+  } else if (item === "Reaper Cloth") {
+    if (pokemonId !== "356") return false;
+  } else if (item === "Protector") {
+    if (pokemonId !== "112") return false;
+  } else if (item === "Electirizer") {
+    if (!["125", "737"].includes(pokemonId)) return false;
+  } else if (item === "Magmarizer") {
+    if (pokemonId !== "467") return false;
+  } else if (item === "Razor Claw") {
+    if (pokemonId !== "215") return false;
+  } else if (item === "Razor Fang") {
+    if (pokemonId !== "207") return false;
+  } else if (item === "Light Ball") {
+    if (!["25", "923", "967", "968", "966", "965"].includes(pokemonId))
+      return false;
+  } else if (item === "Thick Club") {
+    if (!["104", "105"].includes(pokemonId)) return false;
+  } else if (item === "Lucky Punch") {
+    if (pokemonId !== "113") return false;
+  } else if (item === "Stick") {
+    if (pokemonId !== "83") return false;
+  } else if (item === "Soul Dew") {
+    if (!["381", "842", "841", "380"].includes(pokemonId)) return false;
+  } else if (item.includes(" Z")) {
+    var [zAttack] = await query(
+      "SELECT `pokemons` FROM `zaanval_relacionados` WHERE item=?",
+      [item]
+    );
+    const related = zAttack.pokemons.split(",");
+    if (related && related.length > 0) {
+      if (!related.includes(pokemonId)) return false;
+    } else {
+      if (["902", "917", "919"].includes(pokemonId)) return false;
+    }
+  }
+
+  return true;
+}
 
 export {
   getUserItems,
