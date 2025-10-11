@@ -35,7 +35,7 @@ const Traders: React.FC = () => {
     loadTraders();
     // Check if user is admin (you'd need to implement this check)
     setIsAdmin(selectedCharacter?.admin! > 0);
-  }, [selectedCharacter]);
+  }, [selectedCharacter?.user_id]);
 
   const handleTrade = async (traderName: string) => {
     if (!selectedCharacter || !selectedCharacter.rank) return;

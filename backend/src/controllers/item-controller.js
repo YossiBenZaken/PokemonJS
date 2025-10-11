@@ -1,4 +1,9 @@
-import DB from "../config/database.js";
+import DB, { query } from "../config/database.js";
+import {
+  levelGroei,
+  nieuweStats,
+  updatePokedex,
+} from "../helpers/battle-utils.js";
 
 // קבלת נתוני הפריטים של המשתמש
 const getUserItems = async (req, res) => {
@@ -112,7 +117,7 @@ const getItemsWithQuantity = async (req, res) => {
 // מכירת פריט
 const sellItem = async (req, res) => {
   try {
-    const { name, amount,userId } = req.body;
+    const { name, amount, userId } = req.body;
     const accId = req.user.acc_id;
 
     if (!name || !amount || amount <= 0) {
@@ -209,7 +214,7 @@ const sellItem = async (req, res) => {
 // שימוש בפריט
 const useItem = async (req, res) => {
   try {
-    const { name, soort, equip } = req.body;
+    const { name, soort, equip = false } = req.body;
     const userId = req.user.user_id;
 
     if (!name || !soort) {
@@ -238,9 +243,13 @@ const useItem = async (req, res) => {
         message: "You do not have this item",
       });
     }
-
-    // כאן תהיה הלוגיקה הספציפית לשימוש בפריט
-    // זה תלוי בסוג הפריט (potion, stone, tm, etc.)
+    if (soort === "stones") {
+      const result = await useStone(req, userItems);
+      return res.json(result);
+    } else if (name === "Rare candy") {
+      const result = await useRareCandy(req, userItems);
+      return res.json(result);
+    }
 
     res.json({
       success: true,
@@ -249,6 +258,173 @@ const useItem = async (req, res) => {
   } catch (error) {
     console.error("Error using item:", error);
     res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+const useRareCandy = async (req, userItems) => {
+  const { pokemonId, name } = req.body;
+  const quantity = 1;
+  const [pokemon] = await query(
+    "SELECT pokemon_wild.*,pokemon_speler.* FROM pokemon_wild INNER JOIN pokemon_speler ON pokemon_speler.wild_id = pokemon_wild.wild_id WHERE pokemon_speler.id=?",
+    [pokemonId]
+  );
+  if (userItems[name] < quantity) {
+    return {
+      success: false,
+      message: "אין לך את הכמות הזו!",
+    };
+  } else if (pokemon.level + quantity > 100) {
+    return {
+      success: false,
+      message: "אינך יכול להשתמש בסכום זה",
+    };
+  } else if (quantity < 1) {
+    return {
+      success: false,
+      message: "הזן ערך.",
+    };
+  }
+  let level = pokemon.level + quantity;
+
+  await nieuweStats(pokemon, level, pokemon.expnodig);
+
+  await levelGroei(level, pokemon, req.user.user_id);
+
+  const message = `${pokemon.naam} עלה רמה`;
+
+  await query(
+    "INSERT INTO gebeurtenis (datum, ontvanger_id, bericht, gelezen) VALUES (NOW(), ?, ?, '0')",
+    [req.user.user_id, message]
+  );
+  await query(
+    `UPDATE \`gebruikers_item\` SET \`${name}\`=\`${name}\`-? WHERE \`user_id\`=?`,
+    [quantity, req.user.user_id]
+  );
+  return {
+    success: true,
+    message,
+  };
+};
+
+const useStone = async (req, userItems) => {
+  const { pokemonId, name, evolveId } = req.body;
+  const quantity = 1;
+  const userId = req.user.user_id;
+  const [user] = await query("SELECT * FROM `gebruikers` WHERE `user_id`=?", [
+    userId,
+  ]);
+  if (userItems[name] < quantity) {
+    return {
+      success: false,
+      message: "אין לך את הכמות הזו!",
+    };
+  }
+  const [pokemonInfo] = await query(
+    "SELECT pokemon_wild.* ,pokemon_speler.*, karakters.* FROM pokemon_wild INNER JOIN pokemon_speler ON pokemon_speler.wild_id = pokemon_wild.wild_id INNER JOIN karakters ON pokemon_speler.karakter = karakters.karakter_naam WHERE pokemon_speler.id=?",
+    [pokemonId]
+  );
+  let [leven] = await query("SELECT nieuw_id FROM `levelen` WHERE `id`=?", [
+    evolveId,
+  ]);
+  if (leven) {
+    if (user.wereld === "Alola") {
+      if (pokemonInfo.wild_id == "25") {
+        leven.nieuw_id = "26001";
+      } else if (pokemonInfo.wild_id == "102") {
+        leven.nieuw_id = "103001";
+      }
+    }
+    const [newPokemon] = await query(
+      "SELECT * FROM `pokemon_wild` WHERE `wild_id`=?",
+      [leven.nieuw_id]
+    );
+
+    const attackstat = Math.round(
+      ((pokemonInfo.attack_iv +
+        2 * newPokemon.attack_base +
+        Math.floor(pokemonInfo.attack_ev / 4)) *
+        pokemonInfo.level) /
+        100 +
+        5 +
+        pokemonInfo.attack_up * pokemonInfo.attack_add
+    );
+    const defencestat = Math.round(
+      ((pokemonInfo.defence_iv +
+        2 * newPokemon.defence_base +
+        Math.floor(pokemonInfo.defence_ev / 4)) *
+        pokemonInfo.level) /
+        100 +
+        5 +
+        pokemonInfo.defence_up * pokemonInfo.defence_add
+    );
+    const speedstat = Math.round(
+      ((pokemonInfo.speed_iv +
+        2 * newPokemon.speed_base +
+        Math.floor(pokemonInfo.speed_ev / 4)) *
+        pokemonInfo.level) /
+        100 +
+        5 +
+        pokemonInfo.speed_up * pokemonInfo.speed_add
+    );
+    const spcattackstat = Math.round(
+      ((pokemonInfo[`spc.attack_iv`] +
+        2 * newPokemon[`spc.attack_base`] +
+        Math.floor(pokemonInfo["spc.attack_ev"] / 4)) *
+        pokemonInfo.level) /
+        100 +
+        5 +
+        pokemonInfo.spc_up * pokemonInfo[`spc.attack_add`]
+    );
+    const spcdefencestat = Math.round(
+      ((pokemonInfo[`spc.defence_iv`] +
+        2 * newPokemon[`spc.defence_base`] +
+        Math.floor(pokemonInfo["spc.defence_ev"] / 4)) *
+        pokemonInfo.level) /
+        100 +
+        5 +
+        pokemonInfo.spc_up * pokemonInfo[`spc.defence_add`]
+    );
+    const hpstat = Math.round(
+      ((pokemonInfo.hp_iv +
+        2 * newPokemon.hp_base +
+        Math.floor(pokemonInfo.hp_ev / 4)) *
+        pokemonInfo.level) /
+        100 +
+        10 +
+        pokemonInfo.level +
+        pokemonInfo.hp_up
+    );
+
+    const abilities = newPokemon.ability.split(",");
+    const randomAbility =
+      abilities[Math.floor(Math.random() * abilities.length)];
+
+    await query(
+      "UPDATE `pokemon_speler` SET `wild_id`=?, `attack`=?, `defence`=?, `speed`=?, `spc.attack`=?, `spc.defence`=?, `levenmax`=?, `leven`=?, `ability`=?, `decision`=NULL WHERE `id`=?",
+      [
+        leven.nieuw_id,
+        attackstat,
+        defencestat,
+        speedstat,
+        spcattackstat,
+        spcdefencestat,
+        hpstat,
+        hpstat,
+        randomAbility,
+        pokemonId,
+      ]
+    );
+    updatePokedex(leven.nieuw_id, "evo", userId);
+    await query(
+      `UPDATE \`gebruikers_item\` SET \`${name}\`=\`${name}\`-'1' WHERE \`user_id\`=?`,
+      [userId]
+    );
+
+    await levelGroei(
+      pokemonInfo.level,
+      { ...pokemonInfo, wild_id: leven.nieuw_id },
+      userId
+    );
   }
 };
 

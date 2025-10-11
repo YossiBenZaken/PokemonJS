@@ -385,7 +385,7 @@ export const pokemon_grow = async (userId) => {
   return dataOfLevelGrow;
 };
 
-async function nieuweStats(pokemon, levelNieuw, nieuweXp) {
+export async function nieuweStats(pokemon, levelNieuw, nieuweXp) {
   if (!pokemon || !pokemon.id) {
     throw new Error("Invalid pokemon data");
   }

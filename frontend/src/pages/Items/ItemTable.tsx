@@ -226,7 +226,7 @@ const ItemTable: React.FC<ItemTableProps> = ({ items, category, onSellItem, onUs
             <TableHeaderCell>כמות</TableHeaderCell>
             <TableHeaderCell>מחיר מכירה</TableHeaderCell>
             <TableHeaderCell>מכירה</TableHeaderCell>
-            {['stones', 'special items', 'potions', 'tm', 'hm'].includes(category) && (
+            {['stones', 'spc_items', 'potions', 'tm', 'hm'].includes(category) && (
               <TableHeaderCell>שימוש</TableHeaderCell>
             )}
           </tr>
@@ -276,7 +276,7 @@ const ItemTable: React.FC<ItemTableProps> = ({ items, category, onSellItem, onUs
                 )}
               </TableCell>
               
-              {['stones', 'special items', 'potions', 'tm', 'hm'].includes(category) && (
+              {['stones', 'spc_items', 'potions', 'tm', 'hm'].includes(category) && (
                 <TableCell>
                   {canUse(item) ? (
                     <UseButton

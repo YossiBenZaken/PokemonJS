@@ -185,6 +185,11 @@ export const acceptEvolution = async (req, res) => {
       pokemonId,
     ]);
   }
+  const [pokemonNewInfo] = await query(
+    "SELECT pokemon_wild.wild_id, pokemon_wild.naam, pokemon_wild.groei, pokemon_speler.* FROM pokemon_wild INNER JOIN pokemon_speler ON pokemon_wild.wild_id = pokemon_speler.wild_id WHERE pokemon_speler.id=?",
+    [pokemonId]
+  );
+  await levelGroei(pokemonNewInfo.level, pokemonNewInfo, userId);
 
   return res.json({
     success: true,
