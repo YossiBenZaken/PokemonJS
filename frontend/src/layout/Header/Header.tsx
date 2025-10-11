@@ -364,7 +364,7 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
         </Alert>
       </Snackbar>
       <Box
-        sx={{ display: "flex", direction: "rtl" }}
+        sx={{ display: "flex", direction: "ltr" }}
         onClick={() => isUserMenuOpen && setIsUserMenuOpen(false)}
       >
         <CssBaseline />
@@ -375,7 +375,7 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
             background: "#0f172a",
             color: "white",
             zIndex: theme.zIndex.drawer + 1,
-            direction: "rtl",
+            direction: "ltr",
           }}
         >
           <Toolbar>
@@ -475,7 +475,7 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
               <>
                 <Typography
                   sx={{
-                    marginRight: "auto",
+                    marginLeft: "auto",
                     fontSize: "0.9rem",
                     cursor: "pointer",
                   }}
@@ -515,11 +515,11 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
         {isLoggedIn && (
           <>
             {drawer ? (
-              <OpenedDrawer variant="permanent" anchor="right">
+              <OpenedDrawer variant="permanent" anchor="left">
                 <Toolbar />
                 <List>
                   {/* פרטי השחקן */}
-                  <Box sx={{ p: 2, textAlign: "right" }}>
+                  <Box sx={{ p: 2 }}>
                     <Typography
                       variant="subtitle1"
                       sx={{ fontWeight: 600, cursor: "pointer" }}
@@ -617,7 +617,6 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
                       </ListItemIcon>
                       <ListItemText
                         primary={item.label}
-                        sx={{ textAlign: "right" }}
                       />
                     </ListItemButton>
                   ))}
@@ -639,7 +638,6 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
                       primary={`התראות ${
                         notification > 0 ? `(${notification})` : ""
                       }`}
-                      sx={{ textAlign: "right" }}
                     />
                   </ListItemButton>
                   <ListItemButton
@@ -660,13 +658,12 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
                       primary={`הודעות ${
                         unreadMessages > 0 ? `(${unreadMessages})` : ""
                       }`}
-                      sx={{ textAlign: "right" }}
                     />
                   </ListItemButton>
                 </List>
               </OpenedDrawer>
             ) : (
-              <ClosedDrawer variant="permanent" anchor="right">
+              <ClosedDrawer variant="permanent" anchor="left">
                 <Toolbar />
                 <List>
                   {navigationItems.map((item) => (
@@ -752,17 +749,17 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
           sx={{
             flexGrow: 1,
             bgcolor: "#f1f5f9",
-            minHeight: "100vh",
-            padding: "0 64px 0 0",
+            minHeight: "95vh",
+            padding: "0 0 0 64px",
             marginTop: "64px",
-            textAlign: "right",
+            textAlign: "start",
           }}
         >
           {!isLoggedIn &&
           !["/login", "/signup", "/my-characters", "/new-character"].includes(
             location.pathname
           ) ? (
-            <Box textAlign="center" dir="rtl">
+            <Box textAlign="center">
               <Typography variant="h5" gutterBottom>
                 ברוך הבא לפוקימון אונליין!
               </Typography>

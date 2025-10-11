@@ -9,7 +9,7 @@ const Container = styled.div`
   margin: 0 auto;
   padding: 20px;
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-  min-height: 100%;
+  min-height: 500px;
 `;
 
 const Header = styled.div`

@@ -24,18 +24,12 @@ interface Action {
 const actions: Action[] = [
   { label: "נהל צוות", level: 3, path: "/admin/team", icon: <Users /> },
   {
-    label: "צור סיסמה CRYPT SYMBOL",
-    level: 1,
-    path: "/admin/crypt",
-    icon: <Lock />,
-  },
-  {
     label: "חסום חשבון",
     level: 2,
     path: "/admin/block-account",
     icon: <Shield />,
   },
-  { label: "תו בלוק", level: 2, path: "/admin/block-symbol", icon: <Shield /> },
+  { label: "חסום משתמש", level: 2, path: "/admin/block-symbol", icon: <Shield /> },
   { label: "חפש לפי IP", level: 1, path: "/admin/search-ip", icon: <Search /> },
   { label: "איסור IP", level: 2, path: "/admin/ip-ban", icon: <Shield /> },
   {

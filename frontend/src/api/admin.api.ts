@@ -25,3 +25,9 @@ export const removeAdmin = async(username: string): Promise<{success: boolean}> 
     });
     return data;
 }
+export const addAdmin = async(username: string): Promise<{success: boolean}> => {
+    const {data} = await axiosInstance.post(`${prefix}/addAdmin`,{
+        username
+    });
+    return data;
+}

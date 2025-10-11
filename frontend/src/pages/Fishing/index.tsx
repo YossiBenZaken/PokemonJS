@@ -10,7 +10,7 @@ const Container = styled.div`
   margin: 0 auto;
   padding: 20px;
   background: linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%);
-  min-height: 100%;
+  min-height: 500px;
   color: white;
 `;
 

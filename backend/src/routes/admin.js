@@ -1,4 +1,4 @@
-import { getAdmins, removeAdmin } from '../controllers/admin-controller.js';
+import { addAdmin, getAdmins, removeAdmin } from '../controllers/admin-controller.js';
 
 import express from 'express';
 import jwt from "jsonwebtoken";
@@ -54,5 +54,6 @@ router.use(extractAccIdAndAdmin);
 
 router.get('/getAdmins', getAdmins);
 router.post('/removeAdmin', removeAdmin);
+router.post('/addAdmin', addAdmin);
 
 export default router;

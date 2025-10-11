@@ -395,7 +395,7 @@ const PokeBox: React.FC = () => {
           </div>
         </div>
 
-        <div className="text-lg font-bold bg-white bg-opacity-20 rounded-lg p-3">
+        <div className="text-lg font-bold bg-white bg-opacity-20 rounded-lg p-3 text-gray-950">
           {boxInfo!.house.spotsLeft} מקומות פנויים
         </div>
       </div>
