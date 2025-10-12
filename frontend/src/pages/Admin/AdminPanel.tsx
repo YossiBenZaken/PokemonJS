@@ -29,7 +29,7 @@ const actions: Action[] = [
     path: "/admin/block-account",
     icon: <Shield />,
   },
-  { label: "חסום משתמש", level: 2, path: "/admin/block-symbol", icon: <Shield /> },
+  { label: "חסום משתמש", level: 2, path: "/admin/block-player", icon: <Shield /> },
   { label: "חפש לפי IP", level: 1, path: "/admin/search-ip", icon: <Search /> },
   { label: "איסור IP", level: 2, path: "/admin/ip-ban", icon: <Shield /> },
   {
