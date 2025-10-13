@@ -1,12 +1,8 @@
-import {
-  BannedPlayer,
-  banPlayer,
-  getBannedPlayers,
-  unbanPlayer,
-} from "../../api/admin.api";
+import { BannedIP, banIP, getBannedIPs, unbanIP } from "../../api/admin.api";
 import React, { useEffect, useState } from "react";
 
 import styled from "styled-components";
+import { useSearchParams } from "react-router-dom";
 
 const Page = styled.div`
   padding: 20px;
@@ -37,12 +33,13 @@ const Form = styled.form`
 
 const FormRow = styled.div`
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 15px;
-  
+
   label {
     width: 120px;
     font-weight: 600;
+    padding-top: 8px;
   }
 `;
 
@@ -52,6 +49,10 @@ const Input = styled.input`
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 14px;
+`;
+
+const DateInput = styled(Input)`
+  max-width: 180px;
 `;
 
 const Note = styled.div`
@@ -106,16 +107,6 @@ const Table = styled.table`
   tr:hover {
     background: #f8f9fa;
   }
-
-  a {
-    color: #667eea;
-    text-decoration: none;
-    font-weight: 600;
-
-    &:hover {
-      text-decoration: underline;
-    }
-  }
 `;
 
 const Message = styled.div<{ kind: "success" | "error" }>`
@@ -129,38 +120,51 @@ const Message = styled.div<{ kind: "success" | "error" }>`
   text-align: center;
 `;
 
-const BlockPlayerPage: React.FC = () => {
-  const [username, setUsername] = useState("");
-  const [reason, setReason] = useState("");
+const BanIP: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const [ip, setIp] = useState("");
   const [until, setUntil] = useState("");
-  const [bannedList, setBannedList] = useState<BannedPlayer[]>([]);
+  const [reason, setReason] = useState("");
+  const [bannedList, setBannedList] = useState<BannedIP[]>([]);
   const [message, setMessage] = useState<{
     kind: "success" | "error";
     text: string;
   } | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const loadBannedPlayers = async () => {
+  const loadBannedIPs = async () => {
     try {
-      const res = await getBannedPlayers();
+      const res = await getBannedIPs();
       if (res.success) {
-        setBannedList(res.players);
+        setBannedList(res.ips);
       }
     } catch (error) {
-      console.error("Error loading banned players:", error);
+      console.error("Error loading banned IPs:", error);
     }
   };
 
   useEffect(() => {
-    loadBannedPlayers();
+    loadBannedIPs();
   }, []);
+
+  useEffect(() => {
+    const ipParam = searchParams.get("ip");
+    if (ipParam) {
+      setIp(ipParam);
+    }
+  }, [searchParams]);
 
   const handleBan = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage(null);
 
-    if (!username.trim()) {
-      setMessage({ kind: "error", text: "הזן שם של מאמן" });
+    if (!ip.trim()) {
+      setMessage({ kind: "error", text: "הזן כתובת IP תקינה" });
+      return;
+    }
+
+    if (!until.trim()) {
+      setMessage({ kind: "error", text: "הזן זמן" });
       return;
     }
 
@@ -169,90 +173,101 @@ const BlockPlayerPage: React.FC = () => {
       return;
     }
 
+    // Basic IP validation
+    const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
+    if (!ipRegex.test(ip)) {
+      setMessage({ kind: "error", text: "פורמט IP לא תקין" });
+      return;
+    }
+
     setLoading(true);
     try {
-      const res = await banPlayer({
-        username: username.trim(),
+      const playerParam = searchParams.get("player");
+      const res = await banIP({
+        ip: ip.trim(),
+        until: until.trim(),
         reason: reason.trim(),
-        until: until || undefined,
+        userId: playerParam
       });
 
       if (res.success) {
         setMessage({ kind: "success", text: res.message });
-        setUsername("");
-        setReason("");
+        setIp("");
         setUntil("");
-        await loadBannedPlayers();
+        setReason("");
+        await loadBannedIPs();
       } else {
         setMessage({ kind: "error", text: res.message });
       }
     } catch (error: any) {
       setMessage({
         kind: "error",
-        text: error.response?.data?.message || "שגיאה בחסימת מאמן",
+        text: error.response?.data?.message || "שגיאה בחסימת IP",
       });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleUnban = async (username: string) => {
+  const handleUnban = async (ip: string) => {
     // eslint-disable-next-line no-restricted-globals
-    if (!confirm(`האם אתה בטוח שברצונך לשחרר את ${username} מחסימה?`)) {
+    if (!confirm(`האם אתה בטוח שברצונך לשחרר את כתובת ה-IP ${ip} מחסימה?`)) {
       return;
     }
 
     try {
-      const res = await unbanPlayer(username);
+      const res = await unbanIP(ip);
       if (res.success) {
         setMessage({ kind: "success", text: res.message });
-        await loadBannedPlayers();
+        await loadBannedIPs();
       } else {
         setMessage({ kind: "error", text: res.message });
       }
     } catch (error: any) {
       setMessage({
         kind: "error",
-        text: error.response?.data?.message || "שגיאה בשחרור מאמן",
+        text: error.response?.data?.message || "שגיאה בשחרור IP",
       });
     }
   };
 
   const formatDate = (dateStr: string) => {
-    if (dateStr.includes("0000-00-00") || !dateStr) {
-      return "לצמיתות";
-    }
+    if (!dateStr) return "";
     const [year, month, day] = dateStr.split('T')[0].split("-");
     return `${day}/${month}/${year}`;
+  };
+
+  // Get today's date in YYYY-MM-DD format for min attribute
+  const getTodayDate = () => {
+    const today = new Date();
+    return today.toISOString().split("T")[0];
   };
 
   return (
     <Page>
       <Box>
-        <Header>חסימת מאמנים</Header>
+        <Header>חסימת כתובת IP</Header>
         <Form onSubmit={handleBan}>
           <FormRow>
-            <label>מאמן:</label>
+            <label>IP:</label>
             <Input
               type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              maxLength={10}
-              placeholder="שם המשתמש"
+              value={ip}
+              onChange={(e) => setIp(e.target.value)}
+              maxLength={15}
+              placeholder="123.456.789.012"
             />
           </FormRow>
 
           <FormRow>
             <label>זמן:</label>
             <div style={{ flex: 1 }}>
-              <Input
-                type="text"
+              <DateInput
+                type="date"
                 value={until}
                 onChange={(e) => setUntil(e.target.value)}
-                placeholder="YYYY-MM-DD"
-                maxLength={10}
+                min={getTodayDate()}
               />
-              <Note>(השאר ריק לחסימה קבועה)</Note>
             </div>
           </FormRow>
 
@@ -269,42 +284,43 @@ const BlockPlayerPage: React.FC = () => {
 
           <FormRow>
             <label></label>
-            <Button type="submit" disabled={loading}>
-              {loading ? "מעבד..." : "חסום"}
-            </Button>
+            <div>
+              <Button type="submit" disabled={loading}>
+                {loading ? "מעבד..." : "חסום IP"}
+              </Button>
+              <Note style={{ marginTop: 10 }}>
+                זכור שזה משמש רק לחסימת IP ספציפי, ללא חסימת חשבונות/דמויות מעורבות.
+              </Note>
+            </div>
           </FormRow>
         </Form>
         {message && <Message kind={message.kind}>{message.text}</Message>}
       </Box>
 
       <Box>
-        <Header>רשימת מאמנים חסומים</Header>
+        <Header>רשימת כתובות IP חסומות</Header>
         {bannedList.length === 0 ? (
           <div style={{ padding: "20px", textAlign: "center", color: "#666" }}>
-            אין מאמנים חסומים כרגע
+            אין כתובות IP חסומות כרגע
           </div>
         ) : (
           <Table>
             <thead>
               <tr>
-                <th>מאמן</th>
+                <th>IP</th>
                 <th>חסום עד</th>
                 <th>סיבה</th>
                 <th>הסר</th>
               </tr>
             </thead>
             <tbody>
-              {bannedList.map((player) => (
-                <tr key={player.username}>
+              {bannedList.map((ban) => (
+                <tr key={ban.ip}>
+                  <td style={{ fontFamily: "monospace" }}>{ban.ip}</td>
+                  <td>{formatDate(ban.tot)}</td>
+                  <td>{ban.reden}</td>
                   <td>
-                    <a href={`/profile?player=${player.username}`}>
-                      {player.username}
-                    </a>
-                  </td>
-                  <td>{formatDate(player.bloqueado_tempo)}</td>
-                  <td>{player.razaobloqueado}</td>
-                  <td>
-                    <MiniButton onClick={() => handleUnban(player.username)}>
+                    <MiniButton onClick={() => handleUnban(ban.ip)}>
                       שחרר
                     </MiniButton>
                   </td>
@@ -318,4 +334,4 @@ const BlockPlayerPage: React.FC = () => {
   );
 };
 
-export default BlockPlayerPage;
+export default BanIP;

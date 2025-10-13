@@ -1,13 +1,21 @@
 import {
   addAdmin,
   banAccount,
+  banIP,
   banPlayer,
   checkBanStatus,
+  detectMultiAccounts,
   getAdmins,
   getBannedAccounts,
+  getBannedIPs,
   getBannedPlayers,
+  getCombinedLogs,
+  getTransferListLogs,
+  getTransferListLogsByUser,
   removeAdmin,
+  searchAccountsByIP,
   unbanAccount,
+  unbanIP,
   unbanPlayer,
 } from "../controllers/admin-controller.js";
 
@@ -73,8 +81,26 @@ router.get("/bans", getBannedAccounts);
 router.post("/ban", banAccount);
 router.post("/unban", unbanAccount);
 router.get("/ban-status", checkBanStatus);
+
+// Player ban routes
 router.post("/banPlayer", banPlayer);
 router.post("/unbanPlayer", unbanPlayer);
 router.get("/banned-list", getBannedPlayers);
+
+// IP ban routes
+router.post("/ban-ip", banIP);
+router.post("/unban-ip", unbanIP);
+router.get("/banned-ips", getBannedIPs);
+router.get("/search-by-ip", searchAccountsByIP);
+
+// Multi-account detection
+router.get("/detect-multi-accounts", detectMultiAccounts);
+
+// Bank logs (combined with messages)
+router.get("/combined-logs", getCombinedLogs);
+
+// Transfer list logs
+router.get("/transferlist-logs", getTransferListLogs);
+router.get("/transferlist-logs-by-user", getTransferListLogsByUser);
 
 export default router;

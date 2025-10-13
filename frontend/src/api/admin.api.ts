@@ -83,6 +83,107 @@ export interface GetBannedPlayersResponse {
   players: BannedPlayer[];
 }
 
+export interface BannedIP {
+  ip: string;
+  user_id: number | null;
+  tot: string;
+  reden: string;
+}
+
+export interface BanIPRequest {
+  ip: string;
+  userId: string | null;
+  until: string;
+  reason: string;
+}
+
+export interface GetBannedIPsResponse {
+  success: boolean;
+  ips: BannedIP[];
+}
+
+export interface AccountByIP {
+  acc_id: number;
+  username: string;
+  ip_aangemeld: string;
+  ip_ingelogd: string;
+  email: string;
+}
+
+export interface SearchAccountsByIPResponse {
+  success: boolean;
+  accounts: AccountByIP[];
+  searchType: string;
+}
+
+export interface MultiAccount {
+  ip: string;
+  count: number;
+  accounts: string[];
+  accountIds?: number[];
+}
+
+export interface DetectMultiAccountsResponse {
+  success: boolean;
+  type: string;
+  multiAccounts: MultiAccount[];
+  total: number;
+}
+
+export interface BankLog {
+  id: number;
+  sender: string;
+  reciever: string;
+  date: string;
+  what: string;
+  amount: number;
+}
+
+export interface Pagination {
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  itemsPerPage: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+
+
+export interface Message {
+  datum: string;
+  afzender_id: number;
+  ontvanger_id: number;
+  bericht: string;
+  onderwerp: string;
+  username: string;
+}
+
+export interface GetBankLogsResponse {
+  success: boolean;
+  bankLogs: BankLog[];
+  messages: Message[];
+  pagination: Pagination;
+}
+
+export interface GetTransferListLogsResponse {
+  success: boolean;
+  logs: TransferListLog[];
+  pagination: Pagination;
+}
+
+export interface TransferListLog {
+  id: number;
+  buyer: string;
+  seller: string;
+  date: string;
+  wild_id: number;
+  level: number;
+  silver: number;
+  gold: number;
+  real_id: number;
+  pokemon_name: string;
+}
+
 export const getAdminsTeams = async (): Promise<AdminsTeamResponse> => {
   const { data } = await axiosInstance.get<AdminsTeamResponse>(
     `${prefix}/getAdmins`
@@ -169,5 +270,73 @@ export const unbanPlayer = async (username: string): Promise<BanPlayerResponse> 
 
 export const getBannedPlayers = async (): Promise<GetBannedPlayersResponse> => {
   const { data } = await axiosInstance.get("/admin/banned-list");
+  return data;
+};
+
+// IP ban functions
+export const banIP = async (data: BanIPRequest): Promise<BanPlayerResponse> => {
+  const { data: response } = await axiosInstance.post("/admin/ban-ip", data);
+  return response;
+};
+
+export const unbanIP = async (ip: string): Promise<BanPlayerResponse> => {
+  const { data } = await axiosInstance.post("/admin/unban-ip", { ip });
+  return data;
+};
+
+export const getBannedIPs = async (): Promise<GetBannedIPsResponse> => {
+  const { data } = await axiosInstance.get("/admin/banned-ips");
+  return data;
+};
+
+export const searchAccountsByIP = async (
+  ip: string,
+  type: "login" | "register" = "login"
+): Promise<SearchAccountsByIPResponse> => {
+  const { data } = await axiosInstance.get("/admin/search-by-ip", {
+    params: { ip, type },
+  });
+  return data;
+};
+
+export const detectMultiAccounts = async (
+  type: "login" | "register" = "login",
+  limit: number = 50
+): Promise<DetectMultiAccountsResponse> => {
+  const { data } = await axiosInstance.get("/admin/detect-multi-accounts", {
+    params: { type, limit },
+  });
+  return data;
+};
+
+export const getBankLogs  = async (
+  page: number = 1,
+  limit: number = 50
+): Promise<GetBankLogsResponse> => {
+  const { data } = await axiosInstance.get("/admin/combined-logs", {
+    params: { page, limit },
+  });
+  return data;
+};
+
+// Transfer list logs functions
+export const getTransferListLogs = async (
+  page: number = 1,
+  limit: number = 50
+): Promise<GetTransferListLogsResponse> => {
+  const { data } = await axiosInstance.get("/admin/transferlist-logs", {
+    params: { page, limit },
+  });
+  return data;
+};
+
+export const getTransferListLogsByUser = async (
+  username: string,
+  page: number = 1,
+  limit: number = 50
+): Promise<GetTransferListLogsResponse> => {
+  const { data } = await axiosInstance.get("/admin/transferlist-logs-by-user", {
+    params: { username, page, limit },
+  });
   return data;
 };

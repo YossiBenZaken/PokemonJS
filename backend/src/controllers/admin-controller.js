@@ -404,3 +404,402 @@ export const getBannedPlayers = async (req, res) => {
     });
   }
 };
+
+// POST ban an IP address
+export const banIP = async (req, res) => {
+  try {
+    const { ip,userId, until, reason } = req.body;
+
+    if (!ip || !ip.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "הזן כתובת IP תקינה",
+      });
+    }
+
+    if (!until || !until.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "הזן זמן",
+      });
+    }
+
+    if (!reason || !reason.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "הזן סיבה",
+      });
+    }
+
+    // Validate IP format (basic validation)
+    const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
+    if (!ipRegex.test(ip)) {
+      return res.status(400).json({
+        success: false,
+        message: "פורמט IP לא תקין",
+      });
+    }
+
+    // Check if IP is already banned
+    const existing = await query("SELECT ip FROM ban WHERE ip = ?", [ip]);
+    if (existing && existing.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: "כתובת IP זו כבר חסומה",
+      });
+    }
+
+    await query(
+      "INSERT INTO ban (ip, user_id, tot, reden) VALUES (?, ?, ?, ?)",
+      [ip, userId || 0, until, reason]
+    );
+
+    return res.json({
+      success: true,
+      message: `כתובת ה-IP ${ip} נחסמה בהצלחה עד ${until}`,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "שגיאה בחסימת IP",
+      error: error.message,
+    });
+  }
+};
+
+// POST unban an IP address
+export const unbanIP = async (req, res) => {
+  try {
+    const { ip } = req.body;
+
+    if (!ip) {
+      return res.status(400).json({
+        success: false,
+        message: "כתובת IP נדרשת",
+      });
+    }
+
+    await query("DELETE FROM ban WHERE ip = ?", [ip]);
+
+    return res.json({
+      success: true,
+      message: "כתובת ה-IP שוחררה מחסימה",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "שגיאה בשחרור IP",
+      error: error.message,
+    });
+  }
+};
+
+// GET list of banned IPs
+export const getBannedIPs = async (req, res) => {
+  try {
+    const bannedList = await query(
+      "SELECT ip, user_id, tot, reden FROM ban ORDER BY tot DESC"
+    );
+
+    return res.json({
+      success: true,
+      ips: bannedList,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "שגיאה בטעינת רשימת IP חסומים",
+      error: error.message,
+    });
+  }
+};
+
+// GET search accounts by IP
+export const searchAccountsByIP = async (req, res) => {
+  try {
+    const { ip, type = "login" } = req.query;
+
+    if (!ip || !ip.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "הזן כתובת IP לחיפוש",
+      });
+    }
+
+    // Validate IP format
+    const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
+    if (!ipRegex.test(ip)) {
+      return res.status(400).json({
+        success: false,
+        message: "פורמט IP לא תקין",
+      });
+    }
+
+    let accounts;
+    if (type === "register") {
+      accounts = await query(
+        "SELECT acc_id, username, ip_aangemeld, ip_ingelogd, email FROM rekeningen WHERE account_code='1' AND ip_aangemeld=? ORDER BY username",
+        [ip]
+      );
+    } else {
+      accounts = await query(
+        "SELECT acc_id, username, ip_aangemeld, ip_ingelogd, email FROM rekeningen WHERE account_code='1' AND ip_ingelogd=? ORDER BY username",
+        [ip]
+      );
+    }
+
+    return res.json({
+      success: true,
+      accounts,
+      searchType: type,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "שגיאה בחיפוש חשבונות",
+      error: error.message,
+    });
+  }
+};
+
+// GET detect multi-accounts (duplicate IPs)
+export const detectMultiAccounts = async (req, res) => {
+  try {
+    const { type = "login", limit = 50 } = req.query;
+
+    let multiAccounts = [];
+
+    if (type === "register") {
+      // Check for duplicate registration IPs
+      const duplicateIPs = await query(
+        `SELECT ip_aangemeld as ip, COUNT(*) as count, 
+         GROUP_CONCAT(username ORDER BY username SEPARATOR ', ') as usernames,
+         GROUP_CONCAT(acc_id ORDER BY username SEPARATOR ',') as account_ids
+         FROM rekeningen 
+         WHERE account_code='1' AND ip_aangemeld IS NOT NULL AND ip_aangemeld != ''
+         GROUP BY ip_aangemeld 
+         HAVING count > 1 
+         ORDER BY count DESC 
+         LIMIT ?`,
+        [Number(limit)]
+      );
+
+      multiAccounts = duplicateIPs.map((row) => ({
+        ip: row.ip,
+        count: row.count,
+        accounts: row.usernames.split(", "),
+        accountIds: row.account_ids.split(",").map(Number),
+      }));
+    } else {
+      // Check for duplicate login IPs from recent logs
+      const duplicateIPs = await query(
+        `SELECT ip, COUNT(DISTINCT speler) as count,
+         GROUP_CONCAT(DISTINCT speler ORDER BY speler SEPARATOR ', ') as usernames
+         FROM inlog_logs 
+         WHERE ip IS NOT NULL AND ip != ''
+         GROUP BY ip 
+         HAVING count > 1 
+         ORDER BY datum DESC
+         LIMIT ?`,
+        [Number(limit)]
+      );
+
+      multiAccounts = duplicateIPs.map((row) => ({
+        ip: row.ip,
+        count: row.count,
+        accounts: row.usernames.split(", "),
+      }));
+    }
+
+    return res.json({
+      success: true,
+      type,
+      multiAccounts,
+      total: multiAccounts.length,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "שגיאה בזיהוי חשבונות כפולים",
+      error: error.message,
+    });
+  }
+};
+
+// GET combined bank logs and messages with pagination
+export const getCombinedLogs = async (req, res) => {
+  try {
+    const { page = 1, limit = 50 } = req.query;
+    
+    const pageNum = Math.max(1, Number(page));
+    const limitNum = Math.min(100, Math.max(1, Number(limit)));
+    const offset = (pageNum - 1) * limitNum;
+
+    // Get total count for bank_logs
+    const countResult = await query("SELECT COUNT(*) as total FROM bank_logs");
+    const total = countResult[0].total;
+    const totalPages = Math.ceil(total / limitNum);
+
+    // Get bank logs with pagination
+    const bankLogs = await query(
+      `SELECT id, sender, reciever, date, what, amount 
+       FROM bank_logs 
+       ORDER BY id DESC 
+       LIMIT ? OFFSET ?`,
+      [limitNum, offset]
+    );
+
+    // Get messages with user info (joined with gebruikers)
+    const messages = await query(
+      `SELECT b.datum, b.afzender_id, b.ontvanger_id, b.bericht, b.onderwerp, g.username
+       FROM berichten b
+       INNER JOIN gebruikers g ON b.ontvanger_id = g.user_id 
+       ORDER BY b.datum DESC 
+       LIMIT ? OFFSET ?`,
+      [limitNum, offset]
+    );
+
+    return res.json({
+      success: true,
+      bankLogs,
+      messages,
+      pagination: {
+        currentPage: pageNum,
+        totalPages,
+        totalItems: total,
+        itemsPerPage: limitNum,
+        hasNext: pageNum < totalPages,
+        hasPrev: pageNum > 1,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "שגיאה בטעינת לוגים",
+      error: error.message,
+    });
+  }
+};
+
+// GET transfer list transaction logs with pagination
+export const getTransferListLogs = async (req, res) => {
+  try {
+    const { page = 1, limit = 50 } = req.query;
+    
+    const pageNum = Math.max(1, Number(page));
+    const limitNum = Math.min(100, Math.max(1, Number(limit)));
+    const offset = (pageNum - 1) * limitNum;
+
+    // Get total count
+    const countResult = await query("SELECT COUNT(*) as total FROM transferlist_log");
+    const total = countResult[0].total;
+    const totalPages = Math.ceil(total / limitNum);
+
+    // Get logs with pokemon info
+    const logs = await query(
+      `SELECT 
+        tl.id,
+        tl.buyer,
+        tl.seller,
+        tl.date,
+        tl.wild_id,
+        tl.level,
+        tl.silver,
+        tl.gold,
+        pw.real_id,
+        pw.naam as pokemon_name
+       FROM transferlist_log tl
+       INNER JOIN pokemon_wild pw ON tl.wild_id = pw.wild_id
+       ORDER BY tl.id DESC 
+       LIMIT ? OFFSET ?`,
+      [limitNum, offset]
+    );
+
+    return res.json({
+      success: true,
+      logs,
+      pagination: {
+        currentPage: pageNum,
+        totalPages,
+        totalItems: total,
+        itemsPerPage: limitNum,
+        hasNext: pageNum < totalPages,
+        hasPrev: pageNum > 1,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "שגיאה בטעינת לוגים של Transfer List",
+      error: error.message,
+    });
+  }
+};
+
+// GET transfer list logs by username (buyer or seller)
+export const getTransferListLogsByUser = async (req, res) => {
+  try {
+    const { username, page = 1, limit = 50 } = req.query;
+
+    if (!username) {
+      return res.status(400).json({
+        success: false,
+        message: "שם משתמש נדרש",
+      });
+    }
+
+    const pageNum = Math.max(1, Number(page));
+    const limitNum = Math.min(100, Math.max(1, Number(limit)));
+    const offset = (pageNum - 1) * limitNum;
+
+    const [user] = await query("SELECT user_id FROM gebruikers WHERE username = ?",[username]);
+
+    // Get total count for this user
+    const countResult = await query(
+      "SELECT COUNT(*) as total FROM transferlist_log WHERE buyer=? OR seller=?",
+      [user.user_id, user.user_id]
+    );
+    const total = countResult[0].total;
+    const totalPages = Math.ceil(total / limitNum);
+
+    // Get logs
+    const logs = await query(
+      `SELECT 
+        tl.id,
+        tl.buyer,
+        tl.seller,
+        tl.date,
+        tl.wild_id,
+        tl.level,
+        tl.silver,
+        tl.gold,
+        pw.real_id,
+        pw.naam as pokemon_name
+       FROM transferlist_log tl
+       INNER JOIN pokemon_wild pw ON tl.wild_id = pw.wild_id
+       WHERE tl.buyer=? OR tl.seller=?
+       ORDER BY tl.id DESC 
+       LIMIT ? OFFSET ?`,
+      [user.user_id, user.user_id, limitNum, offset]
+    );
+
+    return res.json({
+      success: true,
+      logs,
+      pagination: {
+        currentPage: pageNum,
+        totalPages,
+        totalItems: total,
+        itemsPerPage: limitNum,
+        hasNext: pageNum < totalPages,
+        hasPrev: pageNum > 1,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "שגיאה בטעינת לוגים של משתמש",
+      error: error.message,
+    });
+  }
+};

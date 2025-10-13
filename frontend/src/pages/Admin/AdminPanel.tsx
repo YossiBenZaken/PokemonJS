@@ -2,7 +2,6 @@ import { Box, Paper, Typography } from "@mui/material";
 import {
   Coins,
   Database,
-  Lock,
   Mail,
   Search,
   Shield,
@@ -39,27 +38,9 @@ const actions: Action[] = [
     icon: <Users />,
   },
   {
-    label: "שגיאות התחברות",
-    level: 2,
-    path: "/admin/login-errors",
-    icon: <Database />,
-  },
-  {
     label: "יומני בנק",
     level: 1,
     path: "/admin/bank-logs",
-    icon: <Database />,
-  },
-  {
-    label: "יומני שחרור",
-    level: 1,
-    path: "/admin/release-logs",
-    icon: <Database />,
-  },
-  {
-    label: "יומני קרב (נכים)",
-    level: 1,
-    path: "/admin/battle-logs",
     icon: <Database />,
   },
   {
@@ -67,15 +48,6 @@ const actions: Action[] = [
     level: 1,
     path: "/admin/market-logs",
     icon: <Database />,
-  },
-  { label: "כותרת MSG", level: 1, path: "/admin/msg-title", icon: <Mail /> },
-  { label: "דף הבית", level: 1, path: "/admin/homepage", icon: <Mail /> },
-  { label: "הודעות", level: 2, path: "/admin/messages", icon: <Mail /> },
-  {
-    label: "שלח אימייל לכולם",
-    level: 3,
-    path: "/admin/send-email",
-    icon: <Mail />,
   },
   {
     label: "שלח הודעה רשמית",
@@ -94,12 +66,6 @@ const actions: Action[] = [
     level: 3,
     path: "/admin/initial-egg",
     icon: <Database />,
-  },
-  {
-    label: "תן מטבע קידום מכירות",
-    level: 3,
-    path: "/admin/give-promo",
-    icon: <Coins />,
   },
   { label: "פוקימון", level: 3, path: "/admin/pokemon", icon: <Database /> },
   {
@@ -131,14 +97,6 @@ const actions: Action[] = [
     level: 3,
     path: "/admin/premium-coach",
     icon: <Coins />,
-  },
-  { label: "הגרלה", level: 2, path: "/admin/lottery", icon: <Database /> },
-  { label: "טורניר", level: 2, path: "/admin/tournament", icon: <Database /> },
-  {
-    label: "ליגת פוקימון",
-    level: 2,
-    path: "/admin/pokemon-league",
-    icon: <Database />,
   },
   { label: "Exp", level: 2, path: "/admin/exp", icon: <Database /> },
   { label: "כסף", level: 2, path: "/admin/money", icon: <Coins /> },
