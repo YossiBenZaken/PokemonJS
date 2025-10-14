@@ -184,6 +184,56 @@ export interface TransferListLog {
   pokemon_name: string;
 }
 
+export interface LevelMove {
+  level: number;
+  attack: string;
+}
+
+export interface CreatePokemonRequest {
+  id: number;
+  zona: string;
+  nome: string;
+  raridade: number;
+  evolutie: number;
+  type1: string;
+  type2?: string;
+  local: string;
+  captura: number;
+  exp: string;
+  baseexp: number;
+  atack1: string;
+  atack2: string;
+  atack3: string;
+  atack4: string;
+  atkbase: number;
+  defbase: number;
+  spatkbase: number;
+  spdefbase: number;
+  speedbase: number;
+  hpbase: number;
+  effortatk: number;
+  effortdef: number;
+  effortspatk: number;
+  effortspdef: number;
+  effortspeed: number;
+  efforthp: number;
+  aparece: string;
+  lendario: number;
+  comerciantes: string;
+  levelMoves?: LevelMove[];
+  movetutor?: string[];
+  relacionados?: string[];
+}
+
+export interface TMHM {
+  naam: string;
+  omschrijving: string;
+}
+
+export interface MoveTutor {
+  naam: string;
+}
+
 export const getAdminsTeams = async (): Promise<AdminsTeamResponse> => {
   const { data } = await axiosInstance.get<AdminsTeamResponse>(
     `${prefix}/getAdmins`
@@ -340,3 +390,64 @@ export const getTransferListLogsByUser = async (
   });
   return data;
 };
+
+// Pokemon management functions
+export const createPokemon = async (data: CreatePokemonRequest): Promise<BanPlayerResponse> => {
+  const { data: response } = await axiosInstance.post("/admin/create-pokemon", data);
+  return response;
+};
+
+export const getTMHMList = async (): Promise<{ success: boolean; tmList: TMHM[] }> => {
+  const { data } = await axiosInstance.get("/admin/tm-hm-list");
+  return data;
+};
+
+export const getMoveTutorList = async (): Promise<{ success: boolean; tutorList: MoveTutor[] }> => {
+  const { data } = await axiosInstance.get("/admin/move-tutor-list");
+  return data;
+};
+
+// Give egg functions
+export interface GiveEggRequest {
+  userId: number;
+  eggType: number;
+  region: string;
+}
+export interface GivePokemonRequest {
+  userId: number;
+  wildId: number;
+  isEgg:string
+  level: number;
+  maxIV: number;
+  minIV: number;
+}
+
+export interface GiveEggResponse {
+  success: boolean;
+  message: string;
+  pokemon?: {
+    name: string;
+    level: number;
+    character: string;
+  };
+}
+
+export const giveEgg = async (data: GiveEggRequest): Promise<GiveEggResponse> => {
+  const { data: response } = await axiosInstance.post("/admin/give-egg", data);
+  return response;
+};
+export const givePokemon = async (data: GivePokemonRequest): Promise<GiveEggResponse> => {
+  const { data: response } = await axiosInstance.post("/admin/give-pokemon", data);
+  return response;
+};
+
+export interface PokemonDetails {
+  wild_id: number;
+  naam: string;
+  type1: string;
+}
+
+export const getPokemons = async(): Promise<PokemonDetails[]> => {
+  const { data: response } = await axiosInstance.get("/admin/getPokemons");
+  return response;
+}

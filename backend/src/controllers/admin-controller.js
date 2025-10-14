@@ -313,7 +313,6 @@ export const checkBanStatus = async (req, res) => {
   }
 };
 
-
 // POST ban a player
 export const banPlayer = async (req, res) => {
   try {
@@ -408,7 +407,7 @@ export const getBannedPlayers = async (req, res) => {
 // POST ban an IP address
 export const banIP = async (req, res) => {
   try {
-    const { ip,userId, until, reason } = req.body;
+    const { ip, userId, until, reason } = req.body;
 
     if (!ip || !ip.trim()) {
       return res.status(400).json({
@@ -630,7 +629,7 @@ export const detectMultiAccounts = async (req, res) => {
 export const getCombinedLogs = async (req, res) => {
   try {
     const { page = 1, limit = 50 } = req.query;
-    
+
     const pageNum = Math.max(1, Number(page));
     const limitNum = Math.min(100, Math.max(1, Number(limit)));
     const offset = (pageNum - 1) * limitNum;
@@ -685,13 +684,15 @@ export const getCombinedLogs = async (req, res) => {
 export const getTransferListLogs = async (req, res) => {
   try {
     const { page = 1, limit = 50 } = req.query;
-    
+
     const pageNum = Math.max(1, Number(page));
     const limitNum = Math.min(100, Math.max(1, Number(limit)));
     const offset = (pageNum - 1) * limitNum;
 
     // Get total count
-    const countResult = await query("SELECT COUNT(*) as total FROM transferlist_log");
+    const countResult = await query(
+      "SELECT COUNT(*) as total FROM transferlist_log"
+    );
     const total = countResult[0].total;
     const totalPages = Math.ceil(total / limitNum);
 
@@ -752,7 +753,10 @@ export const getTransferListLogsByUser = async (req, res) => {
     const limitNum = Math.min(100, Math.max(1, Number(limit)));
     const offset = (pageNum - 1) * limitNum;
 
-    const [user] = await query("SELECT user_id FROM gebruikers WHERE username = ?",[username]);
+    const [user] = await query(
+      "SELECT user_id FROM gebruikers WHERE username = ?",
+      [username]
+    );
 
     // Get total count for this user
     const countResult = await query(
@@ -803,3 +807,600 @@ export const getTransferListLogsByUser = async (req, res) => {
     });
   }
 };
+
+// POST create new pokemon
+export const createPokemon = async (req, res) => {
+  try {
+    const {
+      id,
+      zona,
+      nome,
+      raridade,
+      evolutie,
+      type1,
+      type2,
+      local,
+      captura,
+      exp,
+      baseexp,
+      atack1,
+      atack2,
+      atack3,
+      atack4,
+      atkbase,
+      defbase,
+      spatkbase,
+      spdefbase,
+      speedbase,
+      hpbase,
+      effortatk,
+      effortdef,
+      effortspatk,
+      effortspdef,
+      effortspeed,
+      efforthp,
+      aparece,
+      lendario,
+      comerciantes,
+      levelMoves,
+      movetutor,
+      relacionados,
+    } = req.body;
+
+    // Insert pokemon
+    const result = await query(
+      `INSERT INTO pokemon_wild (
+        wild_id, wereld, naam, zeldzaamheid, evolutie, type1, type2, gebied, 
+        vangbaarheid, groei, base_exp, aanval_1, aanval_2, aanval_3, aanval_4,
+        attack_base, defence_base, \`spc.attack_base\`, \`spc.defence_base\`, 
+        speed_base, hp_base, effort_attack, effort_defence, \`effort_spc.attack\`,
+        \`effort_spc.defence\`, effort_speed, effort_hp, aparece, lendario, comerciantes
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        id,
+        zona,
+        nome,
+        raridade,
+        evolutie,
+        type1,
+        type2 || null,
+        local,
+        captura,
+        exp,
+        baseexp,
+        atack1,
+        atack2,
+        atack3,
+        atack4,
+        atkbase,
+        defbase,
+        spatkbase,
+        spdefbase,
+        speedbase,
+        hpbase,
+        effortatk,
+        effortdef,
+        effortspatk,
+        effortspdef,
+        effortspeed,
+        efforthp,
+        aparece,
+        lendario,
+        comerciantes,
+      ]
+    );
+
+    const pokemonId = result.insertId || id;
+
+    // Insert level-up moves
+    if (levelMoves && Array.isArray(levelMoves)) {
+      for (const move of levelMoves) {
+        if (move.level && move.attack) {
+          await query(
+            `INSERT INTO levelen (level, stone, trade, wild_id, wat, nieuw_id, aanval)
+             VALUES (?, '', '0', ?, 'att', '0', ?)`,
+            [move.level, pokemonId, move.attack]
+          );
+        }
+      }
+    }
+
+    // Update move tutor relationships
+    if (movetutor && Array.isArray(movetutor)) {
+      for (const tutorName of movetutor) {
+        const [tutor] = await query(
+          "SELECT relacionados FROM tmhm_movetutor WHERE naam = ?",
+          [tutorName]
+        );
+        if (tutor) {
+          const newRelated = `${tutor.relacionados},${pokemonId}`;
+          await query(
+            "UPDATE tmhm_movetutor SET relacionados = ? WHERE naam = ?",
+            [newRelated, tutorName]
+          );
+        }
+      }
+    }
+
+    // Update TM/HM relationships
+    if (relacionados && Array.isArray(relacionados)) {
+      for (const tmName of relacionados) {
+        const [tm] = await query(
+          "SELECT relacionados FROM tmhm_relacionados WHERE naam = ?",
+          [tmName]
+        );
+        if (tm) {
+          const newRelated = `${tm.relacionados},${pokemonId}`;
+          await query(
+            "UPDATE tmhm_relacionados SET relacionados = ? WHERE naam = ?",
+            [newRelated, tmName]
+          );
+        }
+      }
+    }
+
+    return res.json({
+      success: true,
+      message: "הפוקימון נוסף בהצלחה",
+      pokemonId,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "שגיאה ביצירת פוקימון",
+      error: error.message,
+    });
+  }
+};
+
+// Helper function to calculate stats
+const calculateStats = (base, iv, level, multiplier) => {
+  return Math.round((((base * 2 + iv) * level) / 100 + 5) * multiplier);
+};
+
+const calculateHP = (base, iv, level) => {
+  return Math.round(((base * 2 + iv) * level) / 100 + level + 10);
+};
+
+// Helper function to generate random IV (2-31)
+const generateIV = () => Math.floor(Math.random() * 30) + 2;
+
+// Helper function to select random ability
+const selectAbility = (abilities) => {
+  const abilityList = abilities.split(",");
+  return abilityList[Math.floor(Math.random() * abilityList.length)];
+};
+
+// POST give egg to player
+export const giveEgg = async (req, res) => {
+  try {
+    const { userId, eggType, region } = req.body;
+
+    // Validation
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: "הזן ID של מאמן",
+      });
+    }
+
+    if (!region) {
+      return res.status(400).json({
+        success: false,
+        message: "בחר אזור",
+      });
+    }
+
+    if (!eggType) {
+      return res.status(400).json({
+        success: false,
+        message: "בחר ביצה",
+      });
+    }
+
+    // Check if player has 6 pokemon already
+    const [pokemonCount] = await query(
+      "SELECT COUNT(*) as count FROM pokemon_speler WHERE user_id = ? AND opzak = 'ja'",
+      [userId]
+    );
+
+    if (pokemonCount.count >= 6) {
+      return res.status(400).json({
+        success: false,
+        message: "למאמן יש כבר 6 פוקימונים איתו",
+      });
+    }
+
+    const opzakNumber = pokemonCount.count + 1;
+    const currentTime = new Date().toISOString().slice(0, 19).replace("T", " ");
+
+    // Determine which table to use based on egg type
+    let joinTable;
+    if (eggType === 1) joinTable = "pokemon_nieuw_starter";
+    else if (eggType === 2) joinTable = "pokemon_nieuw_normaal";
+    else if (eggType === 3) joinTable = "pokemon_nieuw_baby";
+    else {
+      return res.status(400).json({
+        success: false,
+        message: "סוג ביצה לא תקין",
+      });
+    }
+
+    // Get random pokemon from the appropriate table
+    const [pokemon] = await query(
+      `SELECT pw.wild_id, pw.naam, pw.groei, pw.attack_base, pw.defence_base, 
+              pw.speed_base, pw.\`spc.attack_base\`, pw.\`spc.defence_base\`, 
+              pw.hp_base, pw.aanval_1, pw.aanval_2, pw.aanval_3, pw.aanval_4, 
+              pw.ability
+       FROM pokemon_wild pw
+       INNER JOIN ${joinTable} pnb ON pw.wild_id = pnb.wild_id
+       WHERE pw.wereld = ?
+       ORDER BY RAND()
+       LIMIT 1`,
+      [region]
+    );
+
+    if (!pokemon) {
+      return res.status(404).json({
+        success: false,
+        message: "לא נמצא פוקימון מתאים",
+      });
+    }
+
+    // Insert pokemon into pokemon_speler
+    const insertResult = await query(
+      `INSERT INTO pokemon_speler (wild_id, aanval_1, aanval_2, aanval_3, aanval_4)
+       SELECT wild_id, aanval_1, aanval_2, aanval_3, aanval_4
+       FROM pokemon_wild
+       WHERE wild_id = ?`,
+      [pokemon.wild_id]
+    );
+
+    const pokemonId = insertResult.insertId;
+
+    // Update player's pokemon count
+    await query(
+      "UPDATE gebruikers SET aantalpokemon = aantalpokemon + 1 WHERE user_id = ?",
+      [userId]
+    );
+
+    // Get random character
+    const [character] = await query(
+      "SELECT * FROM karakters ORDER BY RAND() LIMIT 1"
+    );
+
+    // Get experience needed for level 6
+    const [expData] = await query(
+      "SELECT punten FROM experience WHERE soort = ? AND level = 6",
+      [pokemon.groei]
+    );
+
+    // Generate IVs
+    const attackIV = generateIV();
+    const defenceIV = generateIV();
+    const speedIV = generateIV();
+    const spcAttackIV = generateIV();
+    const spcDefenceIV = generateIV();
+    const hpIV = generateIV();
+
+    // Calculate stats for level 5
+    const level = 5;
+    const attackStat = calculateStats(
+      pokemon.attack_base,
+      attackIV,
+      level,
+      character.attack_add
+    );
+    const defenceStat = calculateStats(
+      pokemon.defence_base,
+      defenceIV,
+      level,
+      character.defence_add
+    );
+    const speedStat = calculateStats(
+      pokemon.speed_base,
+      speedIV,
+      level,
+      character.speed_add
+    );
+    const spcAttackStat = calculateStats(
+      pokemon["spc.attack_base"],
+      spcAttackIV,
+      level,
+      character["spc.attack_add"]
+    );
+    const spcDefenceStat = calculateStats(
+      pokemon["spc.defence_base"],
+      spcDefenceIV,
+      level,
+      character["spc.defence_add"]
+    );
+    const hpStat = calculateHP(pokemon.hp_base, hpIV, level);
+
+    // Select random ability
+    const ability = selectAbility(pokemon.ability);
+
+    // Determine time field based on egg type
+    const timeField = eggType === 3 ? "baby_tijd" : "ei_tijd";
+
+    // Update pokemon with all data
+    await query(
+      `UPDATE pokemon_speler SET
+        level = 5,
+        karakter = ?,
+        expnodig = ?,
+        user_id = ?,
+        opzak = 'ja',
+        opzak_nummer = ?,
+        ei = '1',
+        ${timeField} = ?,
+        attack_iv = ?,
+        defence_iv = ?,
+        speed_iv = ?,
+        \`spc.attack_iv\` = ?,
+        \`spc.defence_iv\` = ?,
+        hp_iv = ?,
+        attack = ?,
+        defence = ?,
+        speed = ?,
+        \`spc.attack\` = ?,
+        \`spc.defence\` = ?,
+        levenmax = ?,
+        leven = ?,
+        ability = ?,
+        capture_date = ?
+       WHERE id = ?`,
+      [
+        character.karakter_naam,
+        expData.punten,
+        userId,
+        opzakNumber,
+        currentTime,
+        attackIV,
+        defenceIV,
+        speedIV,
+        spcAttackIV,
+        spcDefenceIV,
+        hpIV,
+        attackStat,
+        defenceStat,
+        speedStat,
+        spcAttackStat,
+        spcDefenceStat,
+        hpStat,
+        hpStat,
+        ability,
+        currentTime,
+        pokemonId,
+      ]
+    );
+
+    return res.json({
+      success: true,
+      message: "ביצת הפוקימון נשלחה בהצלחה",
+      pokemon: {
+        name: pokemon.naam,
+        level: 5,
+        character: character.karakter_naam,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "שגיאה במתן ביצה",
+      error: error.message,
+    });
+  }
+};
+
+// GET all TM/HM for selection
+export const getTMHMList = async (req, res) => {
+  try {
+    const tmList = await query(
+      "SELECT naam, omschrijving FROM tmhm_relacionados ORDER BY naam"
+    );
+    return res.json({ success: true, tmList });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "שגיאה בטעינת TM/HM",
+      error: error.message,
+    });
+  }
+};
+
+// GET all Move Tutors for selection
+export const getMoveTutorList = async (req, res) => {
+  try {
+    const tutorList = await query(
+      "SELECT naam FROM tmhm_movetutor ORDER BY naam"
+    );
+    return res.json({ success: true, tutorList });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "שגיאה בטעינת Move Tutors",
+      error: error.message,
+    });
+  }
+};
+
+export const getPokemons = async (req, res) => {
+  const pokemons = await query(
+    "SELECT wild_id, naam, type1 FROM pokemon_wild ORDER BY naam ASC",
+    []
+  );
+  res.json(pokemons);
+};
+
+export const givePokemon = async (req, res) => {
+  const { isEgg, level, maxIV, minIV, userId, wildId } = req.body;
+  if (!userId) {
+    return res.status(400).json({
+      success: false,
+      message: "הזן ID של מאמן",
+    });
+  }
+  // Check if player has 6 pokemon already
+  const [pokemonCount] = await query(
+    "SELECT COUNT(*) as count FROM pokemon_speler WHERE user_id = ? AND opzak = 'ja'",
+    [userId]
+  );
+
+  if (pokemonCount.count >= 6) {
+    return res.status(400).json({
+      success: false,
+      message: "למאמן יש כבר 6 פוקימונים איתו",
+    });
+  }
+
+  const opzakNumber = pokemonCount.count + 1;
+  const currentTime = new Date().toISOString().slice(0, 19).replace("T", " ");
+
+  const [pokemon] = await query(
+    "SELECT * FROM `pokemon_wild` WHERE `wild_id`=?",
+    [wildId]
+  );
+
+  // Insert pokemon into pokemon_speler
+  const insertResult = await query(
+    `INSERT INTO pokemon_speler (wild_id, aanval_1, aanval_2, aanval_3, aanval_4)
+       SELECT wild_id, aanval_1, aanval_2, aanval_3, aanval_4
+       FROM pokemon_wild
+       WHERE wild_id = ?`,
+    [pokemon.wild_id]
+  );
+
+  const pokemonId = insertResult.insertId;
+
+  // Update player's pokemon count
+  await query(
+    "UPDATE gebruikers SET aantalpokemon = aantalpokemon + 1 WHERE user_id = ?",
+    [userId]
+  );
+
+  // Get random character
+  const [character] = await query(
+    "SELECT * FROM karakters ORDER BY RAND() LIMIT 1"
+  );
+
+  // Get experience needed for level 6
+  const [expData] = await query(
+    "SELECT punten FROM experience WHERE soort = ? AND level = ?",
+    [pokemon.groei, level]
+  );
+
+  const min = Math.min(minIV, maxIV);
+  const max = Math.max(minIV, maxIV);
+
+  // Generate IVs
+  const attackIV = randomBetween(min, max);
+  const defenceIV = randomBetween(min, max);
+  const speedIV = randomBetween(min, max);
+  const spcAttackIV = randomBetween(min, max);
+  const spcDefenceIV = randomBetween(min, max);
+  const hpIV = randomBetween(min, max);
+
+  const attackStat = calculateStats(
+    pokemon.attack_base,
+    attackIV,
+    level,
+    character.attack_add
+  );
+  const defenceStat = calculateStats(
+    pokemon.defence_base,
+    defenceIV,
+    level,
+    character.defence_add
+  );
+  const speedStat = calculateStats(
+    pokemon.speed_base,
+    speedIV,
+    level,
+    character.speed_add
+  );
+  const spcAttackStat = calculateStats(
+    pokemon["spc.attack_base"],
+    spcAttackIV,
+    level,
+    character["spc.attack_add"]
+  );
+  const spcDefenceStat = calculateStats(
+    pokemon["spc.defence_base"],
+    spcDefenceIV,
+    level,
+    character["spc.defence_add"]
+  );
+  const hpStat = calculateHP(pokemon.hp_base, hpIV, level);
+
+  // Select random ability
+  const ability = selectAbility(pokemon.ability);
+
+  const egg = isEgg === "n" ? 0 : 1;
+
+  await query(
+    `UPDATE pokemon_speler SET
+      level = ?,
+      karakter = ?,
+      expnodig = ?,
+      user_id = ?,
+      opzak = 'ja',
+      opzak_nummer = ?,
+      ei = ?,
+      ei_tijd = ?,
+      attack_iv = ?,
+      defence_iv = ?,
+      speed_iv = ?,
+      \`spc.attack_iv\` = ?,
+      \`spc.defence_iv\` = ?,
+      hp_iv = ?,
+      attack = ?,
+      defence = ?,
+      speed = ?,
+      \`spc.attack\` = ?,
+      \`spc.defence\` = ?,
+      levenmax = ?,
+      leven = ?,
+      ability = ?,
+      capture_date = ?
+     WHERE id = ?`,
+    [
+      level,
+      character.karakter_naam,
+      expData.punten,
+      userId,
+      opzakNumber,
+      egg,
+      currentTime,
+      attackIV,
+      defenceIV,
+      speedIV,
+      spcAttackIV,
+      spcDefenceIV,
+      hpIV,
+      attackStat,
+      defenceStat,
+      speedStat,
+      spcAttackStat,
+      spcDefenceStat,
+      hpStat,
+      hpStat,
+      ability,
+      currentTime,
+      pokemonId,
+    ]
+  );
+
+  return res.json({
+    success: true,
+    message: "הפוקימון נשלח בהצלחה",
+    pokemon: {
+      name: pokemon.naam,
+      level,
+      character: character.karakter_naam,
+    },
+  });
+};
+
+const randomBetween = (min, max) =>
+  Math.floor(Math.random() * (max - min + 1)) + min;

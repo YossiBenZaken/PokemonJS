@@ -235,7 +235,6 @@ function App() {
                 {InboxRoutes}
                 {TownRoutes}
               </Routes>
-              <Footer />
             </Header>
           </Router>
         </BattleProvider>

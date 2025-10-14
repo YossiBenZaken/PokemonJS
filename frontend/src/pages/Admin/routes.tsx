@@ -1,4 +1,7 @@
+import AdminAddPokemon from "./AdminAddPokemon";
 import AdminBankLogsPage from "./BankLogs";
+import AdminGiveEggPage from "./AdminGiveEggPage";
+import AdminGivePokemonPage from "./AdminGivePokemonPage";
 import AdminIPSearchPage from "./AdminIPSearchPage";
 import AdminMultiAccountDetector from "./AdminMultiAccountPage";
 import AdminPanel from "./AdminPanel";
@@ -82,6 +85,30 @@ export const AdminRoutes = () => {
         element={
           <PrivateRoute admin={true}>
             <AdminTransferListLogsPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="add-pokemon"
+        element={
+          <PrivateRoute admin={true}>
+            <AdminAddPokemon />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="initial-egg"
+        element={
+          <PrivateRoute admin={true}>
+            <AdminGiveEggPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="pokemon"
+        element={
+          <PrivateRoute admin={true}>
+            <AdminGivePokemonPage />
           </PrivateRoute>
         }
       />

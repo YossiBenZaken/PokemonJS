@@ -69,12 +69,6 @@ const actions: Action[] = [
   },
   { label: "פוקימון", level: 3, path: "/admin/pokemon", icon: <Database /> },
   {
-    label: "פוקימון העברה (פרס)",
-    level: 1,
-    path: "/admin/pokemon-transfer",
-    icon: <Database />,
-  },
-  {
     label: "תרומה המונית",
     level: 3,
     path: "/admin/mass-donation",
