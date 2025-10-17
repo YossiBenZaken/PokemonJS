@@ -214,10 +214,7 @@ const PokedexPage: React.FC = () => {
               <ListRow key={p.wild_id} onClick={() => setSelected(p.wild_id)}>
                 <div style={{ display: "flex", alignItems: "center" }}>
                   <PokeImg
-                    src={`/images/pokemon/${p.wild_id}.gif`}
-                    onError={(e: any) => {
-                      e.target.src = "/images/pokemon/1.gif";
-                    }}
+                    src={require(`../../assets/images/pokemon/${p.wild_id}.gif`)}
                   />
                   <span>
                     {p.real_id}. {p.naam}
@@ -238,7 +235,7 @@ const PokedexPage: React.FC = () => {
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <PokeImg
                     style={{ width: 48, height: 48 }}
-                    src={`/images/pokemon/${pokemonInfo.wild_id}.gif`}
+                    src={require(`../../assets/images/pokemon/${pokemonInfo.wild_id}.gif`)}
                     onError={(e: any) => {
                       e.target.src = "/images/pokemon/1.gif";
                     }}
@@ -528,7 +525,7 @@ const PokedexPage: React.FC = () => {
                       style={{ display: "flex", alignItems: "center", gap: 8 }}
                     >
                       <img
-                        src={`/images/pokemon/icon/${pokemonInfo.evolve_from.from.wild_id}.gif`}
+                        src={require(`../../assets/images/pokemon/icon/${pokemonInfo.evolve_from.from.wild_id}.gif`)}
                         style={{ width: 24, height: 24 }}
                         alt={pokemonInfo.evolve_from.from.naam}
                       />
@@ -568,7 +565,7 @@ const PokedexPage: React.FC = () => {
                                 <tr key={idx}>
                                   <td style={{ padding: 6 }}>
                                     {row.level < 100 ? row.level || "-" : null}
-                                    {row.stone !== "" ? (
+                                    {row.stone !== "" && row.stone !== null ? (
                                       <img
                                         src={require(`../../assets/images/items/${row.stone}.png`)}
                                         alt={row.stone}
@@ -587,7 +584,7 @@ const PokedexPage: React.FC = () => {
                                       : row.nieuw_id === 237
                                       ? " + Attack = Defense"
                                       : null}
-                                    {row.trade === 1 && row.item !== "" ? (
+                                    {row.trade === 1 && row.item !== "" && row.item !== null ? (
                                       <>
                                         +
                                         <img
@@ -596,7 +593,7 @@ const PokedexPage: React.FC = () => {
                                         />
                                       </>
                                     ) : null}
-                                    {row.region !== ""
+                                    {row.region !== "" && row.region !== null
                                       ? ` + ${row.region}`
                                       : null}
                                   </td>
@@ -606,7 +603,7 @@ const PokedexPage: React.FC = () => {
                                     ) : (
                                       <>
                                         <img
-                                          src={require(`../../assets/images/pokemon/icon/${row.nieuw_id}.gif`)}
+                                          src={require(`../../assets/images/pokemon/icon/${row.nieuw_id}.gif`) || ''}
                                           alt={row.nieuw_id}
                                         />
                                       </>
