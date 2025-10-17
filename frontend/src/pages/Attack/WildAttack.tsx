@@ -63,7 +63,7 @@ const WildAttack: React.FC = () => {
     setPokemonInfo,
     setAttackLog,
     setComputerInfo,
-    setPokemonEvolve
+    setPokemonEvolve,
   } = useBattle();
 
   const { selectedCharacter, myPokemons, itemInfo, attacks } = useGame();
@@ -85,13 +85,15 @@ const WildAttack: React.FC = () => {
       let attackLogInEffect = attackLog;
       if (!attackLogInEffect) {
         const logId = await getBattleLogId();
-        const {attackLogId,success} = logId;
-        if(!success) {
-          navigate('/');
+        const { attackLogId, success } = logId;
+        if (!success) {
+          navigate("/");
           return;
         }
 
-        const {aanval_log,computer_info,pokemon_info} = await initBattle(attackLogId);
+        const { aanval_log, computer_info, pokemon_info } = await initBattle(
+          attackLogId
+        );
         setAttackLog(aanval_log);
         setComputerInfo(computer_info);
         setPokemonInfo(pokemon_info);
@@ -236,9 +238,9 @@ const WildAttack: React.FC = () => {
           ["Recover", "Roost"].includes(battleState.currentAtk) &&
           response.who === "computer"
         ) {
-          gifImg.src = `/images/attacks/${gifAttack}.gif`;
+          gifImg.src = require(`../../assets/images/attacks/${gifAttack}.gif`);
         } else {
-          gifImg.src = `/images/attacks/${gifAttack}${gifSuffix}.gif`;
+          gifImg.src = require(`../../assets/images/attacks/${gifAttack}${gifSuffix}.gif`);
         }
       }
     }
@@ -352,12 +354,12 @@ const WildAttack: React.FC = () => {
 
         // Redirect after delay
         setTimeout(() => {
-          if(response.dataOfLevelGrow.needsAttention) {
+          if (response.dataOfLevelGrow.needsAttention) {
             setPokemonEvolve(response.dataOfLevelGrow);
-            if(response.dataOfLevelGrow.newAttack) {
-              navigate('/poke-new-attack')
+            if (response.dataOfLevelGrow.newAttack) {
+              navigate("/poke-new-attack");
             } else {
-              navigate('/poke-evolve');
+              navigate("/poke-evolve");
             }
           } else {
             navigate("/attack/map");
@@ -397,7 +399,7 @@ const WildAttack: React.FC = () => {
         if (effectEl) {
           const img = effectEl.querySelector("img") as HTMLImageElement;
           if (img) {
-            img.src = `/images/effects/${effectName}.png`;
+            img.src = require(`../../assets/images/effects/${effectName}.png`);
             img.alt = effectName;
             img.title = effectName;
           }
@@ -472,7 +474,7 @@ const WildAttack: React.FC = () => {
           "img_pokemon"
         ) as HTMLImageElement;
         if (pokemonImg) {
-          pokemonImg.src = `/images/${map}/back/${transformData[0]}.gif`;
+          pokemonImg.src = require(`../../assets/images/${map}/back/${transformData[0]}.gif`);
         }
       } else {
         // Computer Pokemon transformed
@@ -481,7 +483,7 @@ const WildAttack: React.FC = () => {
           "img_computer"
         ) as HTMLImageElement;
         if (computerImg) {
-          computerImg.src = `/images/${map}/${transformData[0]}.gif`;
+          computerImg.src = require(`../../assets/images/${map}/${transformData[0]}.gif`);
         }
       }
     }
@@ -553,7 +555,10 @@ const WildAttack: React.FC = () => {
             zmoveEl.style.display = "none";
             (
               zmoveEl as HTMLImageElement
-            ).src = `/images/zmoves/${attackName.replace(" ", "_")}.png`;
+            ).src = require(`../../assets/images/zmoves/${attackName.replace(
+              " ",
+              "_"
+            )}.png`);
             zmoveEl.style.display = "block";
           }
 
@@ -662,7 +667,7 @@ const WildAttack: React.FC = () => {
         } else {
           const img = pokemonEffectEl?.querySelector("img") as HTMLImageElement;
           if (img) {
-            img.src = `/images/effects/${changePokemon.effect}.png`;
+            img.src = require(`../../assets/images/effects/${changePokemon.effect}.png`);
             img.alt = changePokemon.effect;
             img.title = changePokemon.effect;
           }
@@ -696,7 +701,7 @@ const WildAttack: React.FC = () => {
         if (pokemonLifeEl) {
           pokemonLifeEl.style.width = `${pokemonLifePercent}%`;
         }
-        
+
         // Set battle state for next phase
         if (refresh) {
           dispatchBattle({ type: "SET_SPELER_ATTACK", value: false });
@@ -964,7 +969,7 @@ const WildAttack: React.FC = () => {
       <Title>קרב</Title>
       <GifAttack>
         <img
-          src="/images/attacks/_blank.gif"
+          src={require(`../../assets/images/attacks/_blank.gif`)}
           alt="Trainer Attack"
           style={{
             width: 700,
@@ -1257,7 +1262,7 @@ const WildAttack: React.FC = () => {
                                 }}
                               >
                                 <img
-                                  src={`/images/items/${item.naam}.png`}
+                                  src={require(`../../assets/images/items/${item.naam}.png`)}
                                   className="image"
                                   alt={item.naam}
                                 />

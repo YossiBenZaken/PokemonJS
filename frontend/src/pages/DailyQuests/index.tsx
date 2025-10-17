@@ -215,28 +215,28 @@ const DailyQuestsPage: React.FC = () => {
         return (
           <RewardDisplay>
             {reward.quantity}x {reward.item}
-            <img src={`/images/items/Attack_${reward.attackType}.png`} alt={reward.attackType} />
+            <img src={require(`../../assets/images/items/Attack_${reward.attackType}.png`)} alt={reward.attackType} />
           </RewardDisplay>
         );
       }
       return (
         <RewardDisplay>
           {reward.quantity}x {reward.item}
-          <img src={`/images/items/${reward.item}.png`} alt={reward.item} />
+          <img src={require(`../../assets/images/items/${reward.item}.png`)} alt={reward.item} />
         </RewardDisplay>
       );
     } else if (reward.type === "gold") {
       return (
         <RewardDisplay>
           {reward.quantity}x
-          <img src="/images/icons/gold.png" alt="Gold" />
+          <img src={require(`../../assets/images/icons/gold.png`)} alt="Gold" />
         </RewardDisplay>
       );
     } else {
       return (
         <RewardDisplay>
           {reward.quantity}x
-          <img src="/images/icons/silver.png" alt="Silver" />
+          <img src={require(`../../assets/images/icons/silver.png`)} alt="Silver" />
         </RewardDisplay>
       );
     }
@@ -354,7 +354,7 @@ const DailyQuestsPage: React.FC = () => {
       )}
 
       <NPCBox>
-        <NPCImage src="/images/npc/13.png" alt="Quest NPC" />
+        <NPCImage src={require(`../../assets/images/npc/13.png`)} alt="Quest NPC" />
         <NPCText>
           <h3>משימות יומיות</h3>
           <p>
@@ -362,7 +362,7 @@ const DailyQuestsPage: React.FC = () => {
             אם תשלים משימות למשך 7 ימים רצופים, תקבל{" "}
             <strong>Master Ball</strong>{" "}
             <img
-              src="/images/items/Master ball.png"
+              src={require(`../../assets/images/items/Master ball.png`)}
               style={{ width: 24, height: 24, verticalAlign: "middle" }}
             />
             <br />

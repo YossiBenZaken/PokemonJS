@@ -5,28 +5,37 @@ interface UBBCodeProps {
 }
 
 const smileys: Record<string, string> = {
-  ":)": "001.png",
-  ":D": "002.png",
-  xD: "003.png",
-  ":P": "004.png",
-  ";)": "005.png",
-  ":S": "006.png",
-  ":O": "007.png",
-  "8-)": "008.png",
-  ":*": "009.png",
-  ":(": "010.png",
-  ":'(": "011.png",
-  ":|": "012.png",
-  ":b": "013.png",
-  "(BOO)": "014.png",
-  "(zZZ)": "015.png",
-  ":v": "016.png",
-  "(GRR)": "017.png",
-  ":3": "018.png",
-  "@-)": "019.png",
-  o_O: "020.png",
-  "._.": "021.png",
-  "(S2)": "022.png",
+  ":)": require('../../assets/images/emoticons/001.png'),
+  ":D": require('../../assets/images/emoticons/002.png'),
+  xD: require('../../assets/images/emoticons/003.png'),
+  ":P": require('../../assets/images/emoticons/004.png'),
+  ";)": require('../../assets/images/emoticons/005.png'),
+  ":S": require('../../assets/images/emoticons/006.png'),
+  ":O": require('../../assets/images/emoticons/007.png'),
+  "8-)": require('../../assets/images/emoticons/008.png'),
+  ":*": require('../../assets/images/emoticons/009.png'),
+  ":(": require('../../assets/images/emoticons/010.png'),
+  ":'(": require('../../assets/images/emoticons/011.png'),
+  ":|": require('../../assets/images/emoticons/012.png'),
+  ":b": require('../../assets/images/emoticons/013.png'),
+  "(BOO)": require('../../assets/images/emoticons/014.png'),
+  "(zZZ)": require('../../assets/images/emoticons/015.png'),
+  ":v": require('../../assets/images/emoticons/016.png'),
+  "(GRR)": require('../../assets/images/emoticons/017.png'),
+  ":3": require('../../assets/images/emoticons/018.png'),
+  "@-)": require('../../assets/images/emoticons/019.png'),
+  o_O: require('../../assets/images/emoticons/020.png'),
+  "._.": require('../../assets/images/emoticons/021.png'),
+  "(S2)": require('../../assets/images/emoticons/022.png'),
+};
+
+const getPokemonImage = (path: string): string => {
+  try {
+    return require(`../../assets/images/${path}`);
+  } catch {
+    console.warn(`Missing image: ${path}`);
+    return "";
+  }
 };
 
 export const UBBCode: React.FC<UBBCodeProps> = ({ text }) => {
@@ -41,7 +50,7 @@ export const UBBCode: React.FC<UBBCodeProps> = ({ text }) => {
   // סמיילים
   Object.entries(smileys).forEach(([key, img]) => {
     const regex = new RegExp(key.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&"), "g");
-    processed = processed.replace(regex, `<img src="/images/emoticons/${img}" alt="${key}" />`);
+    processed = processed.replace(regex, `<img src="${img}" alt="${key}" />`);
   });
 
   // BBCode בסיסי

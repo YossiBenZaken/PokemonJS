@@ -13,13 +13,13 @@ export const HoennMap = (props: MapProps) => {
         <img
           className="cursor-pointer"
           onClick={() => onTerrainClick(4)}
-          src="/images/attackmap/hoenn/spookhuis.gif"
+          src={require('../../assets/images/attackmap/hoenn/spookhuis.gif')}
           alt="Torre Assombrada"
         />
         <img
           className="cursor-pointer"
           onClick={() => onTerrainClick(1)}
-          src="/images/attackmap/hoenn/lavagrot.gif"
+          src={require('../../assets/images/attackmap/hoenn/lavagrot.gif')}
           alt="Lava"
         />
       </div>
@@ -27,25 +27,25 @@ export const HoennMap = (props: MapProps) => {
         <img
           className="cursor-pointer"
           onClick={() => onTerrainClick(3)}
-          src="/images/attackmap/hoenn/grasveld_01.gif"
+          src={require('../../assets/images/attackmap/hoenn/grasveld_01.gif')}
           alt="Grama"
         />
-        <img src="/images/attackmap/hoenn/area_01.gif" alt="Grama" />
+        <img src={require('../../assets/images/attackmap/hoenn/area_01.gif')} alt="Grama" />
       </div>
       <div className="flex">
-        <img src="/images/attackmap/hoenn/area_02.gif" alt="Grama" />
+        <img src={require('../../assets/images/attackmap/hoenn/area_02.gif')} alt="Grama" />
       </div>
       <div className="flex">
         <img
           className="cursor-pointer"
           onClick={() => onTerrainClick(3)}
-          src="/images/attackmap/hoenn/grasveld.gif"
+          src={require('../../assets/images/attackmap/hoenn/grasveld.gif')}
           alt="Grama"
         />
         <img
           className="cursor-pointer"
           onClick={() => onTerrainClick(2)}
-          src="/images/attackmap/hoenn/vechtschool.gif"
+          src={require('../../assets/images/attackmap/hoenn/vechtschool.gif')}
           alt="Dojô"
         />
       </div>
@@ -53,19 +53,19 @@ export const HoennMap = (props: MapProps) => {
         <img
           className="cursor-pointer"
           onClick={() => onTerrainClick(6)}
-          src="/images/attackmap/hoenn/water.gif"
+          src={require('../../assets/images/attackmap/hoenn/water.gif')}
           alt="Água"
         />
         <img
           className="cursor-pointer"
           onClick={() => onTerrainClick(7)}
-          src="/images/attackmap/hoenn/strand.gif"
+          src={require('../../assets/images/attackmap/hoenn/strand.gif')}
           alt="Praia"
         />
         <img
           className="cursor-pointer"
           onClick={() => onTerrainClick(5)}
-          src="/images/attackmap/hoenn/grot.gif"
+          src={require('../../assets/images/attackmap/hoenn/grot.gif')}
           alt="Gruta"
         />
       </div>
@@ -81,13 +81,13 @@ export const JohtoMap = (props: MapProps) => {
         <img
           className="cursor-pointer"
           onClick={() => onTerrainClick(5)}
-          src="/images/attackmap/johto/grot.gif"
+          src={require('../../assets/images/attackmap/johto/grot.gif')}
           alt="Gruta"
         />
         <img
           className="cursor-pointer"
           onClick={() => onTerrainClick(2)}
-          src="/images/attackmap/johto/vechtschool.gif"
+          src={require('../../assets/images/attackmap/johto/vechtschool.gif')}
           alt="Dojô"
         />
       </div>
@@ -95,13 +95,13 @@ export const JohtoMap = (props: MapProps) => {
         <img
           className="cursor-pointer"
           onClick={() => onTerrainClick(1)}
-          src="/images/attackmap/johto/lavagrot.gif"
+          src={require('../../assets/images/attackmap/johto/lavagrot.gif')}
           alt="Lava"
         />
         <img
           className="cursor-pointer"
           onClick={() => onTerrainClick(3)}
-          src="/images/attackmap/johto/grasveld.gif"
+          src={require('../../assets/images/attackmap/johto/grasveld.gif')}
           alt="Grama"
         />
       </div>
@@ -109,13 +109,13 @@ export const JohtoMap = (props: MapProps) => {
         <img
           className="cursor-pointer"
           onClick={() => onTerrainClick(7)}
-          src="/images/attackmap/johto/strand.gif"
+          src={require('../../assets/images/attackmap/johto/strand.gif')}
           alt="Praia"
         />
         <img
           className="cursor-pointer"
           onClick={() => onTerrainClick(4)}
-          src="/images/attackmap/johto/spookhuis.gif"
+          src={require('../../assets/images/attackmap/johto/spookhuis.gif')}
           alt="Torre Assombrada"
         />
       </div>
@@ -123,7 +123,7 @@ export const JohtoMap = (props: MapProps) => {
         <img
           className="cursor-pointer"
           onClick={() => onTerrainClick(6)}
-          src="/images/attackmap/johto/water.gif"
+          src={require('../../assets/images/attackmap/johto/water.gif')}
           alt="Água"
         />
       </div>
@@ -139,13 +139,13 @@ export const KantoMap = (props: MapProps) => {
         <img
           className="cursor-pointer"
           onClick={() => onTerrainClick(3)}
-          src="/images/attackmap/kanto/grasveld.gif"
+          src={require('../../assets/images/attackmap/kanto/grasveld.gif')}
           alt="Grama"
         />
         <img
           className="cursor-pointer"
           onClick={() => onTerrainClick(5)}
-          src="/images/attackmap/kanto/grot.gif"
+          src={require('../../assets/images/attackmap/kanto/grot.gif')}
           alt="Gruta"
         />
       </div>
@@ -153,13 +153,13 @@ export const KantoMap = (props: MapProps) => {
         <img
           className="cursor-pointer"
           onClick={() => onTerrainClick(2)}
-          src="/images/attackmap/kanto/vechtschool.gif"
+          src={require('../../assets/images/attackmap/kanto/vechtschool.gif')}
           alt="Dojô"
         />
         <img
           className="cursor-pointer"
           onClick={() => onTerrainClick(1)}
-          src="/images/attackmap/kanto/lavagrot.gif"
+          src={require('../../assets/images/attackmap/kanto/lavagrot.gif')}
           alt="Lava"
         />
       </div>
@@ -167,7 +167,7 @@ export const KantoMap = (props: MapProps) => {
         <img
           className="cursor-pointer"
           onClick={() => onTerrainClick(7)}
-          src="/images/attackmap/kanto/strand.gif"
+          src={require('../../assets/images/attackmap/kanto/strand.gif')}
           alt="Praia"
         />
       </div>
@@ -175,13 +175,13 @@ export const KantoMap = (props: MapProps) => {
         <img
           className="cursor-pointer"
           onClick={() => onTerrainClick(4)}
-          src="/images/attackmap/kanto/spookhuis.gif"
+          src={require('../../assets/images/attackmap/kanto/spookhuis.gif')}
           alt="Torre Assombrada"
         />
         <img
           className="cursor-pointer"
           onClick={() => onTerrainClick(6)}
-          src="/images/attackmap/kanto/water.gif"
+          src={require('../../assets/images/attackmap/kanto/water.gif')}
           alt="Água"
         />
       </div>
@@ -197,19 +197,19 @@ export const SinnohMap = (props: MapProps) => {
         <img
           className="cursor-pointer"
           onClick={() => onTerrainClick(6)}
-          src="/images/attackmap/sinnoh/water.gif"
+          src={require('../../assets/images/attackmap/sinnoh/water.gif')}
           alt="Água"
         />
         <img
           className="cursor-pointer"
           onClick={() => onTerrainClick(5)}
-          src="/images/attackmap/sinnoh/grot.gif"
+          src={require('../../assets/images/attackmap/sinnoh/grot.gif')}
           alt="Gruta"
         />
         <img
           className="cursor-pointer"
           onClick={() => onTerrainClick(4)}
-          src="/images/attackmap/sinnoh/spookhuis.gif"
+          src={require('../../assets/images/attackmap/sinnoh/spookhuis.gif')}
           alt="Torre Assombrada"
         />
       </div>
@@ -217,7 +217,7 @@ export const SinnohMap = (props: MapProps) => {
         <img
           className="cursor-pointer"
           onClick={() => onTerrainClick(6)}
-          src="/images/attackmap/sinnoh/water2.gif"
+          src={require('../../assets/images/attackmap/sinnoh/water2.gif')}
           alt="Água"
         />
       </div>
@@ -225,13 +225,13 @@ export const SinnohMap = (props: MapProps) => {
         <img
           className="cursor-pointer"
           onClick={() => onTerrainClick(2)}
-          src="/images/attackmap/sinnoh/vechtschool.gif"
+          src={require('../../assets/images/attackmap/sinnoh/vechtschool.gif')}
           alt="Dojô"
         />
         <img
           className="cursor-pointer"
           onClick={() => onTerrainClick(7)}
-          src="/images/attackmap/sinnoh/strand.gif"
+          src={require('../../assets/images/attackmap/sinnoh/strand.gif')}
           alt="Praia"
         />
       </div>
@@ -239,13 +239,13 @@ export const SinnohMap = (props: MapProps) => {
         <img
           className="cursor-pointer"
           onClick={() => onTerrainClick(1)}
-          src="/images/attackmap/sinnoh/lavagrot.gif"
+          src={require('../../assets/images/attackmap/sinnoh/lavagrot.gif')}
           alt="Lava"
         />
         <img
           className="cursor-pointer"
           onClick={() => onTerrainClick(3)}
-          src="/images/attackmap/sinnoh/grasveld.gif"
+          src={require('../../assets/images/attackmap/sinnoh/grasveld.gif')}
           alt="Grama"
         />
       </div>
@@ -261,7 +261,7 @@ export const UnovaMap = (props: MapProps) => {
         <img
           className="cursor-pointer"
           onClick={() => onTerrainClick(1)}
-          src="/images/attackmap/unova/lavagrot.gif"
+          src={require('../../assets/images/attackmap/unova/lavagrot.gif')}
           alt="Lava"
         />
       </div>
@@ -269,7 +269,7 @@ export const UnovaMap = (props: MapProps) => {
         <img
           className="cursor-pointer"
           onClick={() => onTerrainClick(5)}
-          src="/images/attackmap/unova/grot.gif"
+          src={require('../../assets/images/attackmap/unova/grot.gif')}
           alt="Gruta"
         />
       </div>
@@ -277,29 +277,29 @@ export const UnovaMap = (props: MapProps) => {
         <img
           className="cursor-pointer"
           onClick={() => onTerrainClick(4)}
-          src="/images/attackmap/unova/spookhuis.gif"
+          src={require('../../assets/images/attackmap/unova/spookhuis.gif')}
           alt="Torre Assombrada"
         />
         <img
           className="cursor-pointer"
           onClick={() => onTerrainClick(3)}
-          src="/images/attackmap/unova/grasveld.gif"
+          src={require('../../assets/images/attackmap/unova/grasveld.gif')}
           alt="Grama"
         />
         <img
           className="cursor-pointer"
           onClick={() => onTerrainClick(2)}
-          src="/images/attackmap/unova/vechtschool.gif"
+          src={require('../../assets/images/attackmap/unova/vechtschool.gif')}
           alt="Dojô"
         />
       </div>
 
       <div className="flex">
-        <img src="/images/attackmap/unova/port.gif" alt="Praia" />
+        <img src={require('../../assets/images/attackmap/unova/port.gif')} alt="Praia" />
         <img
           className="cursor-pointer"
           onClick={() => onTerrainClick(7)}
-          src="/images/attackmap/unova/strand.gif"
+          src={require('../../assets/images/attackmap/unova/strand.gif')}
           alt="Praia"
         />
       </div>
@@ -307,7 +307,7 @@ export const UnovaMap = (props: MapProps) => {
         <img
           className="cursor-pointer"
           onClick={() => onTerrainClick(6)}
-          src="/images/attackmap/unova/water.gif"
+          src={require('../../assets/images/attackmap/unova/water.gif')}
           alt="Água"
         />
       </div>
@@ -320,7 +320,7 @@ export const KalosMap = (props: MapProps) => {
   return (
     <center>
       <img
-        src="/images/attackmap/kalos/Kalos.gif"
+        src={require('../../assets/images/attackmap/kalos/Kalos.gif')}
         width="593"
         height="807"
         useMap="#kalos"
@@ -466,7 +466,7 @@ export const AlolaMap = (props: MapProps) => {
           <div style={{ float: "left", width: 144, height: 64 }}>
             <input
               type="image"
-              src="/images/attackmap/alola/Floresta.gif"
+              src={require('../../assets/images/attackmap/alola/Floresta.gif')}
               alt="Grama"
               onClick={() => onTerrainClick(3)}
             />
@@ -476,7 +476,7 @@ export const AlolaMap = (props: MapProps) => {
             <div style={{ float: "left", width: 65, height: 48 }}>
               <input
                 type="image"
-                src="/images/attackmap/alola/Grama2.gif"
+                src={require('../../assets/images/attackmap/alola/Grama2.gif')}
                 alt="Grama"
                 onClick={() => onTerrainClick(3)}
               />
@@ -484,7 +484,7 @@ export const AlolaMap = (props: MapProps) => {
             <div style={{ float: "left", width: 65, height: 16 }}>
               <input
                 type="image"
-                src="/images/attackmap/alola/Grama.gif"
+                src={require('../../assets/images/attackmap/alola/Grama.gif')}
                 alt="Grama"
                 onClick={() => onTerrainClick(3)}
               />
@@ -494,7 +494,7 @@ export const AlolaMap = (props: MapProps) => {
           <div style={{ float: "left", width: 209, height: 163 }}>
             <input
               type="image"
-              src="/images/attackmap/alola/Grama2.gif"
+              src={require('../../assets/images/attackmap/alola/Grama2.gif')}
               alt="Grama"
               onClick={() => onTerrainClick(3)}
             />
@@ -505,7 +505,7 @@ export const AlolaMap = (props: MapProps) => {
           <div style={{ float: "left", width: 176, height: 160 }}>
             <input
               type="image"
-              src="/images/attackmap/alola/Gruta.gif"
+              src={require('../../assets/images/attackmap/alola/Gruta.gif')}
               alt="Gruta"
               style={{ marginTop: 0 }}
               onClick={() => onTerrainClick(5)}
@@ -513,18 +513,18 @@ export const AlolaMap = (props: MapProps) => {
           </div>
           <img
             style={{ float: "left", width: 34, height: 67 }}
-            src="/images/attackmap/alola/Caminho.gif"
+            src={require('../../assets/images/attackmap/alola/Caminho.gif')}
             alt="Road"
           />
           <img
             style={{ float: "left", width: 126, height: 67 }}
-            src="/images/attackmap/alola/Caminho2.gif"
+            src={require('../../assets/images/attackmap/alola/Caminho2.gif')}
             alt="Road"
           />
           <div style={{ float: "left", width: 16, height: 67 }}>
             <input
               type="image"
-              src="/images/attackmap/alola/Floresta3.gif?n"
+              src={require('../../assets/images/attackmap/alola/Floresta3.gif?n"')}
               onClick={() => onTerrainClick(3)}
               alt="Grama"
             />
@@ -534,7 +534,7 @@ export const AlolaMap = (props: MapProps) => {
         <div style={{ float: "left", width: 205, height: 160 }}>
           <input
             type="image"
-            src="/images/attackmap/alola/Lava.gif"
+            src={require('../../assets/images/attackmap/alola/Lava.gif')}
             alt="Lava"
             onClick={() => onTerrainClick(1)}
           />
@@ -543,7 +543,7 @@ export const AlolaMap = (props: MapProps) => {
         <div style={{ float: "left", width: 205, height: 67 }}>
           <input
             type="image"
-            src="/images/attackmap/alola/Floresta4.gif"
+            src={require('../../assets/images/attackmap/alola/Floresta4.gif')}
             alt="Grama"
             onClick={() => onTerrainClick(3)}
           />
@@ -552,7 +552,7 @@ export const AlolaMap = (props: MapProps) => {
         <div style={{ float: "left", width: 243, height: 238 }}>
           <input
             type="image"
-            src="/images/attackmap/alola/Torre.gif"
+            src={require('../../assets/images/attackmap/alola/Torre.gif')}
             alt="Torre Fantasma"
             onClick={() => onTerrainClick(4)}
           />
@@ -561,7 +561,7 @@ export const AlolaMap = (props: MapProps) => {
         <div style={{ float: "left", width: 126, height: 238 }}>
           <input
             type="image"
-            src="/images/attackmap/alola/Dojo.gif"
+            src={require('../../assets/images/attackmap/alola/Dojo.gif')}
             alt="Dojô"
             onClick={() => onTerrainClick(2)}
           />
@@ -570,7 +570,7 @@ export const AlolaMap = (props: MapProps) => {
         <div style={{ float: "left", width: 221, height: 125 }}>
           <input
             type="image"
-            src="/images/attackmap/alola/Floresta5.gif"
+            src={require('../../assets/images/attackmap/alola/Floresta5.gif')}
             alt="Grama"
             onClick={() => onTerrainClick(3)}
           />
@@ -578,14 +578,14 @@ export const AlolaMap = (props: MapProps) => {
 
         <img
           style={{ float: "left", width: 221, height: 113, marginTop: -2 }}
-          src="/images/attackmap/alola/Caminho3.gif"
+          src={require('../../assets/images/attackmap/alola/Caminho3.gif')}
           alt="Road"
         />
 
         <div style={{ float: "left", width: 590, height: 45 }}>
           <input
             type="image"
-            src="/images/attackmap/alola/Praia.gif"
+            src={require('../../assets/images/attackmap/alola/Praia.gif')}
             alt="Praia"
             onClick={() => onTerrainClick(7)}
           />
@@ -594,7 +594,7 @@ export const AlolaMap = (props: MapProps) => {
         <div style={{ float: "left", width: 332, height: 45 }}>
           <input
             type="image"
-            src="/images/attackmap/alola/Praia2.gif"
+            src={require('../../assets/images/attackmap/alola/Praia2.gif')}
             alt="Praia"
             onClick={() => onTerrainClick(7)}
           />
@@ -603,7 +603,7 @@ export const AlolaMap = (props: MapProps) => {
         <div style={{ float: "left", width: 45, height: 45 }}>
           <input
             type="image"
-            src="/images/attackmap/alola/Gruta2.gif"
+            src={require('../../assets/images/attackmap/alola/Gruta2.gif')}
             alt="Gruta"
             onClick={() => onTerrainClick(5)}
           />
@@ -612,7 +612,7 @@ export const AlolaMap = (props: MapProps) => {
         <div style={{ float: "left", width: 213, height: 45 }}>
           <input
             type="image"
-            src="/images/attackmap/alola/Praia3.gif"
+            src={require('../../assets/images/attackmap/alola/Praia3.gif')}
             alt="Praia"
             onClick={() => onTerrainClick(7)}
           />
@@ -621,7 +621,7 @@ export const AlolaMap = (props: MapProps) => {
         <div style={{ float: "left", width: 590, height: 36 }}>
           <input
             type="image"
-            src="/images/attackmap/alola/Praia4.gif"
+            src={require('../../assets/images/attackmap/alola/Praia4.gif')}
             alt="Praia"
             onClick={() => onTerrainClick(7)}
           />
@@ -630,7 +630,7 @@ export const AlolaMap = (props: MapProps) => {
         <div style={{ float: "left", width: 89, height: 79 }}>
           <input
             type="image"
-            src="/images/attackmap/alola/Agua.gif"
+            src={require('../../assets/images/attackmap/alola/Agua.gif')}
             alt="Água"
             onClick={() => onTerrainClick(6)}
           />
@@ -639,7 +639,7 @@ export const AlolaMap = (props: MapProps) => {
         <div style={{ float: "left", width: 132, height: 79 }}>
           <input
             type="image"
-            src="/images/attackmap/alola/Praia5.gif"
+            src={require('../../assets/images/attackmap/alola/Praia5.gif')}
             alt="Praia"
             onClick={() => onTerrainClick(7)}
           />
@@ -648,7 +648,7 @@ export const AlolaMap = (props: MapProps) => {
         <div style={{ float: "left", width: 369, height: 79 }}>
           <input
             type="image"
-            src="/images/attackmap/alola/Agua2.gif"
+            src={require('../../assets/images/attackmap/alola/Agua2.gif')}
             alt="Água"
             onClick={() => onTerrainClick(6)}
           />
@@ -657,7 +657,7 @@ export const AlolaMap = (props: MapProps) => {
         <div style={{ float: "left", width: 590, height: 130 }}>
           <input
             type="image"
-            src="/images/attackmap/alola/Agua3.gif"
+            src={require('../../assets/images/attackmap/alola/Agua3.gif')}
             alt="Água"
             onClick={() => onTerrainClick(6)}
           />

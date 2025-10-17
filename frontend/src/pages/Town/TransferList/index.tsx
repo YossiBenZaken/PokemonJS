@@ -136,7 +136,7 @@ const TransferListPage: React.FC = () => {
         return (
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <img
-              src={row.animatie || `/images/pokemon/icon/${row.wild_id}.gif`}
+              src={row.animatie || require(`../../../assets/images/pokemon/icon/${row.wild_id}.gif`)}
               alt={displayName}
               style={{ width: 32, height: 32 }}
             />
@@ -188,7 +188,7 @@ const TransferListPage: React.FC = () => {
         if (!params.value) return "ללא";
         return (
           <img
-            src={`/images/items/${params.value}.png`}
+            src={require(`../../../assets/images/items/${params.value}.png`)}
             alt={params.value}
             title={params.value}
             style={{ width: 24, height: 24 }}
@@ -234,7 +234,7 @@ const TransferListPage: React.FC = () => {
               <div style={{ marginBottom: 4 }}>
                 {row.silver.toLocaleString()}{" "}
                 <img
-                  src="/images/icons/silver.png"
+                  src={require('../../../assets/images/icons/silver.png')}
                   alt="Silver"
                   style={{ width: 16, height: 16, verticalAlign: "middle" }}
                 />
@@ -244,7 +244,7 @@ const TransferListPage: React.FC = () => {
               <div style={{ marginBottom: 4 }}>
                 {row.gold.toLocaleString()}{" "}
                 <img
-                  src="/images/icons/gold.png"
+                  src={require('../../../assets/images/icons/gold.png')}
                   alt="Gold"
                   style={{ width: 16, height: 16, verticalAlign: "middle" }}
                 />

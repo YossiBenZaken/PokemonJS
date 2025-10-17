@@ -427,7 +427,7 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
                     </Badges>
                     <NavLink to={"/daily_quests"} style={{ display: "block" }}>
                       <img
-                        src="/images/icons/avatar/quests.png"
+                        src={require('../../assets/images/icons/avatar/quests.png')}
                         title="לחץ כאן כדי לצפות במשימות היומיות שלך."
                         alt="לחץ כאן כדי לצפות במשימות היומיות שלך."
                       />

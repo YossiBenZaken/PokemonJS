@@ -87,9 +87,9 @@ const PokeEvolvePage: React.FC = () => {
                     }}
                   >
                     <img
-                      src={`/images/${
+                      src={require(`../../assets/images/${
                         pokemon.pokemon.shiny === 1 ? "shiny" : "pokemon"
-                      }/${pokemon.evolution.evolutionData.wild_id}.gif`}
+                      }/${pokemon.evolution.evolutionData.wild_id}.gif`)}
                       alt={pokemon.pokemon.naam}
                       style={{
                         margin: "0 auto",
@@ -99,9 +99,9 @@ const PokeEvolvePage: React.FC = () => {
                     />{" "}
                     <ArrowBigRight size={50} />
                     <img
-                      src={`/images/${
+                      src={require(`../../assets/images/${
                         pokemon.pokemon.shiny === 1 ? "shiny" : "pokemon"
-                      }/${pokemon.evolution.evolutionData.nieuw_id}.gif`}
+                      }/${pokemon.evolution.evolutionData.nieuw_id}.gif`)}
                       alt={pokemon.pokemon.naam}
                       style={{
                         margin: "0 auto",

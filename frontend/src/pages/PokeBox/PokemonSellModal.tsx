@@ -110,7 +110,7 @@ const PokemonSellModal: React.FC<PokemonSellModalProps> = ({
                   max={1000000}
                   className="flex-1 px-3 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
                 />
-                <img src="/images/icons/silver.png" className="w-5 h-5" alt="כסף" />
+                <img src={require('../../assets/images/icons/silver.png')} className="w-5 h-5" alt="כסף" />
               </div>
               <p className="text-xs text-gray-600 mt-1">
                 בין 500 ל-1,000,000 כסף
@@ -143,7 +143,7 @@ const PokemonSellModal: React.FC<PokemonSellModalProps> = ({
                     max={1500000}
                     className="flex-1 px-3 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
                   />
-                  <img src="/images/icons/silver.png" className="w-5 h-5" alt="כסף" />
+                  <img src={require('../../assets/images/icons/silver.png')} className="w-5 h-5" alt="כסף" />
                 </div>
                 <p className="text-xs text-gray-600 mt-1">500 - 1,500,000</p>
               </div>
@@ -158,7 +158,7 @@ const PokemonSellModal: React.FC<PokemonSellModalProps> = ({
                     max={1000}
                     className="flex-1 px-3 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
                   />
-                  <img src="/images/icons/gold.png" className="w-5 h-5" alt="זהב" />
+                  <img src={require('../../assets/images/icons/gold.png')} className="w-5 h-5" alt="זהב" />
                 </div>
                 <p className="text-xs text-gray-600 mt-1">0 - 1,000</p>
               </div>
@@ -199,7 +199,7 @@ const PokemonSellModal: React.FC<PokemonSellModalProps> = ({
                     max={2000000}
                     className="flex-1 px-3 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
                   />
-                  <img src="/images/icons/silver.png" className="w-5 h-5" alt="כסף" />
+                  <img src={require('../../assets/images/icons/silver.png')} className="w-5 h-5" alt="כסף" />
                 </div>
                 <p className="text-xs text-gray-600 mt-1">500 - 2,000,000</p>
               </div>
@@ -214,7 +214,7 @@ const PokemonSellModal: React.FC<PokemonSellModalProps> = ({
                     max={1000}
                     className="flex-1 px-3 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
                   />
-                  <img src="/images/icons/gold.png" className="w-5 h-5" alt="זהב" />
+                  <img src={require('../../assets/images/icons/gold.png')} className="w-5 h-5" alt="זהב" />
                 </div>
                 <p className="text-xs text-gray-600 mt-1">0 - 1,000</p>
               </div>

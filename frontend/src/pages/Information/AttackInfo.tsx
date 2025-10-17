@@ -82,11 +82,11 @@ const columns: GridColDef[] = [
       const { value } = params;
       if (value) {
         return (
-          <img src="/images/icons/green.png" alt="יש מגע" title="יש מגע" />
+          <img src={require('../../assets/images/icons/green.png')} alt="יש מגע" title="יש מגע" />
         );
       } else {
         return (
-          <img src="/images/icons/red.png" alt="אין מגע" title="אין מגע" />
+          <img src={require('../../assets/images/icons/red.png')} alt="אין מגע" title="אין מגע" />
         );
       }
     },
@@ -100,12 +100,12 @@ const columns: GridColDef[] = [
       const { value } = params;
       if (value === "ja") {
         return (
-          <img src="/images/icons/green.png" alt="חל אפקט" title="חל אפקט" />
+          <img src={require('../../assets/images/icons/green.png')} alt="חל אפקט" title="חל אפקט" />
         );
       } else {
         return (
           <img
-            src="/images/icons/red.png"
+            src={require('../../assets/images/icons/red.png')}
             alt="לא חל אפקט"
             title="לא חל אפקט"
           />

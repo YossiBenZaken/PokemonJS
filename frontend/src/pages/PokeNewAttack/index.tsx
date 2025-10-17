@@ -118,9 +118,9 @@ const PokeNewAttackPage: React.FC = () => {
                       }}
                     >
                       <img
-                        src={`/images/${
+                        src={ require(`../../assets/images/${
                           pokemon.shiny === 1 ? "shiny" : "pokemon"
-                        }/${pokemon.wild_id}.gif`}
+                        }/${pokemon.wild_id}.gif`)}
                         alt={pokemon.naam}
                         style={{
                           margin: "0 auto",

@@ -240,7 +240,7 @@ const AdminBankLogsPage: React.FC = () => {
                         <tr>
                           <td width="320">
                             <img
-                              src={`/images/icons/${log.what}.png`}
+                              src={require(`../../assets/images/icons/${log.what}.png`)}
                               alt={log.what}
                               onError={(e) => {
                                 e.currentTarget.style.display = "none";

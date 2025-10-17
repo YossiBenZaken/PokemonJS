@@ -106,7 +106,7 @@ const LeaderboardsPage: React.FC = () => {
           {data?.strongest?.map((r:any, i:number) => (
             <Row key={i}>
               <Left>
-                <PokeImg src={`/images/pokemon/${r.wild_id}.gif`} alt={r.naam} onError={(e:any)=>{e.target.src = '/images/pokemon/1.gif';}} />
+                <PokeImg src={require(`../../assets/images/pokemon/${r.wild_id}.gif`)} alt={r.naam} />
                 <span>{i+1}. {r.username} — {r.naam}</span>
               </Left>
               <span>{Number(r.powerTotal).toLocaleString()}</span>
@@ -119,7 +119,7 @@ const LeaderboardsPage: React.FC = () => {
           {data?.experienced?.map((r:any, i:number) => (
             <Row key={i}>
               <Left>
-                <PokeImg src={`/images/pokemon/${r.wild_id}.gif`} alt={r.naam} onError={(e:any)=>{e.target.src = '/images/pokemon/1.gif';}} />
+                <PokeImg src={require(`../../assets/images/pokemon/${r.wild_id}.gif`)} alt={r.naam} />
                 <span>{i+1}. {r.username} — {r.naam}</span>
               </Left>
               <span>{Number(r.totalexp).toLocaleString()}</span>
@@ -132,7 +132,7 @@ const LeaderboardsPage: React.FC = () => {
           {data?.millionaires?.map((r:any, i:number) => (
             <Row key={i}>
               <Left>
-                <CharImg src={`/images/characters/${r.character}/Thumb.png`} alt={r.username} onError={(e:any)=>{e.target.style.display='none';}} />
+                <CharImg src={require(`../../assets/images/characters/${r.character}/Thumb.png`)} alt={r.username} onError={(e:any)=>{e.target.style.display='none';}} />
                 <span>{i+1}. {r.username}</span>
               </Left>
               <span>{Number(r.total).toLocaleString()} Silver</span>
@@ -145,7 +145,7 @@ const LeaderboardsPage: React.FC = () => {
           {data?.collectors100?.map((r:any, i:number) => (
             <Row key={i}>
               <Left>
-                <CharImg src={`/images/characters/${r.character}/Thumb.png`} alt={r.username} onError={(e:any)=>{e.target.style.display='none';}} />
+                <CharImg src={require(`../../assets/images/characters/${r.character}/Thumb.png`)} alt={r.username} onError={(e:any)=>{e.target.style.display='none';}} />
                 <span>{i+1}. {r.username}</span>
               </Left>
               <span>{Number(r.total).toLocaleString()}</span>
@@ -158,7 +158,7 @@ const LeaderboardsPage: React.FC = () => {
           {data?.duelists?.map((r:any, i:number) => (
             <Row key={i}>
               <Left>
-                <CharImg src={`/images/characters/${r.character}/Thumb.png`} alt={r.username} onError={(e:any)=>{e.target.style.display='none';}} />
+                <CharImg src={require(`../../assets/images/characters/${r.character}/Thumb.png`)} alt={r.username} onError={(e:any)=>{e.target.style.display='none';}} />
                 <span>{i+1}. {r.username}</span>
               </Left>
               <span>{Number(r.gevechten).toLocaleString()}</span>

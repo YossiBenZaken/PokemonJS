@@ -79,7 +79,6 @@ export interface Character {
   pagina: string;
 }
 
-
 export const MyCharactersPage: React.FC = () => {
   const navigate = useNavigate();
   const { loginWithCharacter: setGameCharacter, setIsLoggedIn } = useGame();
@@ -96,13 +95,13 @@ export const MyCharactersPage: React.FC = () => {
 
   useEffect(() => {
     if (characters.length > 0) {
-      itemsApi.getUserItems(characters[0].user_id.toString()).then((items)=>{
+      itemsApi.getUserItems(characters[0].user_id.toString()).then((items) => {
         setSelectedCharacter({
           ...characters[0],
-          items: items.gebruikers_item
+          items: items.gebruikers_item,
         });
         setCurrentIndex(0);
-      })
+      });
     }
   }, [characters]);
 
@@ -173,11 +172,7 @@ export const MyCharactersPage: React.FC = () => {
   };
 
   const getCharacterImage = (characterName: string) => {
-    try {
-      return require(`../../assets/images/characters/${characterName}/Thumb.png`);
-    } catch {
-      return "/images/characters/default.png";
-    }
+    return require(`../../assets/images/characters/${characterName}/Thumb.png`);
   };
 
   const backgroundElements = Array.from({ length: 6 }, (_, i) => ({
@@ -291,9 +286,6 @@ export const MyCharactersPage: React.FC = () => {
                 <CharacterCarouselImage
                   src={getCharacterImage(character.character)}
                   alt={character.username}
-                  onError={(e) => {
-                    e.currentTarget.src = "/images/characters/default.png";
-                  }}
                 />
 
                 {/* Character Status Badges */}
