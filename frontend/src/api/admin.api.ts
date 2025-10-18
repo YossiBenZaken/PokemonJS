@@ -451,3 +451,38 @@ export const getPokemons = async(): Promise<PokemonDetails[]> => {
   const { data: response } = await axiosInstance.get("/admin/getPokemons");
   return response;
 }
+
+// Donate to all players
+export interface DonateResponse {
+  success: boolean;
+  message: string;
+  playersAffected?: number;
+}
+
+export const giveSilverToAll = async (amount: number): Promise<DonateResponse> => {
+  const { data } = await axiosInstance.post("/admin/give-silver-all", { amount });
+  return data;
+};
+
+export const giveGoldToAll = async (amount: number): Promise<DonateResponse> => {
+  const { data } = await axiosInstance.post("/admin/give-gold-all", { amount });
+  return data;
+};
+
+export const givePremiumToAll = async (days: number): Promise<DonateResponse> => {
+  const { data } = await axiosInstance.post("/admin/give-premium-all", { days });
+  return data;
+};
+
+export const givePremiumToPlayer = async (
+  username: string,
+  days: number,
+  adminUsername: string
+): Promise<DonateResponse> => {
+  const { data } = await axiosInstance.post("/admin/give-premium-player", {
+    username,
+    days,
+    adminUsername,
+  });
+  return data;
+};

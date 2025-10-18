@@ -1404,3 +1404,233 @@ export const givePokemon = async (req, res) => {
 
 const randomBetween = (min, max) =>
   Math.floor(Math.random() * (max - min + 1)) + min;
+
+
+// POST give silver to all players
+export const giveSilverToAll = async (req, res) => {
+  try {
+    const { amount } = req.body;
+
+    if (!amount || isNaN(amount)) {
+      return res.status(400).json({
+        success: false,
+        message: "עליך להזין מספר",
+      });
+    }
+
+    const silverAmount = Number(amount);
+
+    if (silverAmount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "הסכום חייב להיות גדול מ-0",
+      });
+    }
+
+    // Give silver to all players
+    await query(
+      "UPDATE gebruikers SET silver = silver + ? WHERE user_id > 0",
+      [silverAmount]
+    );
+
+    // Get count of affected players
+    const [countResult] = await query(
+      "SELECT COUNT(*) as count FROM gebruikers WHERE user_id > 0"
+    );
+
+    return res.json({
+      success: true,
+      message: `${silverAmount.toLocaleString()} Silver ניתן בהצלחה לכל השחקנים`,
+      playersAffected: countResult.count,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "שגיאה במתן Silver",
+      error: error.message,
+    });
+  }
+};
+
+// POST give gold to all players
+export const giveGoldToAll = async (req, res) => {
+  try {
+    const { amount } = req.body;
+
+    if (!amount || isNaN(amount)) {
+      return res.status(400).json({
+        success: false,
+        message: "עליך להזין מספר",
+      });
+    }
+
+    const goldAmount = Number(amount);
+
+    if (goldAmount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "הסכום חייב להיות גדול מ-0",
+      });
+    }
+
+    // Give gold to all players
+    await query(
+      "UPDATE rekeningen SET gold = gold + ? WHERE acc_id > 0",
+      [goldAmount]
+    );
+
+    // Get count of affected players
+    const [countResult] = await query(
+      "SELECT COUNT(*) as count FROM gebruikers WHERE user_id > 0"
+    );
+
+    return res.json({
+      success: true,
+      message: `${goldAmount.toLocaleString()} Gold ניתן בהצלחה לכל השחקנים`,
+      playersAffected: countResult.count,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "שגיאה במתן Gold",
+      error: error.message,
+    });
+  }
+};
+
+// POST give premium days to all players
+export const givePremiumToAll = async (req, res) => {
+  try {
+    const { days } = req.body;
+
+    if (!days || isNaN(days)) {
+      return res.status(400).json({
+        success: false,
+        message: "עליך להזין מספר",
+      });
+    }
+
+    const premiumDays = Number(days);
+
+    if (premiumDays <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "הסכום חייב להיות גדול מ-0",
+      });
+    }
+
+    const currentTime = Math.floor(Date.now() / 1000); // Current unix timestamp
+    const secondsToAdd = 86400 * premiumDays; // Days to seconds
+    const newPremiumTime = currentTime + secondsToAdd;
+
+    // Add premium to players who already have active premium
+    await query(
+      "UPDATE gebruikers SET premiumaccount = premiumaccount + ? WHERE premiumaccount > ?",
+      [secondsToAdd, currentTime]
+    );
+
+    // Set premium for players who don't have active premium
+    await query(
+      "UPDATE gebruikers SET premiumaccount = ? WHERE premiumaccount < ?",
+      [newPremiumTime, currentTime]
+    );
+
+    // Get count of affected players
+    const [countResult] = await query(
+      "SELECT COUNT(*) as count FROM gebruikers WHERE user_id > 0"
+    );
+
+    return res.json({
+      success: true,
+      message: `${premiumDays} ימי Premium ניתנו בהצלחה לכל השחקנים`,
+      playersAffected: countResult.count,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "שגיאה במתן Premium",
+      error: error.message,
+    });
+  }
+};
+
+// POST give premium to specific player
+export const givePremiumToPlayer = async (req, res) => {
+  try {
+    const { username, days, adminUsername } = req.body;
+
+    if (!username || !username.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "הזן שם מאמן",
+      });
+    }
+
+    if (!days || isNaN(days)) {
+      return res.status(400).json({
+        success: false,
+        message: "הזן מספר",
+      });
+    }
+
+    const premiumDays = Number(days);
+
+    if (premiumDays <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "המספר חייב להיות גדול מ-0",
+      });
+    }
+
+    // Check if player exists
+    const player = await query(
+      "SELECT user_id, username, premiumaccount FROM gebruikers WHERE username = ?",
+      [username]
+    );
+
+    if (!player || player.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "המאמן לא קיים!",
+      });
+    }
+
+    const currentTime = Math.floor(Date.now() / 1000);
+    const secondsToAdd = 86400 * premiumDays;
+    const newPremiumTime = currentTime + secondsToAdd;
+
+    // Update premium based on current status
+    if (player[0].premiumaccount > currentTime) {
+      // Player has active premium - add to existing
+      await query(
+        "UPDATE gebruikers SET premiumaccount = premiumaccount + ? WHERE username = ? LIMIT 1",
+        [secondsToAdd, username]
+      );
+    } else {
+      // Player doesn't have active premium - set new expiration
+      await query(
+        "UPDATE gebruikers SET premiumaccount = ? WHERE username = ? LIMIT 1",
+        [newPremiumTime, username]
+      );
+    }
+
+    // Create event notification
+    const eventMessage = `<img src="/images/icons/blue.png" width="16" height="16" class="imglower" /> <a href="/profile?player=${adminUsername}">${adminUsername}</a> נתן ל-${username} ${premiumDays} יום/ימים של Premium.`;
+    
+    await query(
+      "INSERT INTO gebeurtenis (datum, ontvanger_id, bericht, gelezen) VALUES (NOW(), ?, ?, '0')",
+      [player[0].user_id, eventMessage]
+    );
+
+    return res.json({
+      success: true,
+      message: `${username} קיבל ${premiumDays} ימי Premium!`,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "שגיאה במתן Premium",
+      error: error.message,
+    });
+  }
+};

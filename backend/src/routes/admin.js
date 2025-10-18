@@ -17,7 +17,11 @@ import {
   getTransferListLogs,
   getTransferListLogsByUser,
   giveEgg,
+  giveGoldToAll,
   givePokemon,
+  givePremiumToAll,
+  givePremiumToPlayer,
+  giveSilverToAll,
   removeAdmin,
   searchAccountsByIP,
   unbanAccount,
@@ -121,5 +125,13 @@ router.get("/import/galar", importGalarPokemons);
 router.post("/give-egg", giveEgg);
 router.post("/give-pokemon", givePokemon);
 router.get('/getPokemons', getPokemons);
+
+// Donate to all players
+router.post("/give-silver-all", giveSilverToAll);
+router.post("/give-gold-all", giveGoldToAll);
+router.post("/give-premium-all", givePremiumToAll);
+
+// Give premium to specific player
+router.post("/give-premium-player", givePremiumToPlayer);
 
 export default router;

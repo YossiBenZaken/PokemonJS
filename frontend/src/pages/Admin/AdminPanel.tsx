@@ -74,24 +74,6 @@ const actions: Action[] = [
     path: "/admin/mass-donation",
     icon: <Coins />,
   },
-  {
-    label: "זהב/כסף p/ הכל",
-    level: 3,
-    path: "/admin/gold-silver",
-    icon: <Coins />,
-  },
-  {
-    label: "פרימיום p/all",
-    level: 3,
-    path: "/admin/premium-all",
-    icon: <Coins />,
-  },
-  {
-    label: "פרימיום p/coach",
-    level: 3,
-    path: "/admin/premium-coach",
-    icon: <Coins />,
-  },
   { label: "Exp", level: 2, path: "/admin/exp", icon: <Database /> },
   { label: "כסף", level: 2, path: "/admin/money", icon: <Coins /> },
 ];
