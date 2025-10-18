@@ -31,7 +31,7 @@ const PokeNewAttackPage: React.FC = () => {
     oldAttack: number | undefined,
     newAttack: string
   ) => {
-    const changeAttack = oldAttack ? `aanval_${oldAttack + 1}` : undefined;
+    const changeAttack = oldAttack !== undefined ? `aanval_${oldAttack + 1}` : undefined;
     const response = await learnNewAttack(pokemon.id, changeAttack, newAttack);
     if (response.success) {
       navigate("/");
@@ -118,9 +118,9 @@ const PokeNewAttackPage: React.FC = () => {
                       }}
                     >
                       <img
-                        src={`/images/${
+                        src={ require(`../../assets/images/${
                           pokemon.shiny === 1 ? "shiny" : "pokemon"
-                        }/${pokemon.wild_id}.gif`}
+                        }/${pokemon.wild_id}.gif`)}
                         alt={pokemon.naam}
                         style={{
                           margin: "0 auto",

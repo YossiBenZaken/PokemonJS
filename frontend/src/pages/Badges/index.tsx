@@ -172,7 +172,7 @@ export const BadgeCase: React.FC = () => {
                 {names.map((name) => (
                   <img
                     key={name}
-                    src={`/images/badges/pixel/${name}.png`}
+                    src={require(`../../assets/images/badges/pixel/${name}.png`)}
                     alt={`${name} Badge`}
                     title={
                       badges[name] === 1

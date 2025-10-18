@@ -222,9 +222,9 @@ const TrainerAttack: React.FC = () => {
           ["Recover", "Roost"].includes(battleState.currentAtk) &&
           response.who === "computer"
         ) {
-          gifImg.src = `/images/attacks/${gifAttack}.gif`;
+          gifImg.src = require(`../../assets/images/attacks/${gifAttack}.gif`);
         } else {
-          gifImg.src = `/images/attacks/${gifAttack}${gifSuffix}.gif`;
+          gifImg.src = require(`../../assets/images/attacks/${gifAttack}${gifSuffix}.gif`);
         }
       }
     }
@@ -364,7 +364,7 @@ const TrainerAttack: React.FC = () => {
             zmoveEl.style.display = "none";
             (
               zmoveEl as HTMLImageElement
-            ).src = `/images/badges/pixel/${response.badge}.png`;
+            ).src = require(`../../assets/images/badges/pixel/${response.badge}.png`);
             zmoveEl.style.marginLeft = "81%";
             zmoveEl.style.display = "block";
           }
@@ -429,7 +429,7 @@ const TrainerAttack: React.FC = () => {
         if (effectEl) {
           const img = effectEl.querySelector("img") as HTMLImageElement;
           if (img) {
-            img.src = `/images/effects/${effectName}.png`;
+            img.src = require(`../../assets/images/effects/${effectName}.png`);
             img.alt = effectName;
             img.title = effectName;
           }
@@ -504,7 +504,7 @@ const TrainerAttack: React.FC = () => {
           "img_pokemon"
         ) as HTMLImageElement;
         if (pokemonImg) {
-          pokemonImg.src = `/images/${map}/back/${transformData[0]}.gif`;
+          pokemonImg.src = require(`../../assets/images/${map}/back/${transformData[0]}.gif`);
         }
       } else {
         // Computer Pokemon transformed
@@ -513,7 +513,7 @@ const TrainerAttack: React.FC = () => {
           "img_computer"
         ) as HTMLImageElement;
         if (computerImg) {
-          computerImg.src = `/images/${map}/${transformData[0]}.gif`;
+          computerImg.src = require(`../../assets/images/${map}/${transformData[0]}.gif`);
         }
       }
     }
@@ -548,7 +548,7 @@ const TrainerAttack: React.FC = () => {
           );
           if (trainerEl) {
             (trainerEl as HTMLImageElement).src =
-              "/images/icons/pokeball_black.gif";
+              require(`../../assets/images/icons/pokeball_black.gif`);
           }
           setTimeout(() => showEndScreen(), 5000);
         }
@@ -596,7 +596,7 @@ const TrainerAttack: React.FC = () => {
         "img_trainer"
       ) as HTMLImageElement;
       if (trainerImg) {
-        trainerImg.src = `/images/pokemon/${wildId}.gif`;
+        trainerImg.src = require(`../../assets/images/pokemon/${wildId}.gif`);
       }
       // Handle status effect
       const computerEffectEl = document.getElementById("computer_effect");
@@ -605,7 +605,7 @@ const TrainerAttack: React.FC = () => {
       } else {
         const img = computerEffectEl?.querySelector("img") as HTMLImageElement;
         if (img) {
-          img.src = `/images/effects/${effect}.png`;
+          img.src = require(`../../assets/images/effects/${effect}.png`);
           img.alt = effect;
           img.title = effect;
         }
@@ -623,7 +623,7 @@ const TrainerAttack: React.FC = () => {
       const oldTrainerEl = document.getElementById(`trainer_${trainerId}`);
       if (oldTrainerEl) {
         (oldTrainerEl as HTMLImageElement).src =
-          "/images/icons/pokeball_black.gif";
+          require(`../../assets/images/icons/pokeball_black.gif`);
         oldTrainerEl.title = "Defeated";
       }
 
@@ -667,7 +667,7 @@ const TrainerAttack: React.FC = () => {
             zmoveEl.style.display = "none";
             (
               zmoveEl as HTMLImageElement
-            ).src = `/images/zmoves/${attackName.replace(" ", "_")}.png`;
+            ).src = require(`../../assets/images/zmoves/${attackName.replace(" ", "_")}.png`);
             zmoveEl.style.display = "block";
           }
 
@@ -776,7 +776,7 @@ const TrainerAttack: React.FC = () => {
         } else {
           const img = pokemonEffectEl?.querySelector("img") as HTMLImageElement;
           if (img) {
-            img.src = `/images/effects/${changePokemon.effect}.png`;
+            img.src = require(`../../assets/images/effects/${changePokemon.effect}.png`);
             img.alt = changePokemon.effect;
             img.title = changePokemon.effect;
           }
@@ -1022,7 +1022,7 @@ const TrainerAttack: React.FC = () => {
       <Title>קרב נגד {attackLog?.trainer}</Title>
       <GifAttack>
         <img
-          src="/images/attacks/_blank.gif"
+          src={require(`../../assets/images/attacks/_blank.gif`)}
           alt="Trainer Attack"
           style={{
             width: 700,
@@ -1321,7 +1321,7 @@ const TrainerAttack: React.FC = () => {
                                 }}
                               >
                                 <img
-                                  src={`/images/items/${potion.naam}.png`}
+                                  src={require(`../../assets/images/items/${potion.naam}.png`)}
                                   className="image"
                                   alt={potion.naam}
                                 />

@@ -32,6 +32,7 @@ import {
   Package,
   Squirrel,
   Swords,
+  UserStar,
   Users,
 } from "lucide-react";
 import { Badges, Events, UserMenu, UserMenuItem } from "./styled";
@@ -122,7 +123,7 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
     config,
   } = useGame();
   const { setPokemonEvolve } = useBattle();
-  const navigationItems = [
+  const navigationItems: { path: string; label: string; icon: any }[] = [
     { path: "/", label: "בית", icon: <Home size={20} /> },
     { path: "/box", label: "הפוקימונים", icon: <Computer size={20} /> },
     { path: "/town", label: "מחוז", icon: <Map size={20} /> },
@@ -141,6 +142,14 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
     { path: "/information", label: "מידע", icon: <Info size={20} /> },
     { path: "/npc", label: "קרב עם מאמן", icon: <Swords size={20} /> },
   ];
+
+  if (selectedCharacter && selectedCharacter.admin! > 0) {
+    navigationItems.push({
+      path: "/admin",
+      label: "פאנל ניהול",
+      icon: <UserStar size={20} />,
+    });
+  }
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -355,7 +364,7 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
         </Alert>
       </Snackbar>
       <Box
-        sx={{ display: "flex", direction: "rtl" }}
+        sx={{ display: "flex", direction: "ltr" }}
         onClick={() => isUserMenuOpen && setIsUserMenuOpen(false)}
       >
         <CssBaseline />
@@ -366,7 +375,7 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
             background: "#0f172a",
             color: "white",
             zIndex: theme.zIndex.drawer + 1,
-            direction: "rtl",
+            direction: "ltr",
           }}
         >
           <Toolbar>
@@ -418,7 +427,7 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
                     </Badges>
                     <NavLink to={"/daily_quests"} style={{ display: "block" }}>
                       <img
-                        src="/images/icons/avatar/quests.png"
+                        src={require('../../assets/images/icons/avatar/quests.png')}
                         title="לחץ כאן כדי לצפות במשימות היומיות שלך."
                         alt="לחץ כאן כדי לצפות במשימות היומיות שלך."
                       />
@@ -466,7 +475,7 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
               <>
                 <Typography
                   sx={{
-                    marginRight: "auto",
+                    marginLeft: "auto",
                     fontSize: "0.9rem",
                     cursor: "pointer",
                   }}
@@ -506,11 +515,11 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
         {isLoggedIn && (
           <>
             {drawer ? (
-              <OpenedDrawer variant="permanent" anchor="right">
+              <OpenedDrawer variant="permanent" anchor="left">
                 <Toolbar />
                 <List>
                   {/* פרטי השחקן */}
-                  <Box sx={{ p: 2, textAlign: "right" }}>
+                  <Box sx={{ p: 2 }}>
                     <Typography
                       variant="subtitle1"
                       sx={{ fontWeight: 600, cursor: "pointer" }}
@@ -608,7 +617,6 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
                       </ListItemIcon>
                       <ListItemText
                         primary={item.label}
-                        sx={{ textAlign: "right" }}
                       />
                     </ListItemButton>
                   ))}
@@ -630,7 +638,6 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
                       primary={`התראות ${
                         notification > 0 ? `(${notification})` : ""
                       }`}
-                      sx={{ textAlign: "right" }}
                     />
                   </ListItemButton>
                   <ListItemButton
@@ -651,13 +658,12 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
                       primary={`הודעות ${
                         unreadMessages > 0 ? `(${unreadMessages})` : ""
                       }`}
-                      sx={{ textAlign: "right" }}
                     />
                   </ListItemButton>
                 </List>
               </OpenedDrawer>
             ) : (
-              <ClosedDrawer variant="permanent" anchor="right">
+              <ClosedDrawer variant="permanent" anchor="left">
                 <Toolbar />
                 <List>
                   {navigationItems.map((item) => (
@@ -743,17 +749,17 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
           sx={{
             flexGrow: 1,
             bgcolor: "#f1f5f9",
-            minHeight: "100vh",
-            padding: "0 64px 0 0",
+            minHeight: "95vh",
+            padding: "0 0 0 64px",
             marginTop: "64px",
-            textAlign: "right",
+            textAlign: "start",
           }}
         >
           {!isLoggedIn &&
           !["/login", "/signup", "/my-characters", "/new-character"].includes(
             location.pathname
           ) ? (
-            <Box textAlign="center" dir="rtl">
+            <Box textAlign="center">
               <Typography variant="h5" gutterBottom>
                 ברוך הבא לפוקימון אונליין!
               </Typography>

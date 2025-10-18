@@ -42,7 +42,7 @@ const MapCanvas = styled.div<{ mapId: number }>`
   position: relative;
   border: 2px solid #577599;
   border-radius: 5px;
-  background-image: url("/images/maps/kanto/map${(props) => props.mapId}.png");
+  background-image: url(${props =>require(`../../assets/images/maps/kanto/map${props.mapId}.png`)});
   background-size: cover;
   overflow: hidden;
 `;
@@ -346,9 +346,9 @@ const Safari: React.FC = () => {
           <MapCanvas ref={canvasRef} mapId={currentMap}>
             {/* Player sprite */}
             <Sprite
-              src={`/images/sprites/${currentMap === 2 ? "water/" : ""}${
+              src={require(`../../assets/images/sprites/${currentMap === 2 ? "water/" : ""}${
                 selectedCharacter?.map_sprite
-              }.png`}
+              }.png`)}
               x={position.x}
               y={position.y}
               isPlayer
@@ -359,9 +359,9 @@ const Safari: React.FC = () => {
             {users.slice(0, 10).map((user) => (
               <React.Fragment key={user.id}>
                 <Sprite
-                  src={`/images/sprites/${currentMap === 2 ? "water/" : ""}${
+                  src={require(`../../assets/images/sprites/${currentMap === 2 ? "water/" : ""}${
                     user.sprite
-                  }.png`}
+                  }.png`)}
                   x={user.x}
                   y={user.y}
                   alt={user.username}
@@ -369,7 +369,7 @@ const Safari: React.FC = () => {
                 />
                 {user.map_wild && (
                   <Sprite
-                    src={`/images/pokemon/icon/${user.map_wild}.gif`}
+                    src={require(`../../assets/images/pokemon/icon/${user.map_wild}.gif`)}
                     x={user.x }
                     y={user.y }
                     alt={`${user.username}'s Pokemon`}
@@ -390,7 +390,7 @@ const Safari: React.FC = () => {
         <NavigationPanel>
           <NavigationButtons>
             <img
-              src="/images/maps/nav.png"
+              src={require('../../assets/images/maps/nav.png')}
               alt="Navigation"
               useMap="#navMap"
               style={{ width: "90px", height: "90px" }}
@@ -433,7 +433,7 @@ const Safari: React.FC = () => {
                 onClick={() => setCurrentMap(mapId)}
                 title={mapNames[mapId]}
               >
-                <img src="/images/animation.gif" alt={mapNames[mapId]} />
+                <img src={require('../../assets/images/animation.gif')} alt={mapNames[mapId]} />
               </MapButton>
             ))}
             <MapButton
@@ -441,14 +441,14 @@ const Safari: React.FC = () => {
               active={false}
               onClick={() => (window.location.href = "/pokemoncenter")}
             >
-              <img src="/images/animation.gif" alt="Pokemon Center" />
+              <img src={require('../../assets/images/animation.gif')} alt="Pokemon Center" />
             </MapButton>
             <MapButton
               index={9}
               active={false}
               onClick={() => (window.location.href = "/market")}
             >
-              <img src="/images/animation.gif" alt="Market" />
+              <img src={require('../../assets/images/animation.gif')} alt="Market" />
             </MapButton>
           </MapSelector>
         </NavigationPanel>
@@ -460,21 +460,22 @@ const Safari: React.FC = () => {
               <EncounterCard>
                 <div
                   style={{
-                    backgroundImage: `url('/images/maps/${mapNames[
+                    backgroundImage: `url(${require(`../../assets/images/maps/${mapNames[
                       currentMap
-                    ].toLowerCase()}.png')`,
+                    ]}.png`)})`,
                     backgroundPosition: "center bottom",
                     backgroundRepeat: "no-repeat",
                     padding: "20px",
                   }}
                 >
+                                    <h3>You found a {encounter.name}!</h3>
+                                    <p>Level: {encounter.level}</p>
                   <img
-                    src={`/images/pokemon/${encounter.id}.gif`}
+                    src={require(`../../assets/images/pokemon/${encounter.id}.gif`)}
                     alt={encounter.name}
-                    style={{ maxWidth: "150px" }}
+                    style={{ maxWidth: "150px", margin: '0 auto' }}
                   />
-                  <h3>You found a {encounter.name}!</h3>
-                  <p>Level: {encounter.level}</p>
+
                 </div>
                 <ActionButton onClick={startWildBattle}>Battle!</ActionButton>
                 <ActionButton onClick={() => setEncounter(null)}>

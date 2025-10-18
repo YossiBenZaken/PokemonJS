@@ -60,11 +60,7 @@ export const ProfilePage: React.FC = () => {
   }, [username]);
 
   const getCharacterImage = (characterName: string) => {
-    try {
-      return require(`../../assets/images/characters/${characterName}/npc.png`);
-    } catch {
-      return "/images/characters/default.png";
-    }
+    return require(`../../assets/images/characters/${characterName}/npc.png`);
   };
 
   if (isLoading) {

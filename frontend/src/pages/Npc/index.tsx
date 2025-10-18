@@ -57,7 +57,7 @@ const NpcPage: React.FC = () => {
             <td style={{ width: "100%", padding: 0, margin: "10px" }}>
               <div id="trainer-content">
                 <img
-                  src={`/images/trainers/${randomTrainer}.png`}
+                  src={require(`../../assets/images/trainers/${randomTrainer}.png`)}
                   alt="Random"
                   style={{
                     margin: "0 auto",

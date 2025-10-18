@@ -112,9 +112,9 @@ export const Judge: React.FC = () => {
             onClick={() => setSelected(p.id)}
           >
             <img
-              src={`/images/${p.shiny === 1 ? "shiny" : "pokemon"}/${
+              src={require(`../../assets/images/${p.shiny === 1 ? "shiny" : "pokemon"}/${
                 p.wild_id
-              }.gif`}
+              }.gif`)}
               alt={p.naam}
               style={{ width: 64, height: 64 }}
             />

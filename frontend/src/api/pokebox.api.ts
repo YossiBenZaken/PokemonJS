@@ -225,11 +225,11 @@ export const getPokemonImageUrl = (
   baseUrl: string
 ): string => {
   if (pokemon.ei === 1) {
-    return `${baseUrl}/images/icons/egg.gif`;
+    return require('../assets/images/icons/egg.gif');
   }
 
   const type = pokemon.shiny === 1 ? "shiny" : "pokemon";
-  return `${baseUrl}/images/${type}/icon/${pokemon.wild_id}.gif`;
+  return require(`../assets/images/${type}/icon/${pokemon.wild_id}.gif`);
 };
 
 export const getPokemonDisplayName = (pokemon: Pokemon): string => {

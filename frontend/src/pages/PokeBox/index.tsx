@@ -350,7 +350,7 @@ const PokeBox: React.FC = () => {
 
         <div className="my-4">
           <img
-            src={`/images/${boxInfo!.house.image}`}
+            src={require(`../../assets/images/${boxInfo!.house.image}`)}
             alt={boxInfo!.house.name}
             className="mx-auto max-w-24 max-h-24 object-contain"
           />
@@ -367,7 +367,7 @@ const PokeBox: React.FC = () => {
             <div className="flex justify-center items-center gap-2 text-xs">
               <div className="flex items-center gap-1">
                 <img
-                  src="/images/icons/medal3.png"
+                  src={require("../../assets/images/icons/medal3.png")}
                   className="w-4 h-4"
                   alt="מקום 3"
                 />
@@ -376,7 +376,7 @@ const PokeBox: React.FC = () => {
               <span>|</span>
               <div className="flex items-center gap-1">
                 <img
-                  src="/images/icons/medal2.png"
+                  src={require("../../assets/images/icons/medal2.png")}
                   className="w-4 h-4"
                   alt="מקום 2"
                 />
@@ -385,7 +385,7 @@ const PokeBox: React.FC = () => {
               <span>|</span>
               <div className="flex items-center gap-1">
                 <img
-                  src="/images/icons/medal1.png"
+                  src={require("../../assets/images/icons/medal1.png")}
                   className="w-4 h-4"
                   alt="מקום 1"
                 />
@@ -395,7 +395,7 @@ const PokeBox: React.FC = () => {
           </div>
         </div>
 
-        <div className="text-lg font-bold bg-white bg-opacity-20 rounded-lg p-3">
+        <div className="text-lg font-bold bg-white bg-opacity-20 rounded-lg p-3 text-gray-950">
           {boxInfo!.house.spotsLeft} מקומות פנויים
         </div>
       </div>
@@ -609,15 +609,25 @@ const PokeBox: React.FC = () => {
                 <span className="font-medium">התקפות:</span>
                 <span>
                   {selectedPokemon.aanval_1}
-                  {selectedPokemon.aanval_2 ? `/${selectedPokemon.aanval_2}` : ""}
-                  {selectedPokemon.aanval_3 ? `/${selectedPokemon.aanval_3}` : ""}
-                  {selectedPokemon.aanval_4 ? `/${selectedPokemon.aanval_4}` : ""}
+                  {selectedPokemon.aanval_2
+                    ? `/${selectedPokemon.aanval_2}`
+                    : ""}
+                  {selectedPokemon.aanval_3
+                    ? `/${selectedPokemon.aanval_3}`
+                    : ""}
+                  {selectedPokemon.aanval_4
+                    ? `/${selectedPokemon.aanval_4}`
+                    : ""}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="font-medium">כוח:</span>
                 <span>
-                  {selectedPokemon.attack + selectedPokemon.defence + selectedPokemon.speed + selectedPokemon["spc.attack"] + selectedPokemon["spc.defence"]}
+                  {selectedPokemon.attack +
+                    selectedPokemon.defence +
+                    selectedPokemon.speed +
+                    selectedPokemon["spc.attack"] +
+                    selectedPokemon["spc.defence"]}
                 </span>
               </div>
               {selectedPokemon.shiny === 1 && (

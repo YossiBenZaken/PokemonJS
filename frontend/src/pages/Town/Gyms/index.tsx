@@ -161,10 +161,10 @@ const GymsPage: React.FC = () => {
               !g.badge.includes("Elite") &&
               !g.blocked ? (
               <img
-                src={`/images/badges/pixel/${g.badge.replace(
+                src={require(`../../../assets/images/badges/pixel/${g.badge.replace(
                   " Badge",
                   ""
-                )}.png`}
+                )}.png`)}
                 alt="badge"
                 style={{
                   position: "absolute",
@@ -175,7 +175,7 @@ const GymsPage: React.FC = () => {
                 }}
               />
             ) : null}
-            <img src={`/images/trainers/${g.naam}.png`} alt={g.namePublic} />
+            <img src={require(`../../../assets/images/trainers/${g.naam}.png`)} alt={g.namePublic} />
             <div style={{ marginTop: 6, color: "#eee" }}>{g.namePublic}</div>
             <div style={{ fontSize: 12, color: "#ccc" }}>{g.badge}</div>
           </Cell>

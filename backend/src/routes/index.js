@@ -1,3 +1,4 @@
+import adminRoutes from './admin.js';
 import authRoutes from "./auth.js";
 import bankRoutes from "./bank.js";
 import battleRoutes from './battle.js';
@@ -50,5 +51,6 @@ router.use("/api/gyms", gymsRoutes);
 router.use('/api/battle', battleRoutes);
 router.use('/api/safari', safariRoutes);
 router.use('/api/transferlist', transferListRoutes);
+router.use('/api/admin', adminRoutes);
 
 export { router };

@@ -1,18 +1,7 @@
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { ThemeProvider, createTheme, useTheme } from "@mui/material/styles";
 
-import { CacheProvider } from "@emotion/react";
 import React from "react";
-import createCache from "@emotion/cache";
-import { heIL } from "@mui/x-data-grid/locales";
-import { prefixer } from "stylis";
-import rtlPlugin from "@mui/stylis-plugin-rtl";
 import { useGame } from "../../contexts/GameContext";
-
-const cacheRtl = createCache({
-  key: "data-grid-rtl-attack-info",
-  stylisPlugins: [prefixer, rtlPlugin],
-});
 
 const columns: GridColDef[] = [
   {
@@ -26,9 +15,11 @@ const columns: GridColDef[] = [
             alignItems: 'end'
         }}>
           <img
-            src={`/images/items/${params.value}.png`}
+            src={require(`../../assets/images/items/${params.value}.png`)}
             alt={params.value}
             title={params.value}
+            height={24}
+            width={24}
           /> {params.value}
         </p>
       );
@@ -64,9 +55,9 @@ const columns: GridColDef[] = [
     renderCell(params) {
         const {value} = params;
         if(value) {
-            return <img src="/images/icons/green.png" alt="יש מגע" title="יש מגע"/>;
+            return <img src={require('../../assets/images/icons/green.png')} alt="יש מגע" title="יש מגע"/>;
         } else {
-            return <img src="/images/icons/red.png" alt="אין מגע" title="אין מגע"/>;
+            return <img src={require('../../assets/images/icons/red.png')} alt="אין מגע" title="אין מגע"/>;
         }
     },
   },
@@ -78,9 +69,9 @@ const columns: GridColDef[] = [
     renderCell(params) {
         const {value} = params;
         if(value === 'sim') {
-            return <img src="/images/icons/green.png" alt="חל אפקט" title="חל אפקט"/>;
+            return <img src={require('../../assets/images/icons/green.png')} alt="חל אפקט" title="חל אפקט"/>;
         } else {
-            return <img src="/images/icons/red.png" alt="לא חל אפקט" title="לא חל אפקט"/>;
+            return <img src={require('../../assets/images/icons/red.png')} alt="לא חל אפקט" title="לא חל אפקט"/>;
         }
     },
   },
@@ -92,9 +83,9 @@ const columns: GridColDef[] = [
     renderCell(params) {
         const {value} = params;
         if(value) {
-            return <img src="/images/icons/green.png" alt="חל אפקט" title="חל אפקט"/>;
+            return <img src={require('../../assets/images/icons/green.png')} alt="חל אפקט" title="חל אפקט"/>;
         } else {
-            return <img src="/images/icons/red.png" alt="לא חל אפקט" title="לא חל אפקט"/>;
+            return <img src={require('../../assets/images/icons/red.png')} alt="לא חל אפקט" title="לא חל אפקט"/>;
         }
     },
   }
@@ -102,17 +93,7 @@ const columns: GridColDef[] = [
 
 const ItemInfoPage: React.FC = () => {
   const { itemInfo } = useGame();
-  const existingTheme = useTheme();
-  const theme = React.useMemo(
-    () =>
-      createTheme({}, heIL, existingTheme, {
-        direction: "rtl",
-      }),
-    [existingTheme]
-  );
   return (
-    <CacheProvider value={cacheRtl}>
-      <ThemeProvider theme={theme}>
         <div dir="rtl">
           <DataGrid
             rows={itemInfo}
@@ -121,16 +102,14 @@ const ItemInfoPage: React.FC = () => {
               pagination: {
                 paginationModel: {
                   page: 0,
-                  pageSize: 20,
+                  pageSize: 100,
                 },
               },
             }}
-            pageSizeOptions={[5, 10, 15, 20, 25]}
+            pageSizeOptions={[5, 10, 15, 20, 25,50,100]}
             sx={{ border: 0 }}
           />
         </div>
-      </ThemeProvider>
-    </CacheProvider>
   );
 };
 

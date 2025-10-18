@@ -17,22 +17,10 @@ import {Container, FilterBox, FilterRow, Header, Title} from './styled';
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { FiltersData, TransferListItem, buyPokemon, deletePokemon, getFilteredData, getTransferList } from "../../../api/transferlist.api";
 import React, { useEffect, useState } from "react";
-import { ThemeProvider, createTheme, useTheme } from "@mui/material/styles";
 
-import { CacheProvider } from "@emotion/react";
 import TabContext from "@mui/lab/TabContext";
 import TabList from "@mui/lab/TabList";
 import TabPanel from "@mui/lab/TabPanel";
-import createCache from "@emotion/cache";
-import { heIL } from "@mui/x-data-grid/locales";
-import { prefixer } from "stylis";
-import rtlPlugin from "@mui/stylis-plugin-rtl";
-
-const cacheRtl = createCache({
-  key: "data-grid-rtl-transferlist",
-  stylisPlugins: [prefixer, rtlPlugin],
-});
-
 
 const TransferListPage: React.FC = () => {
   const [tabValue, setTabValue] = useState("direct");
@@ -58,12 +46,6 @@ const TransferListPage: React.FC = () => {
     level_type: "maior",
     equip: "",
   });
-
-  const existingTheme = useTheme();
-  const theme = React.useMemo(
-    () => createTheme({}, heIL, existingTheme, { direction: "rtl" }),
-    [existingTheme]
-  );
 
   useEffect(() => {
     loadFiltersData();
@@ -154,7 +136,7 @@ const TransferListPage: React.FC = () => {
         return (
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <img
-              src={row.animatie || `/images/pokemon/icon/${row.wild_id}.gif`}
+              src={row.animatie || require(`../../../assets/images/pokemon/icon/${row.wild_id}.gif`)}
               alt={displayName}
               style={{ width: 32, height: 32 }}
             />
@@ -206,7 +188,7 @@ const TransferListPage: React.FC = () => {
         if (!params.value) return "ללא";
         return (
           <img
-            src={`/images/items/${params.value}.png`}
+            src={require(`../../../assets/images/items/${params.value}.png`)}
             alt={params.value}
             title={params.value}
             style={{ width: 24, height: 24 }}
@@ -252,7 +234,7 @@ const TransferListPage: React.FC = () => {
               <div style={{ marginBottom: 4 }}>
                 {row.silver.toLocaleString()}{" "}
                 <img
-                  src="/images/icons/silver.png"
+                  src={require('../../../assets/images/icons/silver.png')}
                   alt="Silver"
                   style={{ width: 16, height: 16, verticalAlign: "middle" }}
                 />
@@ -262,7 +244,7 @@ const TransferListPage: React.FC = () => {
               <div style={{ marginBottom: 4 }}>
                 {row.gold.toLocaleString()}{" "}
                 <img
-                  src="/images/icons/gold.png"
+                  src={require('../../../assets/images/icons/gold.png')}
                   alt="Gold"
                   style={{ width: 16, height: 16, verticalAlign: "middle" }}
                 />
@@ -495,8 +477,6 @@ const TransferListPage: React.FC = () => {
               <label>הצג רק את הפוקימונים שלי</label>
             </Box>
 
-            <CacheProvider value={cacheRtl}>
-              <ThemeProvider theme={theme}>
                 <div dir="rtl">
                   {loading ? (
                     <Box
@@ -529,8 +509,6 @@ const TransferListPage: React.FC = () => {
                     />
                   )}
                 </div>
-              </ThemeProvider>
-            </CacheProvider>
           </TabPanel>
         </TabContext>
       </Box>
