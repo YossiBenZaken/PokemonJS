@@ -1634,3 +1634,98 @@ export const givePremiumToPlayer = async (req, res) => {
     });
   }
 };
+
+// GET current game configurations
+export const getGameConfigs = async (req, res) => {
+  try {
+    const configs = await query(
+      "SELECT config, valor FROM configs WHERE config IN ('exp', 'silver')"
+    );
+
+    const configsMap = {};
+    configs.forEach((config) => {
+      configsMap[config.config] = Number(config.valor);
+    });
+
+    return res.json({
+      success: true,
+      configs: configsMap,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "שגיאה בטעינת הגדרות",
+      error: error.message,
+    });
+  }
+};
+
+// POST update EXP multiplier
+export const updateExpMultiplier = async (req, res) => {
+  try {
+    const { multiplier } = req.body;
+
+    if (!multiplier || ![1, 2, 3].includes(Number(multiplier))) {
+      return res.status(400).json({
+        success: false,
+        message: "בחר ערך EXP תקין (1, 2 או 3)",
+      });
+    }
+
+    await query(
+      "UPDATE configs SET valor = ? WHERE config = 'exp'",
+      [multiplier]
+    );
+
+    const multiplierText = 
+      multiplier === 1 ? "רגיל (1x)" :
+      multiplier === 2 ? "כפול (2x)" :
+      "משולש (3x)";
+
+    return res.json({
+      success: true,
+      message: `EXP שונה בהצלחה ל-${multiplierText}`,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "שגיאה בשינוי EXP",
+      error: error.message,
+    });
+  }
+};
+
+// POST update Silver multiplier
+export const updateSilverMultiplier = async (req, res) => {
+  try {
+    const { multiplier } = req.body;
+
+    if (!multiplier || ![1, 2, 3].includes(Number(multiplier))) {
+      return res.status(400).json({
+        success: false,
+        message: "בחר ערך Silver תקין (1, 2 או 3)",
+      });
+    }
+
+    await query(
+      "UPDATE configs SET valor = ? WHERE config = 'silver'",
+      [multiplier]
+    );
+
+    const multiplierText = 
+      multiplier === 1 ? "רגיל (1x)" :
+      multiplier === 2 ? "כפול (2x)" :
+      "משולש (3x)";
+
+    return res.json({
+      success: true,
+      message: `Silver שונה בהצלחה ל-${multiplierText}`,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "שגיאה בשינוי Silver",
+      error: error.message,
+    });
+  }
+};

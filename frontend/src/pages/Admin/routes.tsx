@@ -1,6 +1,7 @@
 import AdminAddPokemon from "./AdminAddPokemon";
 import AdminBankLogsPage from "./BankLogs";
 import AdminDonateAllPage from "./AdminDonateAllPage";
+import AdminGameConfigPage from "./AdminGameConfigPage";
 import AdminGiveEggPage from "./AdminGiveEggPage";
 import AdminGivePokemonPage from "./AdminGivePokemonPage";
 import AdminIPSearchPage from "./AdminIPSearchPage";
@@ -118,6 +119,14 @@ export const AdminRoutes = () => {
         element={
           <PrivateRoute admin={true}>
             <AdminDonateAllPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="config"
+        element={
+          <PrivateRoute admin={true}>
+            <AdminGameConfigPage />
           </PrivateRoute>
         }
       />
