@@ -10,6 +10,8 @@ import {
   TrainerChangePokemonResponse,
   attackChangePokemon,
   attackUsePotion,
+  getBattleLogId,
+  initBattle,
   trainerAttack,
   trainerAttackRun,
   trainerChangePokemonApi,
@@ -60,7 +62,9 @@ const TrainerAttack: React.FC = () => {
     battleState,
     dispatchBattle,
     setPokemonInfo,
-    setPokemonEvolve
+    setPokemonEvolve,
+    setAttackLog,
+    setComputerInfo
   } = useBattle();
   const { attacks, myPokemons, selectedCharacter, itemInfo } = useGame();
   const navigate = useNavigate();
@@ -75,14 +79,30 @@ const TrainerAttack: React.FC = () => {
   const potions = itemInfo.filter((item) => item.soort === "potions");
 
   useEffect(() => {
-    const initializeBattleState = () => {
-      if (!attackLog) return;
+    const initializeBattleState = async () => {
+      let attackLogInEffect = attackLog;
+      if (!attackLogInEffect) {
+        const logId = await getBattleLogId();
+        const { attackLogId, success } = logId;
+        if (!success) {
+          navigate("/");
+          return;
+        }
+
+        const { aanval_log, computer_info, pokemon_info } = await initBattle(
+          attackLogId
+        );
+        setAttackLog(aanval_log);
+        setComputerInfo(computer_info);
+        setPokemonInfo(pokemon_info);
+        attackLogInEffect = aanval_log;
+      }
 
       let spelerAttack = false;
       let spelerWissel = false;
       let message = "";
 
-      switch (attackLog.laatste_aanval) {
+      switch (attackLogInEffect.laatste_aanval) {
         case "spelereersteaanval":
           spelerAttack = true;
           message = "Your turn to attack!";
@@ -127,7 +147,7 @@ const TrainerAttack: React.FC = () => {
           showEndScreen();
           break;
         default:
-          message = `Error: ${attackLog.laatste_aanval}`;
+          message = `Error: ${attackLogInEffect.laatste_aanval}`;
       }
 
       dispatchBattle({ type: "SET_SPELER_ATTACK", value: spelerAttack });
@@ -136,12 +156,12 @@ const TrainerAttack: React.FC = () => {
 
       // Handle weather
       if (
-        attackLog.weather &&
-        battleState.currentWeather.includes(attackLog.weather)
+        attackLogInEffect.weather &&
+        battleState.currentWeather.includes(attackLogInEffect.weather)
       ) {
         document
           .getElementById("weather")
-          ?.classList.add("weather", attackLog.weather);
+          ?.classList.add("weather", attackLogInEffect.weather);
       } else {
         document.getElementById("weather")?.classList.remove("weather");
       }
