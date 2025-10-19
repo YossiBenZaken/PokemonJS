@@ -1,4 +1,5 @@
 import { query } from "../config/database.js";
+import {updatePokedex} from '../helpers/pokedex-helper.js';
 
 export const Auth = async (socket) => {
   socket.on("getUserInfo", async (userId, callback) => {
@@ -58,6 +59,16 @@ export const Auth = async (socket) => {
         "SELECT `pw`.`naam`,`pw`.`type1`,`pw`.`type2`,`pw`.`zeldzaamheid`,`pw`.`groei`,`pw`.`aanval_1`,`ps`.`humor_change`,`pw`.`aanval_2`,`pw`.`aanval_3`,`pw`.`aanval_4`,`ps`.* FROM `pokemon_wild` AS `pw` INNER JOIN `pokemon_speler` AS `ps` ON `ps`.`wild_id`=`pw`.`wild_id` WHERE `ps`.`user_id`=? AND `ps`.`opzak`='ja' ORDER BY `ps`.`opzak_nummer` ASC",
         [userId]
       );
+
+      for (const pokemon of myPokemon) {
+        const date = new Date();
+        if(pokemon.ei === 1 && new Date(pokemon.ei_tijd) < date) {
+          updatePokedex(userId, pokemon.wild_id,null, 'ei');
+          await query("UPDATE `pokemon_speler` SET `ei`='0' WHERE `id`= ?",[pokemon.id]);
+          await query("INSERT INTO `gebeurtenis` (`datum`,`ontvanger_id`,`bericht`,`gelezen`) VALUES (NOW(), ?, ?, '0')",[userId, `ביצת הפוקימון שלך בקעה! זוהי ${pokemon.naam}`]);
+        }
+      }
+
       callback({
         success: true,
         data: {
