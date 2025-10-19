@@ -48,7 +48,7 @@ const cacheRtl = createCache({
   stylisPlugins: [prefixer, rtlPlugin],
 });
 
-export const socket = io("http://localhost:5000", {
+export const socket = io(process.env.REACT_APP_API_URL, {
   withCredentials: true,
   auth: {
     token: Cookies.get("access_token"),
