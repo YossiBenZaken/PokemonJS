@@ -106,7 +106,7 @@ const GymsPage: React.FC = () => {
         mounted = false;
       };
     }
-  }, [selectedCharacter]);
+  }, [selectedCharacter?.user_id]);
 
   if (loading) return <Page>טוען...</Page>;
 

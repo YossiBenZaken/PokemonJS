@@ -69,7 +69,7 @@ const Specialists: React.FC = () => {
 
   useEffect(() => {
     loadSpecialistInfo();
-  }, [selectedCharacter]);
+  }, [selectedCharacter?.user_id]);
 
   const handlePokemonSelect = (pokemonId: number, checked: boolean) => {
     if (checked) {

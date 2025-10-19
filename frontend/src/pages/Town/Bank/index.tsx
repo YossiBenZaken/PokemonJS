@@ -62,7 +62,7 @@ const Bank: React.FC = () => {
   useEffect(() => {
     loadBankInfo();
     loadTransactions();
-  }, [selectedCharacter]);
+  }, [selectedCharacter?.user_id]);
 
   const handleTransferToPlayer = async (e: React.FormEvent) => {
     e.preventDefault();

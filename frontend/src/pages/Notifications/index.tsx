@@ -59,7 +59,7 @@ const Notifications: React.FC = () => {
   useEffect(() => {
     loadNotifications();
     loadUnreadCount();
-  }, [selectedCharacter]);
+  }, [selectedCharacter?.user_id]);
 
   const handleMarkAsRead = async (notificationIds: number[]) => {
     if (!selectedCharacter) return;

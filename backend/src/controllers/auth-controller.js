@@ -450,6 +450,10 @@ export const login = async (req, res) => {
 export const authToken = async (req, res) => {
   const { user_id } = req.body;
 
+  if(!user_id) {
+    return res.status(204).send();
+  }
+
   const [user] = await query("SELECT * FROM `gebruikers` WHERE `user_id` = ?", [
     user_id,
   ]);

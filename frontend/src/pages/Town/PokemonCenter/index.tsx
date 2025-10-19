@@ -133,7 +133,7 @@ const PokemonCenterPage: React.FC = () => {
     if(selectedCharacter) {
       loadCooldown();
     }
-  }, [selectedCharacter]);
+  }, [selectedCharacter?.user_id]);
 
   useEffect(() => {
     if (remaining <= 0) return;
@@ -145,7 +145,7 @@ const PokemonCenterPage: React.FC = () => {
     if (selectedCharacter) {
       load();
     }
-  }, [selectedCharacter]);
+  }, [selectedCharacter?.user_id]);
 
   const toggle = (id: number) => {
     if (!canHealMap[id]) return;

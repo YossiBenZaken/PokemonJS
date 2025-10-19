@@ -208,7 +208,7 @@ const FountainPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [selectedCharacter]);
+  }, [selectedCharacter?.user_id]);
 
   useEffect(() => {
     if(selectedCharacter) {
