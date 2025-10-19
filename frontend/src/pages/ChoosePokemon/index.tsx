@@ -74,7 +74,7 @@ export const ChoosePokemonPage: React.FC = () => {
     if (selectedCharacter?.user_id) {
       loadStarterPokemon();
     }
-  }, [selectedCharacter]);
+  }, [selectedCharacter?.user_id]);
 
   useEffect(() => {
     if (pokemon.length > 0) {

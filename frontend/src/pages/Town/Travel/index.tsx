@@ -154,7 +154,7 @@ const TravelPage: React.FC = () => {
 
   useEffect(() => {
     loadData();
-  }, [selectedCharacter]);
+  }, [selectedCharacter?.user_id]);
 
   const onGo = async (region: RegionKey) => {
     if (!selectedCharacter) return;

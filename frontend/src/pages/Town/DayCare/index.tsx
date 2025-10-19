@@ -50,7 +50,7 @@ const Daycare: React.FC = () => {
 
   useEffect(() => {
     loadDaycareData();
-  }, [selectedCharacter]);
+  }, [selectedCharacter?.user_id]);
 
   const handleAcceptEgg = async () => {
     if (!selectedCharacter) return;

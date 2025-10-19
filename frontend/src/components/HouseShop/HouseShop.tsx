@@ -31,7 +31,7 @@ export const HouseShop: React.FC<HouseShopProps> = ({ onHousePurchased }) => {
     if(selectedCharacter) {
       loadHouseStatus();
     }
-  }, [selectedCharacter]);
+  }, [selectedCharacter?.user_id]);
 
   const loadHouseStatus = async () => {
     if (!selectedCharacter?.user_id) return;
