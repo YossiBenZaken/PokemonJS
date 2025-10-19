@@ -20,7 +20,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000", // הכתובת של React
+    origin: ["http://localhost:3000",process.env.FRONTEND_URL], // הכתובת של React
     credentials: true, // <--- חייב!
   },
 });
@@ -29,7 +29,7 @@ initializeSocket(io);
 
 app.use(
   cors({
-    origin: "http://localhost:3000", // הכתובת של React
+    origin: ["http://localhost:3000",process.env.FRONTEND_URL], // הכתובת של React
     credentials: true, // <--- חייב!
   })
 );
