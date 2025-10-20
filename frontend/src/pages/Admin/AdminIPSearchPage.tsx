@@ -263,15 +263,15 @@ const AdminIPSearchPage: React.FC = () => {
                   <td>
                     <strong>{account.username}</strong>
                   </td>
-                  <IPCell>{account.ip_aangemeld}</IPCell>
-                  <IPCell>{account.ip_ingelogd}</IPCell>
+                  <IPCell>{account.ip_registered}</IPCell>
+                  <IPCell>{account.ip_loggedin}</IPCell>
                   <td>
                     <BanButton
                       onClick={() =>
                         handleBanIP(
                           searchType === "register"
-                            ? account.ip_aangemeld
-                            : account.ip_ingelogd,
+                            ? account.ip_registered
+                            : account.ip_loggedin,
                           account.acc_id
                         )
                       }

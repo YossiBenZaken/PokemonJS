@@ -342,7 +342,7 @@ const PokeBox: React.FC = () => {
     <div className="bg-gradient-to-b from-blue-600 to-blue-800 text-white p-6 rounded-lg shadow-lg">
       <div className="text-center space-y-4">
         <h3 className="text-xl font-bold">
-          {getHouseDisplayName(boxInfo!.user.huis)}
+          {getHouseDisplayName(boxInfo!.user.house)}
         </h3>
         <p className="text-sm opacity-90">
           מקום ל-{boxInfo!.house.capacity.toLocaleString()} פוקימונים
@@ -519,9 +519,9 @@ const PokeBox: React.FC = () => {
         </div>
       )}
 
-      {boxInfo!.house.spotsLeft <= 5 && boxInfo!.user.huis !== "villa" && (
+      {boxInfo!.house.spotsLeft <= 5 && boxInfo!.user.house !== "villa" && (
         <div className="bg-blue-100 border-r-4 border-blue-500 text-blue-700 px-6 py-4 rounded-lg">
-          🏠 {getHouseUpgradeMessage(boxInfo!.user.huis)}
+          🏠 {getHouseUpgradeMessage(boxInfo!.user.house)}
         </div>
       )}
 

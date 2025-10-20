@@ -283,7 +283,7 @@ export const ChoosePokemonPage: React.FC = () => {
           <Title>בחר את הפוקימון הראשון שלך</Title>
           <Subtitle>זהו רגע חשוב! בחר בחוכמה</Subtitle>
           <p style={{ color: '#667eea', fontSize: '1.1rem', marginTop: '0.5rem' }}>
-            דמות: <strong>{selectedCharacter.username}</strong> - {selectedCharacter.wereld}
+            דמות: <strong>{selectedCharacter.username}</strong> - {selectedCharacter.world}
           </p>
         </HeaderSection>
 

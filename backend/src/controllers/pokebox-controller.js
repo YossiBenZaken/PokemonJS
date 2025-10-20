@@ -8,7 +8,7 @@ export const getBoxInfo = async (req, res) => {
     // Get user info
     const [user] = await query(
       `
-      SELECT g.huis, COUNT(ps.wild_id) AS in_hand FROM gebruikers AS g INNER JOIN pokemon_speler AS ps ON g.user_id = ps.user_id WHERE g.user_id = ?
+      SELECT g.house, COUNT(ps.wild_id) AS in_hand FROM gebruikers AS g INNER JOIN pokemon_speler AS ps ON g.user_id = ps.user_id WHERE g.user_id = ?
     `,
       [userId]
     );
@@ -20,7 +20,7 @@ export const getBoxInfo = async (req, res) => {
     // Get house info
     const [house] = await query(
       "SELECT ruimte FROM huizen WHERE afkorting = ?",
-      [user.huis]
+      [user.house]
     );
 
     if (!house) {
@@ -80,14 +80,14 @@ export const getBoxInfo = async (req, res) => {
     const maxPerBox = 50;
     const maxBoxes = Math.ceil(house.ruimte / maxPerBox);
 
-    const houseInfo = getHouseInfo(user.huis);
+    const houseInfo = getHouseInfo(user.house);
     const spotsLeft = houseInfo.capacity - storageCount.aantal;
 
     return res.json({
       success: true,
       data: {
         user: {
-          huis: user.huis,
+          house: user.house,
           inHand: user.in_hand,
         },
         house: {
@@ -127,7 +127,7 @@ export const getBoxPokemons = async (req, res) => {
 
     // Get house capacity to calculate pagination
     const [user] = await query(
-      "SELECT huis FROM gebruikers WHERE user_id = ?",
+      "SELECT house FROM gebruikers WHERE user_id = ?",
       [userId]
     );
     if (!user) {
@@ -337,7 +337,7 @@ export const getPokemonSellInfo = async (req, res) => {
       FROM pokemon_speler ps
       INNER JOIN pokemon_wild pw ON ps.wild_id = pw.wild_id
       INNER JOIN gebruikers g ON ps.user_id = g.user_id
-      INNER JOIN rekeningen r ON g.acc_id = r.acc_id
+      INNER JOIN accounts r ON g.acc_id = r.acc_id
       WHERE ps.id = ? AND ps.user_id = ?
     `,
       [pokemonId, userId]
@@ -603,11 +603,11 @@ const getHouseInfo = (houseType) => {
 
 const findAvailableBoxSlot = async (userId) => {
   // Get user's house capacity
-  const [user] = await query("SELECT huis FROM gebruikers WHERE user_id = ?", [
+  const [user] = await query("SELECT house FROM gebruikers WHERE user_id = ?", [
     userId,
   ]);
   const [house] = await query("SELECT ruimte FROM huizen WHERE afkorting = ?", [
-    user.huis,
+    user.house,
   ]);
 
   // Find first available slot

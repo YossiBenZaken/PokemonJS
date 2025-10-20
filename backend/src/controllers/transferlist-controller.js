@@ -26,9 +26,9 @@ export const getTransferList = async (req, res) => {
     // בדיקת RANK
     const [user] = await query(
       `
-        SELECT g.rank, g.huis, g.silver, g.aantalpokemon, r.gold
+        SELECT g.rank, g.house, g.silver, g.number_of_pokemon, r.gold
         FROM gebruikers g
-        LEFT JOIN rekeningen r ON g.acc_id = r.acc_id
+        LEFT JOIN accounts r ON g.acc_id = r.acc_id
         WHERE g.user_id = ?
       `,
       [userId]
@@ -203,9 +203,9 @@ export const buyPokemon = async (req, res) => {
   // בדיקת RANK
   const [buyer] = await query(
     `
-    SELECT g.username, g.silver, g.rank, g.huis, g.aantalpokemon, g.acc_id, r.gold
+    SELECT g.username, g.silver, g.rank, g.house, g.number_of_pokemon, g.acc_id, r.gold
     FROM gebruikers g
-    LEFT JOIN rekeningen r ON g.acc_id = r.acc_id
+    LEFT JOIN accounts r ON g.acc_id = r.acc_id
     WHERE g.user_id = ?
   `,
     [userId]
@@ -256,7 +256,7 @@ export const buyPokemon = async (req, res) => {
     villa: 2500,
   };
 
-  const maxCapacity = houseCapacity[buyer.huis] || 0;
+  const maxCapacity = houseCapacity[buyer.house] || 0;
   const availableSpace = maxCapacity - houseCount.count;
 
   if (availableSpace <= 0) {
@@ -299,7 +299,7 @@ export const buyPokemon = async (req, res) => {
     await query(
       `
       UPDATE gebruikers 
-      SET silver = silver + ?, aantalpokemon = aantalpokemon - 1
+      SET silver = silver + ?, number_of_pokemon = number_of_pokemon - 1
       WHERE user_id = ?
     `,
       [transfer.silver, transfer.user_id]
@@ -307,7 +307,7 @@ export const buyPokemon = async (req, res) => {
 
     await query(
       `
-      UPDATE rekeningen 
+      UPDATE accounts 
       SET gold = gold + ?
       WHERE acc_id = ?
     `,
@@ -318,7 +318,7 @@ export const buyPokemon = async (req, res) => {
     await query(
       `
       UPDATE gebruikers 
-      SET silver = silver - ?, aantalpokemon = aantalpokemon + 1
+      SET silver = silver - ?, number_of_pokemon = number_of_pokemon + 1
       WHERE user_id = ?
     `,
       [transfer.silver, userId]
@@ -326,7 +326,7 @@ export const buyPokemon = async (req, res) => {
 
     await query(
       `
-      UPDATE rekeningen 
+      UPDATE accounts 
       SET gold = gold - ?
       WHERE acc_id = ?
     `,

@@ -10,7 +10,7 @@ const computeRegionIndex = (world) => {
 };
 
 const formatPrices = (user) => {
-  const currentIdx = computeRegionIndex(user.wereld);
+  const currentIdx = computeRegionIndex(user.world);
   const inHand = user.in_hand || 0;
   const premiumActive = (user.premiumaccount || 0) > Math.floor(Date.now() / 1000);
 
@@ -32,7 +32,7 @@ export const getTravelInfo = async (req, res) => {
   try {
     const { userId } = req.params;
     const [user] = await query(
-      `SELECT g.user_id, g.wereld, COUNT(ps.wild_id) AS in_hand, g.premiumaccount, g.silver
+      `SELECT g.user_id, g.world, COUNT(ps.wild_id) AS in_hand, g.premiumaccount, g.silver
          FROM gebruikers g
          INNER JOIN pokemon_speler AS ps ON g.user_id = ps.user_id
         WHERE g.user_id = ? LIMIT 1`,
@@ -45,7 +45,7 @@ export const getTravelInfo = async (req, res) => {
     return res.json({
       success: true,
       data: {
-        world: user.wereld,
+        world: user.world,
         in_hand: user.in_hand,
         silver: user.silver,
         premiumActive: (user.premiumaccount || 0) > Math.floor(Date.now() / 1000),
@@ -66,7 +66,7 @@ export const travelGo = async (req, res) => {
     if (!REGIONS.includes(regionKey)) return res.status(400).json({ success: false, message: 'אזור לא חוקי' });
 
     const [user] = await query(
-      `SELECT g.user_id, g.wereld, COUNT(ps.wild_id) AS in_hand, g.premiumaccount, g.silver,
+      `SELECT g.user_id, g.world, COUNT(ps.wild_id) AS in_hand, g.premiumaccount, g.silver,
               g.Kanto_block, g.Johto_block, g.Hoenn_block, g.Sinnoh_block, g.Unova_block, g.Kalos_block, g.Alola_block
          FROM gebruikers g
          INNER JOIN pokemon_speler AS ps ON g.user_id = ps.user_id
@@ -76,7 +76,7 @@ export const travelGo = async (req, res) => {
     if (!user) return res.status(404).json({ success: false, message: 'משתמש לא נמצא' });
 
     const capName = regionKey.charAt(0).toUpperCase() + regionKey.slice(1);
-    if (String(user.wereld).toLowerCase() === regionKey) return res.status(400).json({ success: false, message: 'אתה כבר באזור זה' });
+    if (String(user.world).toLowerCase() === regionKey) return res.status(400).json({ success: false, message: 'אתה כבר באזור זה' });
 
     const prices = formatPrices(user);
     const needSilver = prices[regionKey].total;
@@ -85,7 +85,7 @@ export const travelGo = async (req, res) => {
 
     await transaction(async (conn) => {
       await conn.execute(
-        `UPDATE gebruikers SET silver = silver - ?, wereld = ?, traveltijdbegin = NOW(), traveltijd = ? WHERE user_id = ? LIMIT 1`,
+        `UPDATE gebruikers SET silver = silver - ?, world = ?, travel_time_start = NOW(), travel_time = ? WHERE user_id = ? LIMIT 1`,
         [needSilver, capName, timeToTravel, userId]
       );
     });
@@ -99,13 +99,13 @@ export const travelGo = async (req, res) => {
 const hasMove = (p, move) => [p.aanval_1, p.aanval_2, p.aanval_3, p.aanval_4].includes(move);
 
 const validateSurfFly = async (userId, pokemonId, regionKey, moveName) => {
-  const [user] = await query(`SELECT user_id, wereld, ${REGIONS.map(r => `${r.charAt(0).toUpperCase()+r.slice(1)}_block AS ${r}`).join(', ')} FROM gebruikers WHERE user_id = ? LIMIT 1`, [userId]);
+  const [user] = await query(`SELECT user_id, world, ${REGIONS.map(r => `${r.charAt(0).toUpperCase()+r.slice(1)}_block AS ${r}`).join(', ')} FROM gebruikers WHERE user_id = ? LIMIT 1`, [userId]);
   if (!user) throw new Error('משתמש לא נמצא');
   const [pokemon] = await query(`SELECT id, user_id, level, aanval_1, aanval_2, aanval_3, aanval_4 FROM pokemon_speler WHERE id = ? LIMIT 1`, [pokemonId]);
   if (!pokemon) throw new Error('פוקימון לא נמצא');
   if (pokemon.user_id !== userId) throw new Error('הפוקימון אינו שלך');
   if (!REGIONS.includes(regionKey)) throw new Error('אזור לא חוקי');
-  if (String(user.wereld).toLowerCase() === regionKey) throw new Error('אתה כבר באזור זה');
+  if (String(user.world).toLowerCase() === regionKey) throw new Error('אתה כבר באזור זה');
   if (!hasMove(pokemon, moveName)) throw new Error(`אין לפוקימון את המהלך ${moveName}`);
   if (pokemon.level < 80) throw new Error('Level 80 נדרש');
   return { capName: regionKey.charAt(0).toUpperCase() + regionKey.slice(1) };
@@ -116,7 +116,7 @@ export const travelSurf = async (req, res) => {
     const { userId, region, pokemonId } = req.body || {};
     const regionKey = String(region || '').toLowerCase();
     const { capName } = await validateSurfFly(userId, pokemonId, regionKey, 'Surf');
-    await query(`UPDATE gebruikers SET wereld = ? WHERE user_id = ? LIMIT 1`, [capName, userId]);
+    await query(`UPDATE gebruikers SET world = ? WHERE user_id = ? LIMIT 1`, [capName, userId]);
     return res.json({ success: true, message: `גלשת ל-${capName}` });
   } catch (e) {
     return res.status(400).json({ success: false, message: e.message });
@@ -128,7 +128,7 @@ export const travelFly = async (req, res) => {
     const { userId, region, pokemonId } = req.body || {};
     const regionKey = String(region || '').toLowerCase();
     const { capName } = await validateSurfFly(userId, pokemonId, regionKey, 'Fly');
-    await query(`UPDATE gebruikers SET wereld = ? WHERE user_id = ? LIMIT 1`, [capName, userId]);
+    await query(`UPDATE gebruikers SET world = ? WHERE user_id = ? LIMIT 1`, [capName, userId]);
     return res.json({ success: true, message: `עפת ל-${capName}` });
   } catch (e) {
     return res.status(400).json({ success: false, message: e.message });

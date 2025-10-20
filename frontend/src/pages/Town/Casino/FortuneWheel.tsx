@@ -124,7 +124,7 @@ const FortuneWheel: React.FC = () => {
 
   const spin = async () => {
     if (spinning) return;
-    if ((selectedCharacter?.geluksrad || 0) <= 0) {
+    if ((selectedCharacter?.lucky_wheel || 0) <= 0) {
       setMessage("אין לך עוד ספינים להיום!");
       return;
     }
@@ -150,13 +150,13 @@ const FortuneWheel: React.FC = () => {
         const updated = {
           ...selectedCharacter!,
           tickets: selectedCharacter!.tickets + delta,
-          geluksrad: selectedCharacter!.geluksrad - 1,
+          lucky_wheel: selectedCharacter!.lucky_wheel - 1,
         };
         setSelectedCharacter(updated);
       } else {
         const updated = {
           ...selectedCharacter!,
-          geluksrad: selectedCharacter!.geluksrad - 1,
+          lucky_wheel: selectedCharacter!.lucky_wheel - 1,
         };
         setSelectedCharacter(updated);
       }
@@ -170,7 +170,7 @@ const FortuneWheel: React.FC = () => {
           Tickets במלאי:
           <img src={TICKET_ICON} alt="Tickets" />
           {selectedCharacter?.tickets.toLocaleString()} | ספינים:
-          {selectedCharacter?.geluksrad ?? 0}
+          {selectedCharacter?.lucky_wheel ?? 0}
         </h3>
       </Header>
 

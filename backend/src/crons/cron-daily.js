@@ -183,30 +183,30 @@ const rotateWildAreas = async () => {
   const wrand3 = randInt(1, 6);
   const wrand4 = randInt(1, 6);
 
-  const wereld2 = worldName(wrand2);
+  const world2 = worldName(wrand2);
   const gebied2 = areaName(dayOfWeek);
 
-  const wereld3 = worldName(wrand3);
+  const world3 = worldName(wrand3);
   const gebied3 = areaName(dayOfWeek);
 
-  const wereld4 = worldName(wrand4);
+  const world4 = worldName(wrand4);
   const gebied4 = areaName(dayOfWeek);
 
   // עדכון לטווח הפוקימונים שב־PHP (895, 840, 923). (800 הושארה כמושמטת)
   await query("UPDATE pokemon_wild SET wereld = ?, gebied = ? WHERE wild_id = 895", [
-    wereld2,
+    world2,
     gebied2,
   ]);
   await query("UPDATE pokemon_wild SET wereld = ?, gebied = ? WHERE wild_id = 840", [
-    wereld3,
+    world3,
     gebied3,
   ]);
   await query("UPDATE pokemon_wild SET wereld = ?, gebied = ? WHERE wild_id = 923", [
-    wereld4,
+    world4,
     gebied4,
   ]);
 
-  console.log("[cron-day] סיבוב אזורי wild לביצועים: ", { wereld2, gebied2, wereld3, gebied3, wereld4, gebied4 });
+  console.log("[cron-day] סיבוב אזורי wild לביצועים: ", { world2, gebied2, world3, gebied3, world4, gebied4 });
 };
 
 
@@ -235,13 +235,13 @@ const applyPremiumSettings = async () => {
 
   // פרימיום פעיל
   await query(
-    "UPDATE gebruikers SET stelen = '3', geluksrad = '3', storten = '5', puffins = '10', calc_limit = '15', calc_multiplier = '0' WHERE premiumaccount > ?",
+    "UPDATE gebruikers SET to_steal = '3', lucky_wheel = '3', to_deposit = '5', puffins = '10', calc_limit = '15', calc_multiplier = '0' WHERE premiumaccount > ?",
     [nowUnix]
   );
 
   // פרימיום לא פעיל
   await query(
-    "UPDATE gebruikers SET stelen = '1', geluksrad = '1', storten = '3', puffins = '5', calc_limit = '5', calc_multiplier = '0' WHERE premiumaccount < ?",
+    "UPDATE gebruikers SET to_steal = '1', lucky_wheel = '1', to_deposit = '3', puffins = '5', calc_limit = '5', calc_multiplier = '0' WHERE premiumaccount < ?",
     [nowUnix]
   );
 
@@ -269,7 +269,7 @@ const cleanupHiddenConversations = async () => {
 // 10) אופטימיזציה לטבלאות (כמו ב־PHP)
 const optimizeTables = async () => {
   const tables = [
-    "rekeningen",
+    "accounts",
     "gebruikers",
     "gebruikers_item",
     "pokemon_speler",

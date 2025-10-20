@@ -145,7 +145,7 @@ const GymsPage: React.FC = () => {
 
   return (
     <Page>
-      <Header>אצטדיונים באזור {selectedCharacter?.wereld}</Header>
+      <Header>אצטדיונים באזור {selectedCharacter?.world}</Header>
 
       <Carousel>
         {gyms.map((g, idx) => (

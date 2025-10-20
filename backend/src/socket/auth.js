@@ -13,7 +13,7 @@ export const Auth = async (socket) => {
         [userId]
       );
       const [account] = await query(
-        "SELECT gold FROM `rekeningen` WHERE `acc_id` = ?",
+        "SELECT gold FROM `accounts` WHERE `acc_id` = ?",
         [user.acc_id]
       );
       const eventsCount = (

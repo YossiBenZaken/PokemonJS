@@ -4,7 +4,7 @@ import { axiosInstance } from "./axios";
 
 export interface CreateCharacterRequest {
   inlognaam: string;
-  wereld: string;
+  world: string;
   character: string;
 }
 
@@ -15,7 +15,7 @@ export interface CreateCharacterResponse {
     user_id: number;
     username: string;
     character: string;
-    wereld: string;
+    world: string;
   };
 }
 
@@ -49,7 +49,7 @@ export interface LoginWithCharacterResponse {
     user_id: number;
     username: string;
     character: string;
-    wereld: string;
+    world: string;
     session_token: string;
     sec_key: string;
     chat_key: string;
@@ -65,11 +65,11 @@ export interface GetCharacterDetailsResponse {
     user_id: number;
     username: string;
     character: string;
-    wereld: string;
+    world: string;
     ultimo_login: string;
     ultimo_login_hour: string;
-    datum: string;
-    aanmeld_datum: string;
+    date: string;
+    registration_date: string;
     rank?: number;
     banned?: string;
     admin?: number;
@@ -362,7 +362,7 @@ export interface UserProfile {
   user_id: number;
   username: string;
   character: string;
-  wereld: string;
+  world: string;
   ultimo_login: string;
   antiguidade: number;
   clan: string;
@@ -374,19 +374,19 @@ export interface UserProfile {
   admin: number;
   online: number;
   character_num: number;
-  profiel: string;
-  teamzien: number;
-  badgeszien: number;
+  profile: string;
+  see_team: number;
+  see_badges: number;
   rank: number;
-  aantalpokemon: number;
+  number_of_pokemon: number;
   badges: number;
-  gewonnen: number;
-  verloren: number;
-  datum: string;
+  won: number;
+  lost: number;
+  date: string;
   karma: number;
   email: string;
-  ip_aangemeld: string;
-  ip_ingelogd: string;
+  ip_registered: string;
+  ip_loggedin: string;
   badge_case: number;
 }
 

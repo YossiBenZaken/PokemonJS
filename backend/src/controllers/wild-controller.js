@@ -36,7 +36,7 @@ export const startWildBattle = async (req, res) => {
     ]);
     const [randomComputer] = await query(
       "SELECT wild_id FROM `pokemon_wild` WHERE `gebied`=? AND `wereld`=? AND `zeldzaamheid`=? AND `aparece`='sim' ORDER BY rand() limit 1",
-      [gebied, user.wereld, rarity]
+      [gebied, user.world, rarity]
     );
     computer_id = randomComputer.wild_id;
     computer_level = await calculatePokemonLevel(user.rank);
@@ -82,7 +82,7 @@ export const startWildBattle = async (req, res) => {
   }
 
   await query(
-    "UPDATE `gebruikers` SET `pagina`='attack',`background`=? WHERE `user_id`=?",
+    "UPDATE `gebruikers` SET `page`='attack',`background`=? WHERE `user_id`=?",
     [gebied == "Gras" ? "gras-1" : "wate-1", userId]
   );
 
@@ -114,7 +114,7 @@ export const finishWildBattle = async (req, res) => {
   if (computer_info.leven <= 0) {
     rankerbij('attack',userId, accId);
     await query(
-      "UPDATE `gebruikers` SET `gewonnen`=`gewonnen`+'1',`in_battle`=0,`map_wild`=0,`points`=(`points` + 50),`points_temp`=(`points_temp` + 50) WHERE `user_id`=?",
+      "UPDATE `gebruikers` SET `won`=`won`+'1',`in_battle`=0,`map_wild`=0,`points`=(`points` + 50),`points_temp`=(`points_temp` + 50) WHERE `user_id`=?",
       [userId]
     );
 
@@ -125,7 +125,7 @@ export const finishWildBattle = async (req, res) => {
   } else {
     if (user.rank >= 3) money = Math.round(user.silver / 10);
     await query(
-      "UPDATE `gebruikers` SET `silver`=`silver`-?, `verloren`=`verloren`+'1',`points`=if (`points` > 0, (`points` - 60), 0),`points_temp`=if (`points_temp` > 0, (`points_temp` - 60), 0) WHERE `user_id`=?",
+      "UPDATE `gebruikers` SET `silver`=`silver`-?, `lost`=`lost`+'1',`points`=if (`points` > 0, (`points` - 60), 0),`points_temp`=if (`points_temp` > 0, (`points_temp` - 60), 0) WHERE `user_id`=?",
       [money, userId]
     );
     text = false;
@@ -870,7 +870,7 @@ export const attackUsePokeball = async (req, res) => {
     [userId]
   );
   const [given] = await query(
-    "SELECT `huis` FROM `gebruikers` WHERE `user_id`=?",
+    "SELECT `house` FROM `gebruikers` WHERE `user_id`=?",
     [userId]
   );
   const [itemInfo] = await query(
@@ -883,7 +883,7 @@ export const attackUsePokeball = async (req, res) => {
       [userId]
     )
   ).length;
-  const house = (
+  const pokemonInHouse = (
     await query(
       "SELECT `id` FROM `pokemon_speler` WHERE `user_id`=? AND `opzak`='nee'",
       [userId]
@@ -893,10 +893,10 @@ export const attackUsePokeball = async (req, res) => {
   let drop = false;
   let message = "";
   let catched = false;
-  const { huis } = given;
+  const { house } = given;
   const over =
-    (huis == "doos" ? 2 : huis == "shuis" ? 20 : huis == "nhuis" ? 100 : 2500) -
-    house;
+    (house == "doos" ? 2 : house == "shuis" ? 20 : house == "nhuis" ? 100 : 2500) -
+    pokemonInHouse;
   if (itemInfo.wat != "pokeball")
     message = "You have to use a Pok&eacute;ball.";
   else if (playerItemInfo[item] <= 0) message = "You do not have a " + item;
@@ -1143,7 +1143,7 @@ export const attackUsePokeball = async (req, res) => {
         ]);
       }
 
-      await query("UPDATE `gebruikers` SET `aantalpokemon`=`aantalpokemon`+'1' WHERE `user_id`=?",[userId]);
+      await query("UPDATE `gebruikers` SET `number_of_pokemon`=`number_of_pokemon`+'1' WHERE `user_id`=?",[userId]);
 
       await pokemonPlayerHandUpdate(userId);
 

@@ -72,10 +72,10 @@ export const getBannedAccounts = async (req, res) => {
 
     // Get banned accounts
     const bannedAccounts = await query(`
-      SELECT r.email, r.username, r.bloqueado_tempo, r.razaobloqueado, r.acc_id
-      FROM rekeningen r
-      WHERE r.bloqueado = 'sim'
-      ORDER BY r.bloqueado_tempo DESC
+      SELECT r.email, r.username, r.blocked_time, r.reasonblocked, r.acc_id
+      FROM accounts r
+      WHERE r.blocked = 'sim'
+      ORDER BY r.blocked_time DESC
     `);
 
     return res.json({
@@ -85,10 +85,10 @@ export const getBannedAccounts = async (req, res) => {
         email: account.email,
         username: account.username,
         bannedUntil:
-          account.bloqueado_tempo === "0000-00-00"
+          account.blocked_time === "0000-00-00"
             ? null
-            : account.bloqueado_tempo,
-        reason: account.razaobloqueado,
+            : account.blocked_time,
+        reason: account.reasonblocked,
       })),
     });
   } catch (error) {
@@ -136,7 +136,7 @@ export const banAccount = async (req, res) => {
 
     // Check if account exists
     const [account] = await query(
-      "SELECT acc_id FROM rekeningen WHERE email = ?",
+      "SELECT acc_id FROM accounts WHERE email = ?",
       [email]
     );
 
@@ -166,7 +166,7 @@ export const banAccount = async (req, res) => {
     ]);
 
     await query(
-      "UPDATE rekeningen SET account_code = '0', bloqueado = 'sim', bloqueado_tempo = ?, razaobloqueado = ? WHERE email = ?",
+      "UPDATE accounts SET account_code = '0', blocked = 'sim', blocked_time = ?, reasonblocked = ? WHERE email = ?",
       [banDate, reason, email]
     );
 
@@ -216,7 +216,7 @@ export const unbanAccount = async (req, res) => {
 
     // Check if account exists
     const [account] = await query(
-      "SELECT acc_id FROM rekeningen WHERE email = ?",
+      "SELECT acc_id FROM accounts WHERE email = ?",
       [email]
     );
 
@@ -233,7 +233,7 @@ export const unbanAccount = async (req, res) => {
     ]);
 
     await query(
-      "UPDATE rekeningen SET account_code = '1', bloqueado = 'nao', bloqueado_tempo = '0000-00-00', razaobloqueado = '' WHERE email = ?",
+      "UPDATE accounts SET account_code = '1', blocked = 'nao', blocked_time = '0000-00-00', reasonblocked = '' WHERE email = ?",
       [email]
     );
 
@@ -257,8 +257,8 @@ export const checkBanStatus = async (req, res) => {
 
     const [account] = await query(
       `
-      SELECT bloqueado, bloqueado_tempo, razaobloqueado 
-      FROM rekeningen 
+      SELECT blocked, blocked_time, reasonblocked 
+      FROM accounts 
       WHERE email = ?
     `,
       [email]
@@ -271,24 +271,24 @@ export const checkBanStatus = async (req, res) => {
       });
     }
 
-    const isBanned = account.bloqueado === "sim";
-    const isPermanent = account.bloqueado_tempo === "0000-00-00";
+    const isBanned = account.blocked === "sim";
+    const isPermanent = account.blocked_time === "0000-00-00";
 
     // Check if temporary ban has expired
     let banExpired = false;
     if (isBanned && !isPermanent) {
-      const banDate = new Date(account.bloqueado_tempo);
+      const banDate = new Date(account.blocked_time);
       const now = new Date();
       banExpired = now > banDate;
 
       // Auto-unban if expired
       if (banExpired) {
         await query(
-          "UPDATE gebruikers SET banned = 'N' WHERE acc_id = (SELECT acc_id FROM rekeningen WHERE email = ?)",
+          "UPDATE gebruikers SET banned = 'N' WHERE acc_id = (SELECT acc_id FROM accounts WHERE email = ?)",
           [email]
         );
         await query(
-          "UPDATE rekeningen SET account_code = '1', bloqueado = 'nao', bloqueado_tempo = '0000-00-00', razaobloqueado = '' WHERE email = ?",
+          "UPDATE accounts SET account_code = '1', blocked = 'nao', blocked_time = '0000-00-00', reasonblocked = '' WHERE email = ?",
           [email]
         );
       }
@@ -300,8 +300,8 @@ export const checkBanStatus = async (req, res) => {
         isBanned: isBanned && !banExpired,
         isPermanent: isPermanent && !banExpired,
         bannedUntil:
-          !isPermanent && !banExpired ? account.bloqueado_tempo : null,
-        reason: account.razaobloqueado,
+          !isPermanent && !banExpired ? account.blocked_time : null,
+        reason: account.reasonblocked,
       },
     });
   } catch (error) {
@@ -537,12 +537,12 @@ export const searchAccountsByIP = async (req, res) => {
     let accounts;
     if (type === "register") {
       accounts = await query(
-        "SELECT acc_id, username, ip_aangemeld, ip_ingelogd, email FROM rekeningen WHERE account_code='1' AND ip_aangemeld=? ORDER BY username",
+        "SELECT acc_id, username, ip_registered, ip_loggedin, email FROM accounts WHERE account_code='1' AND ip_registered=? ORDER BY username",
         [ip]
       );
     } else {
       accounts = await query(
-        "SELECT acc_id, username, ip_aangemeld, ip_ingelogd, email FROM rekeningen WHERE account_code='1' AND ip_ingelogd=? ORDER BY username",
+        "SELECT acc_id, username, ip_registered, ip_loggedin, email FROM accounts WHERE account_code='1' AND ip_loggedin=? ORDER BY username",
         [ip]
       );
     }
@@ -571,12 +571,12 @@ export const detectMultiAccounts = async (req, res) => {
     if (type === "register") {
       // Check for duplicate registration IPs
       const duplicateIPs = await query(
-        `SELECT ip_aangemeld as ip, COUNT(*) as count, 
+        `SELECT ip_registered as ip, COUNT(*) as count, 
          GROUP_CONCAT(username ORDER BY username SEPARATOR ', ') as usernames,
          GROUP_CONCAT(acc_id ORDER BY username SEPARATOR ',') as account_ids
-         FROM rekeningen 
-         WHERE account_code='1' AND ip_aangemeld IS NOT NULL AND ip_aangemeld != ''
-         GROUP BY ip_aangemeld 
+         FROM accounts 
+         WHERE account_code='1' AND ip_registered IS NOT NULL AND ip_registered != ''
+         GROUP BY ip_registered 
          HAVING count > 1 
          ORDER BY count DESC 
          LIMIT ?`,
@@ -1060,7 +1060,7 @@ export const giveEgg = async (req, res) => {
 
     // Update player's pokemon count
     await query(
-      "UPDATE gebruikers SET aantalpokemon = aantalpokemon + 1 WHERE user_id = ?",
+      "UPDATE gebruikers SET number_of_pokemon = number_of_pokemon + 1 WHERE user_id = ?",
       [userId]
     );
 
@@ -1275,7 +1275,7 @@ export const givePokemon = async (req, res) => {
 
   // Update player's pokemon count
   await query(
-    "UPDATE gebruikers SET aantalpokemon = aantalpokemon + 1 WHERE user_id = ?",
+    "UPDATE gebruikers SET number_of_pokemon = number_of_pokemon + 1 WHERE user_id = ?",
     [userId]
   );
 
@@ -1475,7 +1475,7 @@ export const giveGoldToAll = async (req, res) => {
 
     // Give gold to all players
     await query(
-      "UPDATE rekeningen SET gold = gold + ? WHERE acc_id > 0",
+      "UPDATE accounts SET gold = gold + ? WHERE acc_id > 0",
       [goldAmount]
     );
 

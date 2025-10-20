@@ -89,7 +89,7 @@ router.post('/buy', async (req, res) => {
     const houseData = house[0];
 
     // בדיקות עסקיות
-    if (currentUser.huis === houseId) {
+    if (currentUser.house === houseId) {
       return res.status(400).json({
         success: false,
         message: 'אתה כבר הבעלים של הבית הזה'
@@ -103,21 +103,21 @@ router.post('/buy', async (req, res) => {
       });
     }
 
-    if (currentUser.huis === 'villa') {
+    if (currentUser.house === 'villa') {
       return res.status(400).json({
         success: false,
         message: 'יש לך כבר וילה'
       });
     }
 
-    if (currentUser.huis === 'nhuis' && houseId !== 'villa') {
+    if (currentUser.house === 'nhuis' && houseId !== 'villa') {
       return res.status(400).json({
         success: false,
         message: 'יש לך כבר בית טוב יותר'
       });
     }
 
-    if (currentUser.huis === 'shuis' && houseId === 'doos') {
+    if (currentUser.house === 'shuis' && houseId === 'doos') {
       return res.status(400).json({
         success: false,
         message: 'יש לך כבר בית טוב יותר'
@@ -126,7 +126,7 @@ router.post('/buy', async (req, res) => {
 
     // ביצוע הקנייה
     await query(
-      'UPDATE gebruikers SET silver = silver - ?, huis = ? WHERE user_id = ?',
+      'UPDATE gebruikers SET silver = silver - ?, house = ? WHERE user_id = ?',
       [houseData.kosten, houseId, userId]
     );
 
@@ -157,7 +157,7 @@ router.get('/status/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
     
-    const user = await query('SELECT huis, silver FROM gebruikers WHERE user_id = ?', [userId]);
+    const user = await query('SELECT house, silver FROM gebruikers WHERE user_id = ?', [userId]);
     if (user.length === 0) {
       return res.status(404).json({
         success: false,
@@ -169,12 +169,12 @@ router.get('/status/:userId', async (req, res) => {
     
     // יצירת מערך עם סטטוס כל בית
     const houseStatus = houses.map(house => {
-      const isOwned = user[0].huis === house.afkorting;
+      const isOwned = user[0].house === house.afkorting;
       const canAfford = user[0].silver >= house.kosten;
       const isDisabled = isOwned || 
-                        (user[0].huis === 'villa') ||
-                        (user[0].huis === 'nhuis' && house.afkorting !== 'villa') ||
-                        (user[0].huis === 'shuis' && house.afkorting === 'doos');
+                        (user[0].house === 'villa') ||
+                        (user[0].house === 'nhuis' && house.afkorting !== 'villa') ||
+                        (user[0].house === 'shuis' && house.afkorting === 'doos');
 
       return {
         ...house,
@@ -187,7 +187,7 @@ router.get('/status/:userId', async (req, res) => {
     res.json({
       success: true,
       data: {
-        currentHouse: user[0].huis,
+        currentHouse: user[0].house,
         silver: user[0].silver,
         houses: houseStatus
       }

@@ -53,7 +53,7 @@ export const getLeaderboardsSummary = async (req, res) => {
     `);
 
     const duelists = await query(`
-      SELECT user_id, username, \`character\`, (gewonnen - verloren) AS gevechten
+      SELECT user_id, username, \`character\`, (won - lost) AS gevechten
       FROM gebruikers
       WHERE banned = 'N'
       ORDER BY gevechten DESC

@@ -149,10 +149,9 @@ export const handleMove = async (req, res) => {
           map_x = ?, 
           map_y = ?, 
           map_lastseen = ?,
-          captcha_time = ?
       WHERE user_id = ?
     `,
-      [mapNumber, posX, posY, currentTime, currentTime, userId]
+      [mapNumber, posX, posY, currentTime, userId]
     );
 
     // Check if user is admin and apply li bonus

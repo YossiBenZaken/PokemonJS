@@ -144,7 +144,7 @@ const addSilvers = async (userId, min = 500, max = 4999) => {
 export const dailyBonus = async (req, res) => {
   const userId = req.user?.user_id;
   const [user] = await query(
-    "SELECT `daily_bonus`,`premiumaccount`,`rank`,`rankexp`,`rankexpnodig` FROM `gebruikers` WHERE `user_id`=?",
+    "SELECT `daily_bonus`,`premiumaccount`,`rank`,`rankexp`,`rankexpnecessary` FROM `gebruikers` WHERE `user_id`=?",
     [userId]
   );
   if (user.daily_bonus + 86400 > new Date().getTime() / 1000) {
@@ -220,7 +220,7 @@ export const dailyBonus = async (req, res) => {
         const addExp = getRandomInt(100, 1000) * user.rank;
         let rankExp = user.rankexp + addExp;
         rankExp =
-          rankExp < user.rankexpnodig ? rankExp : user.rankexpnodig - 10;
+          rankExp < user.rankexpnecessary ? rankExp : user.rankexpnecessary - 10;
         await query(
           "UPDATE `gebruikers` SET `rankexp`=? ,`daily_bonus`=UNIX_TIMESTAMP() WHERE `user_id`=?",
           [rankExp, userId]
@@ -256,7 +256,7 @@ export const getDailyQuests = async (req, res) => {
         r.quest_r_master,
         r.acc_id
       FROM gebruikers g
-      LEFT JOIN rekeningen r ON g.acc_id = r.acc_id
+      LEFT JOIN accounts r ON g.acc_id = r.acc_id
       INNER JOIN gebruikers_item AS gi ON g.user_id = gi.user_id
       WHERE g.user_id = ?
     `,
@@ -338,7 +338,7 @@ export const completeQuests = async (req, res) => {
         r.quest_r_master,
         r.acc_id
       FROM gebruikers g
-      LEFT JOIN rekeningen r ON g.acc_id = r.acc_id
+      LEFT JOIN accounts r ON g.acc_id = r.acc_id
       INNER JOIN gebruikers_item AS gi ON g.user_id = gi.user_id
       WHERE g.user_id = ?
     `,
@@ -400,7 +400,7 @@ export const completeQuests = async (req, res) => {
       } else if (questData.recomp_type === "gold") {
         await query(
           `
-          UPDATE rekeningen 
+          UPDATE accounts 
           SET gold = gold + ?
           WHERE acc_id = ?
         `,
@@ -420,7 +420,7 @@ export const completeQuests = async (req, res) => {
       // עדכון שהפרס נדרש
       await query(
         `
-        UPDATE rekeningen 
+        UPDATE accounts 
         SET ${questRewardField} = 1
         WHERE acc_id = ?
       `,
@@ -457,7 +457,7 @@ export const completeQuests = async (req, res) => {
 
         await query(
           `
-          UPDATE rekeningen 
+          UPDATE accounts 
           SET quest_r_master = 1
           WHERE acc_id = ?
         `,

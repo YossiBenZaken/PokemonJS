@@ -196,7 +196,7 @@ const AttackMap: React.FC = () => {
   };
 
   const renderMap = () => {
-    const world = selectedCharacter?.wereld || "Kanto";
+    const world = selectedCharacter?.world || "Kanto";
 
     const mapProps = {
       onTerrainClick: handleTerrainClick,
@@ -225,10 +225,10 @@ const AttackMap: React.FC = () => {
 
   return (
     <Container className="max-w-7xl mx-auto p-4 space-y-6">
-      <Title>מפת {selectedCharacter?.wereld}</Title>
+      <Title>מפת {selectedCharacter?.world}</Title>
 
       <div className="blue" style={{ marginBottom: 10 }}>
-        שלום, מאמן! ברוך הבא למפה של אזור {selectedCharacter?.wereld}.
+        שלום, מאמן! ברוך הבא למפה של אזור {selectedCharacter?.world}.
         <br />
         התקדם במשחק על ידי הביס ולכידת פוקימונים רבים. זכור תמיד ללכת עם Poke
         balls!

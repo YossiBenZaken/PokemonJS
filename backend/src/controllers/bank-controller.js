@@ -9,7 +9,7 @@ export const getBankInfo = async (req, res) => {
     const [user] = await query(`
       SELECT g.username, g.silver, g.rank, g.clan, r.gold
       FROM gebruikers g
-      LEFT JOIN rekeningen r ON g.acc_id = r.acc_id
+      LEFT JOIN accounts r ON g.acc_id = r.acc_id
       WHERE g.user_id = ?
     `, [userId]);
 
@@ -85,7 +85,7 @@ export const transferToPlayer = async (req, res) => {
     const [sender] = await query(`
       SELECT g.user_id, g.username, g.silver, g.rank, g.acc_id, r.gold
       FROM gebruikers g
-      LEFT JOIN rekeningen r ON g.acc_id = r.acc_id
+      LEFT JOIN accounts r ON g.acc_id = r.acc_id
       WHERE g.user_id = ?
     `, [userId]);
 
@@ -163,13 +163,13 @@ export const transferToPlayer = async (req, res) => {
     } else { // gold
       // Deduct from sender
       await query(
-        "UPDATE rekeningen SET gold = gold - ? WHERE acc_id = ?",
+        "UPDATE accounts SET gold = gold - ? WHERE acc_id = ?",
         [transferAmount, sender.acc_id]
       );
       
       // Add to receiver
       await query(
-        "UPDATE rekeningen SET gold = gold + ? WHERE acc_id = ?",
+        "UPDATE accounts SET gold = gold + ? WHERE acc_id = ?",
         [transferAmount, receiverUser.acc_id]
       );
     }
@@ -238,7 +238,7 @@ export const transferToClan = async (req, res) => {
     const [user] = await query(`
       SELECT g.user_id, g.username, g.silver, g.rank, g.acc_id, g.clan, r.gold
       FROM gebruikers g
-      LEFT JOIN rekeningen r ON g.acc_id = r.acc_id
+      LEFT JOIN accounts r ON g.acc_id = r.acc_id
       WHERE g.user_id = ?
     `, [userId]);
 
@@ -302,7 +302,7 @@ export const transferToClan = async (req, res) => {
     } else { // gold
       // Deduct from user
       await query(
-        "UPDATE rekeningen SET gold = gold - ? WHERE acc_id = ?",
+        "UPDATE accounts SET gold = gold - ? WHERE acc_id = ?",
         [transferAmount, user.acc_id]
       );
       

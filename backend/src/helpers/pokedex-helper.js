@@ -11,7 +11,7 @@ export const updatePokedex = async (userId, wildId, oldId, type) => {
   try {
     // Get current Pokedex data
     const [user] = await query(
-      "SELECT pok_gezien, pok_bezit FROM gebruikers WHERE user_id = ? LIMIT 1",
+      "SELECT pok_seen, pok_possession FROM gebruikers WHERE user_id = ? LIMIT 1",
       [userId]
     );
 
@@ -20,8 +20,8 @@ export const updatePokedex = async (userId, wildId, oldId, type) => {
     }
 
     // Parse current Pokedex data (handle empty strings)
-    const currentSeen = user.pok_gezien ? user.pok_gezien.split(',').filter(id => id !== '') : [];
-    const currentOwned = user.pok_bezit ? user.pok_bezit.split(',').filter(id => id !== '') : [];
+    const currentSeen = user.pok_seen ? user.pok_seen.split(',').filter(id => id !== '') : [];
+    const currentOwned = user.pok_possession ? user.pok_possession.split(',').filter(id => id !== '') : [];
 
     // Convert to numbers for comparison
     const seenIds = currentSeen.map(id => parseInt(id)).filter(id => !isNaN(id));
@@ -35,49 +35,49 @@ export const updatePokedex = async (userId, wildId, oldId, type) => {
       case 'ei': // Hatching egg - both seen and owned
         if (!seenIds.includes(wildIdNum)) {
           const newSeen = [...currentSeen, wildId].filter(id => id !== '').join(',');
-          updateQueries.push(`pok_gezien = '${newSeen}'`);
+          updateQueries.push(`pok_seen = '${newSeen}'`);
         }
         if (!ownedIds.includes(wildIdNum)) {
           const newOwned = [...currentOwned, wildId].filter(id => id !== '').join(',');
-          updateQueries.push(`pok_bezit = '${newOwned}'`);
+          updateQueries.push(`pok_possession = '${newOwned}'`);
         }
         break;
 
       case 'zien': // Just seen in battle/wild
         if (!seenIds.includes(wildIdNum)) {
           const newSeen = [...currentSeen, wildId].filter(id => id !== '').join(',');
-          updateQueries.push(`pok_gezien = '${newSeen}'`);
+          updateQueries.push(`pok_seen = '${newSeen}'`);
         }
         break;
 
       case 'vangen': // Caught Pokemon
-        // Note: There's a bug in the original PHP - it updates pok_bezit with pok_gezien value
+        // Note: There's a bug in the original PHP - it updates pok_possession with pok_seen value
         // I'll fix it to use the correct owned list
         if (!ownedIds.includes(wildIdNum)) {
           const newOwned = [...currentOwned, wildId].filter(id => id !== '').join(',');
-          updateQueries.push(`pok_bezit = '${newOwned}'`);
+          updateQueries.push(`pok_possession = '${newOwned}'`);
         }
         break;
 
       case 'buy': // Bought Pokemon - both seen and owned
         if (!seenIds.includes(wildIdNum)) {
           const newSeen = [...currentSeen, wildId].filter(id => id !== '').join(',');
-          updateQueries.push(`pok_gezien = '${newSeen}'`);
+          updateQueries.push(`pok_seen = '${newSeen}'`);
         }
         if (!ownedIds.includes(wildIdNum)) {
           const newOwned = [...currentOwned, wildId].filter(id => id !== '').join(',');
-          updateQueries.push(`pok_bezit = '${newOwned}'`);
+          updateQueries.push(`pok_possession = '${newOwned}'`);
         }
         break;
 
       case 'evo': // Evolution - both seen and owned
         if (!seenIds.includes(wildIdNum)) {
           const newSeen = [...currentSeen, wildId].filter(id => id !== '').join(',');
-          updateQueries.push(`pok_gezien = '${newSeen}'`);
+          updateQueries.push(`pok_seen = '${newSeen}'`);
         }
         if (!ownedIds.includes(wildIdNum)) {
           const newOwned = [...currentOwned, wildId].filter(id => id !== '').join(',');
-          updateQueries.push(`pok_bezit = '${newOwned}'`);
+          updateQueries.push(`pok_possession = '${newOwned}'`);
         }
         break;
 
@@ -108,7 +108,7 @@ export const updatePokedex = async (userId, wildId, oldId, type) => {
 export const getPokedexStats = async (userId) => {
   try {
     const [user] = await query(
-      "SELECT pok_gezien, pok_bezit FROM gebruikers WHERE user_id = ? LIMIT 1",
+      "SELECT pok_seen, pok_possession FROM gebruikers WHERE user_id = ? LIMIT 1",
       [userId]
     );
 
@@ -116,8 +116,8 @@ export const getPokedexStats = async (userId) => {
       throw new Error(`User ${userId} not found`);
     }
 
-    const seenIds = user.pok_gezien ? user.pok_gezien.split(',').filter(id => id !== '' && !isNaN(parseInt(id))) : [];
-    const ownedIds = user.pok_bezit ? user.pok_bezit.split(',').filter(id => id !== '' && !isNaN(parseInt(id))) : [];
+    const seenIds = user.pok_seen ? user.pok_seen.split(',').filter(id => id !== '' && !isNaN(parseInt(id))) : [];
+    const ownedIds = user.pok_possession ? user.pok_possession.split(',').filter(id => id !== '' && !isNaN(parseInt(id))) : [];
 
     return {
       seen: seenIds.length,

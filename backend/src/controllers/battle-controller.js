@@ -76,7 +76,7 @@ export const currentBattle = async (req, res) => {
     });
   } else {
     await query(
-      "UPDATE `gebruikers` SET `pagina`='attack_start' WHERE `user_id`=?",
+      "UPDATE `gebruikers` SET `page`='attack_start' WHERE `user_id`=?",
       [userId]
     );
     return res.json({

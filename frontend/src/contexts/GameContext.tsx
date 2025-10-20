@@ -13,7 +13,7 @@ interface GameSession {
   user_id: number;
   username: string;
   character: string;
-  wereld: string;
+  world: string;
   session_token: string;
   sec_key: string;
   chat_key: string;
