@@ -89,7 +89,7 @@ const unlockBlockedUsers = async () => {
   const todayYMD = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
 
   await query(
-    "UPDATE gebruikers SET banned = 'N', bloqueado = 'nao', bloqueado_tempo = '0000-00-00', razaobloqueado = '' WHERE bloqueado_tempo = ?",
+    "UPDATE gebruikers SET banned = 'N', blocked = 'nao', blocked_time = '0000-00-00', razaoblocked = '' WHERE blocked_time = ?",
     [todayYMD]
   );
 

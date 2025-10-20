@@ -335,7 +335,7 @@ export const banPlayer = async (req, res) => {
     const banUntil = until || "0000-00-00";
 
     await query(
-      "UPDATE gebruikers SET banned='Y', bloqueado='sim', bloqueado_tempo=?, razaobloqueado=? WHERE username=?",
+      "UPDATE gebruikers SET banned='Y', blocked='sim', blocked_time=?, reasonblocked=? WHERE username=?",
       [banUntil, reason, username]
     );
 
@@ -367,7 +367,7 @@ export const unbanPlayer = async (req, res) => {
     }
 
     await query(
-      "UPDATE gebruikers SET banned='N', bloqueado='nao', bloqueado_tempo='0000-00-00', razaobloqueado='' WHERE username=?",
+      "UPDATE gebruikers SET banned='N', blocked='nao', blocked_time='0000-00-00', reasonblocked='' WHERE username=?",
       [username]
     );
 
@@ -388,7 +388,7 @@ export const unbanPlayer = async (req, res) => {
 export const getBannedPlayers = async (req, res) => {
   try {
     const bannedList = await query(
-      "SELECT username, bloqueado_tempo, razaobloqueado FROM gebruikers WHERE banned='Y' OR bloqueado='sim' ORDER BY bloqueado_tempo DESC"
+      "SELECT username, blocked_time, reasonblocked FROM gebruikers WHERE banned='Y' OR blocked='sim' ORDER BY blocked_time DESC"
     );
 
     return res.json({
