@@ -37,11 +37,11 @@ export const healPokemons = async (req, res) => {
     }
 
     const [[cd]] = await DB.query(
-        `SELECT TIMESTAMPDIFF(SECOND, pokecentertijdbegin, NOW()) AS passed, pokecentertijd
+        `SELECT TIMESTAMPDIFF(SECOND, pokecenter_time_start, NOW()) AS passed, pokecenter_time
          FROM gebruikers WHERE user_id = ? LIMIT 1`,
         [userId]
       );
-      const remaining = Math.max(0, (cd?.pokecentertijd ?? 0) - (cd?.passed ?? 0));
+      const remaining = Math.max(0, (cd?.pokecenter_time ?? 0) - (cd?.passed ?? 0));
       if (remaining > 0) {
         return res.status(429).json({ success: false, message: 'יש להמתין', remaining });
       }
@@ -91,7 +91,7 @@ export const healPokemons = async (req, res) => {
 
     // עדכון זמן מרכז פוקימון
     await DB.query(
-      `UPDATE gebruikers SET pokecentertijdbegin = NOW(), pokecentertijd = ? WHERE user_id = ? LIMIT 1`,
+      `UPDATE gebruikers SET pokecenter_time_start = NOW(), pokecenter_time = ? WHERE user_id = ? LIMIT 1`,
       [countTime, userId]
     );
 
@@ -105,14 +105,14 @@ export const healPokemons = async (req, res) => {
 export const getCooldown = async (req, res) => {
     const {userId} = req.query;
     const [[row]] = await DB.query(
-      `SELECT TIMESTAMPDIFF(SECOND, pokecentertijdbegin, NOW()) AS passed, pokecentertijd
+      `SELECT TIMESTAMPDIFF(SECOND, pokecenter_time_start, NOW()) AS passed, pokecenter_time
        FROM gebruikers WHERE user_id = ? LIMIT 1`,
       [userId]
     );
-    const remaining = Math.max(0, (row?.pokecentertijd ?? 0) - (row?.passed ?? 0));
+    const remaining = Math.max(0, (row?.pokecenter_time ?? 0) - (row?.passed ?? 0));
     // עדכון זמן מרכז פוקימון
     await DB.query(
-      `UPDATE gebruikers SET pokecentertijdbegin = NOW(), pokecentertijd = ? WHERE user_id = ? LIMIT 1`,
+      `UPDATE gebruikers SET pokecenter_time_start = NOW(), pokecenter_time = ? WHERE user_id = ? LIMIT 1`,
       [remaining, userId]
     );
     res.json({ success: true, remaining });

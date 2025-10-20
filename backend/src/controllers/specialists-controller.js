@@ -31,7 +31,7 @@ export const getSpecialistInfo = async (req, res) => {
       SELECT g.username, g.rank, g.silver, COUNT(ps.wild_id) AS in_hand, g.premiumaccount, r.gold
       FROM gebruikers g
       INNER JOIN pokemon_speler AS ps ON g.user_id = ps.user_id
-      LEFT JOIN rekeningen r ON g.acc_id = r.acc_id
+      LEFT JOIN accounts r ON g.acc_id = r.acc_id
       WHERE g.user_id = ?
     `, [userId]);
 
@@ -102,7 +102,7 @@ export const makeShiny = async (req, res) => {
     const [user] = await query(`
       SELECT g.rank, r.gold, g.premiumaccount
       FROM gebruikers g
-      LEFT JOIN rekeningen r ON g.acc_id = r.acc_id
+      LEFT JOIN accounts r ON g.acc_id = r.acc_id
       WHERE g.user_id = ?
     `, [userId]);
 
@@ -172,7 +172,7 @@ export const makeShiny = async (req, res) => {
 
     // Deduct gold
     await query(
-      "UPDATE rekeningen SET gold = gold - ? WHERE acc_id = (SELECT acc_id FROM gebruikers WHERE user_id = ?)",
+      "UPDATE accounts SET gold = gold - ? WHERE acc_id = (SELECT acc_id FROM gebruikers WHERE user_id = ?)",
       [totalGoldNeeded, userId]
     );
 
@@ -389,7 +389,7 @@ const processNatureChange = async (userId, pokemonIds, type, options = {}) => {
   const [user] = await query(`
     SELECT g.rank, r.gold, g.premiumaccount
     FROM gebruikers g
-    LEFT JOIN rekeningen r ON g.acc_id = r.acc_id
+    LEFT JOIN accounts r ON g.acc_id = r.acc_id
     WHERE g.user_id = ?
   `, [userId]);
 
@@ -530,7 +530,7 @@ const processNatureChange = async (userId, pokemonIds, type, options = {}) => {
 
   // Deduct gold
   await query(
-    "UPDATE rekeningen SET gold = gold - ? WHERE acc_id = (SELECT acc_id FROM gebruikers WHERE user_id = ?)",
+    "UPDATE accounts SET gold = gold - ? WHERE acc_id = (SELECT acc_id FROM gebruikers WHERE user_id = ?)",
     [totalGoldNeeded, userId]
   );
 

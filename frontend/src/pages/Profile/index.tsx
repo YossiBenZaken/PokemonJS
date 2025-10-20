@@ -153,7 +153,7 @@ export const ProfilePage: React.FC = () => {
               </ProfileBadge>
             </div>
             <p>
-              <Globe size={16} /> עולם: {profile.profile.wereld}
+              <Globe size={16} /> עולם: {profile.profile.world}
             </p>
             <p>
               <Calendar size={16} /> נוצר: {profile.formatted.date}
@@ -183,7 +183,7 @@ export const ProfilePage: React.FC = () => {
           </div>
           <div className="stat-item">
             <Activity size={20} />
-            <span>ניצחונות: {profile.profile.gewonnen}</span>
+            <span>ניצחונות: {profile.profile.won}</span>
           </div>
         </ProfileStats>
 

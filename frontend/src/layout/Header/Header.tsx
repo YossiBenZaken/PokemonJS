@@ -223,12 +223,12 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
   useEffect(() => {
     if (selectedCharacter) {
       if (
-        selectedCharacter.pagina === "trainer-attack" &&
+        selectedCharacter.page === "trainer-attack" &&
         location.pathname !== "/attack/trainer"
       ) {
         navigate("/attack/trainer");
       } else if (
-        selectedCharacter.pagina === "attack" &&
+        selectedCharacter.page === "attack" &&
         location.pathname !== "/attack/wild"
       ) {
         navigate("/attack/wild");
@@ -273,19 +273,19 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
   const rankPercent = () => {
     if (
       selectedCharacter?.rankexp &&
-      selectedCharacter.rankexpnodig &&
+      selectedCharacter.rankexpnecessary &&
       selectedCharacter.rankexp > 0
     ) {
       return Math.round(
-        selectedCharacter.rankexp / selectedCharacter.rankexpnodig
+        selectedCharacter.rankexp / selectedCharacter.rankexpnecessary
       );
     }
     return 0;
   };
 
   const catchPokemonPercent = () => {
-    if (!selectedCharacter?.pok_bezit) return 0;
-    const arrayOfPokemon = selectedCharacter.pok_bezit
+    if (!selectedCharacter?.pok_possession) return 0;
+    const arrayOfPokemon = selectedCharacter.pok_possession
       .split(",")
       .filter(Boolean);
     const uniquePokemon = Array.from(new Set(arrayOfPokemon));
@@ -530,7 +530,7 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
                       {selectedCharacter?.username}
                     </Typography>
                     <Typography variant="body2" sx={{ color: "#94a3b8" }}>
-                      מחוז: {selectedCharacter?.wereld}
+                      מחוז: {selectedCharacter?.world}
                     </Typography>
                     <Box
                       sx={{

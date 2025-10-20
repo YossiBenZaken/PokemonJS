@@ -11,7 +11,7 @@ export const getPokedexSummary = async (req, res) => {
   try {
     const { userId } = req.params;
     const [user] = await query(
-      `SELECT g.user_id, gi.pokedex, g.pok_gezien, g.pok_bezit
+      `SELECT g.user_id, gi.pokedex, g.pok_seen, g.pok_possession
          FROM gebruikers g
          LEFT JOIN gebruikers_item gi ON gi.user_id = g.user_id
         WHERE g.user_id = ?
@@ -21,8 +21,8 @@ export const getPokedexSummary = async (req, res) => {
 
     const [{ total }] = await query(`SELECT COUNT(*) AS total FROM pokemon_wild`);
 
-    const seenArr = splitCsv(user?.pok_gezien);
-    const ownArr = splitCsv(user?.pok_bezit);
+    const seenArr = splitCsv(user?.pok_seen);
+    const ownArr = splitCsv(user?.pok_possession);
 
     return res.json({
       success: true,

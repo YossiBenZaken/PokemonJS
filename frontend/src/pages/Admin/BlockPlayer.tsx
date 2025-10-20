@@ -301,8 +301,8 @@ const BlockPlayerPage: React.FC = () => {
                       {player.username}
                     </a>
                   </td>
-                  <td>{formatDate(player.bloqueado_tempo)}</td>
-                  <td>{player.razaobloqueado}</td>
+                  <td>{formatDate(player.blocked_time)}</td>
+                  <td>{player.reasonblocked}</td>
                   <td>
                     <MiniButton onClick={() => handleUnban(player.username)}>
                       שחרר

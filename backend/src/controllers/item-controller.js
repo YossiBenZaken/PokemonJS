@@ -191,7 +191,7 @@ const sellItem = async (req, res) => {
     // עדכון כסף
     if (currency === "gold") {
       await DB.query(
-        "UPDATE rekeningen SET gold = gold + ? WHERE acc_id = ? LIMIT 1",
+        "UPDATE accounts SET gold = gold + ? WHERE acc_id = ? LIMIT 1",
         [price, accId]
       );
     } else {
@@ -338,7 +338,7 @@ const useStone = async (req, userItems) => {
     evolveId,
   ]);
   if (leven) {
-    if (user.wereld === "Alola") {
+    if (user.world === "Alola") {
       if (pokemonInfo.wild_id == "25") {
         leven.nieuw_id = "26001";
       } else if (pokemonInfo.wild_id == "102") {

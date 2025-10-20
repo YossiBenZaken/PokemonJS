@@ -91,7 +91,7 @@ export const NewCharacterPage: React.FC = () => {
     try {
       const response = await createCharacter({
         inlognaam: username,
-        wereld: selectedWorld,
+        world: selectedWorld,
         character: selectedCharacter
       });
 

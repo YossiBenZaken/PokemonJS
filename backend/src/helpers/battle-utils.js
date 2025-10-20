@@ -179,7 +179,7 @@ export async function saveAttack(userId, attackInfo, aanvalLogId) {
       aanvalLogId,
     ]
   );
-  await query("UPDATE gebruikers SET pagina='trainer-attack' WHERE user_id=?", [
+  await query("UPDATE gebruikers SET page='trainer-attack' WHERE user_id=?", [
     userId,
   ]);
 }
@@ -216,11 +216,11 @@ export async function whoCanStart(userId, attackInfo) {
 
 export async function updatePokedex(wild_id, wat, userId) {
   const [myData] = await query(
-    "SELECT `pok_gezien`,`pok_bezit` FROM `gebruikers` WHERE `user_id`=? LIMIT 1",
+    "SELECT `pok_seen`,`pok_possession` FROM `gebruikers` WHERE `user_id`=? LIMIT 1",
     [userId]
   );
-  const pokedex_bezit = myData["pok_bezit"].split(",");
-  const pokedex_gezien = myData["pok_gezien"].split(",");
+  const pokedex_bezit = myData["pok_possession"].split(",");
+  const pokedex_gezien = myData["pok_seen"].split(",");
   if (["ei", "buy", "evo"].includes(wat)) {
     if (!pokedex_gezien.includes(wild_id)) pokedex_gezien.push(wild_id);
     if (!pokedex_bezit.includes(wild_id)) pokedex_bezit.push(wild_id);
@@ -234,7 +234,7 @@ export async function updatePokedex(wild_id, wat, userId) {
   const pokedex_gezien_string = pokedex_gezien.join(",");
 
   await query(
-    "UPDATE `gebruikers` SET `pok_gezien` = ? , `pok_bezit` = ? WHERE user_id = ?",
+    "UPDATE `gebruikers` SET `pok_seen` = ? , `pok_possession` = ? WHERE user_id = ?",
     [pokedex_gezien_string, pokedex_bezit_string, userId]
   );
 }
@@ -256,7 +256,7 @@ export const cleanupBattle = async (userId) => {
  * מוחק את נתוני הקרב
  */
 export async function removeAttack(userId, aanvalLogId) {
-  await query("UPDATE gebruikers SET pagina='attack_start' WHERE user_id=?", [
+  await query("UPDATE gebruikers SET page='attack_start' WHERE user_id=?", [
     userId,
   ]);
   await query("DELETE FROM pokemon_wild_gevecht WHERE aanval_log_id=?", [
@@ -1345,7 +1345,7 @@ export const rank = async (rankNumber) => {
 
 export const rankerbij = async (type, userId, acc_id) => {
   let [playerRank] = await query(
-    "SELECT `g`.`username`,`g`.`user_id`,`g`.`rankexp`,`g`.`rankexpnodig`,`g`.`rank`,`g`.`premiumaccount` FROM `gebruikers` AS `g` INNER JOIN `rekeningen` AS `r` ON `g`.`acc_id`=`r`.`acc_id` WHERE `g`.`user_id`=? LIMIT 1",
+    "SELECT `g`.`username`,`g`.`user_id`,`g`.`rankexp`,`g`.`rankexpnecessary`,`g`.`rank`,`g`.`premiumaccount` FROM `gebruikers` AS `g` INNER JOIN `accounts` AS `r` ON `g`.`acc_id`=`r`.`acc_id` WHERE `g`.`user_id`=? LIMIT 1",
     [userId]
   );
   let premiumFlag = 1;
@@ -1395,12 +1395,12 @@ export const rankerbij = async (type, userId, acc_id) => {
 
       if (newRank >= 33) {
         await query(
-          "UPDATE `gebruikers` SET `rank`='33', `rankexp`='1', `rankexpnodig`='170000000' WHERE `user_id`=?",
+          "UPDATE `gebruikers` SET `rank`='33', `rankexp`='1', `rankexpnecessary`='170000000' WHERE `user_id`=?",
           [userId]
         );
       } else {
         await query(
-          "UPDATE `gebruikers` SET `rank`=?, `rankexp`=?, `rankexpnodig`=? WHERE `user_id`=?",
+          "UPDATE `gebruikers` SET `rank`=?, `rankexp`=?, `rankexpnecessary`=? WHERE `user_id`=?",
           [newRank, rankExpOver, rankDetails.punten, userId]
         );
       }
@@ -1502,7 +1502,7 @@ export const rankerbij = async (type, userId, acc_id) => {
         );
 
         await query(
-          "UPDATE `gebruikers` SET `aantalpokemon`=`aantalpokemon`+'1' WHERE `user_id`=?",
+          "UPDATE `gebruikers` SET `number_of_pokemon`=`number_of_pokemon`+'1' WHERE `user_id`=?",
           [userId]
         );
       }
@@ -1512,7 +1512,7 @@ export const rankerbij = async (type, userId, acc_id) => {
         [rankUp.silvers, rankUp.extra_points, userId]
       );
       await query(
-        "UPDATE `rekeningen` SET `gold`=`gold`+ ?,  WHERE `acc_id`=?",
+        "UPDATE `accounts` SET `gold`=`gold`+ ?,  WHERE `acc_id`=?",
         [rankUp.golds, acc_id]
       );
 

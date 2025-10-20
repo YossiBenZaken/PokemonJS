@@ -80,7 +80,7 @@ export const register = async (req, res) => {
 
     // בדיקה אם שם המשתמש כבר קיים - בדיוק כמו ב-PHP
     const existingUsername = await query(
-      "SELECT `username` FROM `rekeningen` WHERE `username`=? LIMIT 1",
+      "SELECT `username` FROM `accounts` WHERE `username`=? LIMIT 1",
       [username]
     );
 
@@ -93,7 +93,7 @@ export const register = async (req, res) => {
 
     // בדיקה אם האימייל כבר קיים - בדיוק כמו ב-PHP
     const existingEmail = await query(
-      "SELECT `email` FROM `rekeningen` WHERE `email`=? LIMIT 1",
+      "SELECT `email` FROM `accounts` WHERE `email`=? LIMIT 1",
       [email]
     );
 
@@ -107,7 +107,7 @@ export const register = async (req, res) => {
     // בדיקת IP - בדיוק כמו ב-PHP
     const clientIP = req.ip || req.connection.remoteAddress;
     const recentRegistration = await query(
-      "SELECT `ip_aangemeld`,`aanmeld_datum` FROM `rekeningen` WHERE `ip_aangemeld`=? ORDER BY `acc_id` DESC LIMIT 1",
+      "SELECT `ip_registered`,`registration_date` FROM `accounts` WHERE `ip_registered`=? ORDER BY `acc_id` DESC LIMIT 1",
       [clientIP]
     );
 
@@ -134,7 +134,7 @@ export const register = async (req, res) => {
     const result = await transaction(async (connection) => {
       // הכנסת המשתמש - בדיוק כמו ב-PHP
       const [userResult] = await connection.execute(
-        "INSERT INTO `rekeningen` (`account_code`,`username`,`datum`,`aanmeld_datum`,`wachtwoord`,`email`,`ip_aangemeld`) VALUES (?,?,NOW(),NOW(),?,?,?)",
+        "INSERT INTO `accounts` (`account_code`,`username`,`date`,`registration_date`,`password`,`email`,`ip_registered`) VALUES (?,?,NOW(),NOW(),?,?,?)",
         [activationCode, username, hashedPassword, email, clientIP]
       );
 
@@ -159,7 +159,7 @@ export const register = async (req, res) => {
           );
           // עדכון המשתמש החדש עם ID המפנה - בדיוק כמו ב-PHP
           await connection.execute(
-            "UPDATE rekeningen SET refferal = ? WHERE acc_id = ?",
+            "UPDATE accounts SET refferal = ? WHERE acc_id = ?",
             [referrerId[0][0].user_id, userId]
           );
         }
@@ -218,7 +218,7 @@ export const login = async (req, res) => {
 
     // מציאת המשתמש - בדיוק כמו ב-PHP
     const rekening = await query(
-      "SELECT * FROM `rekeningen` WHERE `username`=? LIMIT 1",
+      "SELECT * FROM `accounts` WHERE `username`=? LIMIT 1",
       [username]
     );
 
@@ -236,7 +236,7 @@ export const login = async (req, res) => {
     // בדיקת סיסמה משותפת - בדיוק כמו ב-PHP
     if (!empty(user.shared) && user.shared !== "") {
       const shared = user.shared.split(",");
-      const sharedQuery = `SELECT * FROM \`rekeningen\` WHERE \`wachtwoord\`=? AND acc_id IN (${shared
+      const sharedQuery = `SELECT * FROM \`accounts\` WHERE \`password\`=? AND acc_id IN (${shared
         .map(() => "?")
         .join(",")})`;
 
@@ -245,7 +245,7 @@ export const login = async (req, res) => {
       if (sharedAccounts.length > 0) {
         if (user.locked < 1) {
           share = true;
-          password = user.wachtwoord;
+          password = user.password;
         } else {
           return res.status(401).json({
             success: false,
@@ -281,10 +281,10 @@ export const login = async (req, res) => {
 
       let desblo = "Permanente";
       if (
-        user.bloqueado_tempo !== "0000-00-00" &&
-        isValidDate(user.bloqueado_tempo)
+        user.blocked_time !== "0000-00-00" &&
+        isValidDate(user.blocked_time)
       ) {
-        const data = user.bloqueado_tempo.split("-").reverse().join("/");
+        const data = user.blocked_time.split("-").reverse().join("/");
         desblo = data;
       }
 
@@ -306,11 +306,11 @@ export const login = async (req, res) => {
       const hashedPassword = passwordHashed(password);
 
       // בדיקת סיסמה
-      if (user.wachtwoord !== hashedPassword) {
-        const datum = new Date().toISOString().slice(0, 19).replace("T", " ");
+      if (user.password !== hashedPassword) {
+        const date = new Date().toISOString().slice(0, 19).replace("T", " ");
         await query(
-          "INSERT INTO `inlog_fout` (`datum`, `ip`, `spelernaam`, `wachtwoord`) VALUES (?, ?, ?, ?)",
-          [datum, clientIP, user.username, password]
+          "INSERT INTO `inlog_fout` (`datum`, `ip`, `spelernaam`, `password`) VALUES (?, ?, ?, ?)",
+          [date, clientIP, user.username, password]
         );
 
         // הודעות שגיאה לפי מספר ניסיונות - בדיוק כמו ב-PHP
@@ -333,7 +333,7 @@ export const login = async (req, res) => {
       }
 
       // בדיקות נוספות - בדיוק כמו ב-PHP
-      if (user.bloqueado === "sim") {
+      if (user.blocked === "sim") {
         return res.status(403).json({
           success: false,
           message: `חשבון חסום. שחרור ב: ${desblo}`,
@@ -372,13 +372,13 @@ export const login = async (req, res) => {
 
       // עדכון פרטי התחברות - בדיוק כמו ב-PHP
       await query(
-        "UPDATE `rekeningen` SET `ban_cookie`=?,`locked`='1',`ip_ingelogd`=?,`session`=?,`last_login`=NOW(), `keylog`=? WHERE `acc_id`=? LIMIT 1",
+        "UPDATE `accounts` SET `ban_cookie`=?,`locked`='1',`ip_loggedin`=?,`session`=?,`last_login`=NOW(), `keylog`=? WHERE `acc_id`=? LIMIT 1",
         [pa_lang, clientIP, req.sessionID || "session_id", keylog, user.acc_id]
       );
 
       // עדכון חשבון משותף אם יש
       if (share) {
-        await query("UPDATE `rekeningen` SET `locked`='0' WHERE `acc_id`=?", [
+        await query("UPDATE `accounts` SET `locked`='0' WHERE `acc_id`=?", [
           user.acc_id,
         ]);
       }
@@ -462,7 +462,7 @@ export const authToken = async (req, res) => {
     [user_id]
   );
   const [account] = await query(
-    "SELECT gold FROM `rekeningen` WHERE `acc_id` = ?",
+    "SELECT gold FROM `accounts` WHERE `acc_id` = ?",
     [user.acc_id]
   );
   const eventsCount = (

@@ -126,13 +126,13 @@ export const startWhoIs = async (req, res) => {
       return res.status(400).json({ success: false, message: "userId נדרש" });
 
     const [user] = await query(
-      "SELECT tickets, wiequiz FROM gebruikers WHERE user_id = ?",
+      "SELECT tickets, whoquiz FROM gebruikers WHERE user_id = ?",
       [userId]
     );
     if (!user)
       return res.status(404).json({ success: false, message: "משתמש לא נמצא" });
 
-    const lastTime = new Date(user.wiequiz).getTime();
+    const lastTime = new Date(user.whoquiz).getTime();
     const now = Date.now();
     const diff = now - lastTime;
     const remaining = 3600_000 - diff;
@@ -156,7 +156,7 @@ export const startWhoIs = async (req, res) => {
     );
     const status = Math.random() < 0.5 ? "shiny" : "pokemon";
 
-    await query("UPDATE gebruikers SET wiequiz = NOW() WHERE user_id = ?", [
+    await query("UPDATE gebruikers SET whoquiz = NOW() WHERE user_id = ?", [
       userId,
     ]);
 
@@ -239,7 +239,7 @@ export const spinFortune = async (req, res) => {
       return res.status(400).json({ success: false, message: "userId נדרש" });
 
     const [user] = await query(
-      "SELECT g.geluksrad, gi.itembox FROM gebruikers AS g INNER JOIN gebruikers_item AS gi ON g.user_id = gi.user_id WHERE g.user_id = ?",
+      "SELECT g.lucky_wheel, gi.itembox FROM gebruikers AS g INNER JOIN gebruikers_item AS gi ON g.user_id = gi.user_id WHERE g.user_id = ?",
       [userId]
     );
     const totalItems = await calculateTotalItems(userId);
@@ -247,7 +247,7 @@ export const spinFortune = async (req, res) => {
     const item_over = maxItems - totalItems;
     if (!user)
       return res.status(404).json({ success: false, message: "משתמש לא נמצא" });
-    if (user.geluksrad <= 0)
+    if (user.lucky_wheel <= 0)
       return res
         .status(400)
         .json({ success: false, message: "אין לך יותר ספינים היום" });
@@ -267,14 +267,14 @@ export const spinFortune = async (req, res) => {
     };
     if (roll === 0) {
       await query(
-        "UPDATE gebruikers SET tickets = tickets+100, geluksrad = geluksrad-1 WHERE user_id = ?",
+        "UPDATE gebruikers SET tickets = tickets+100, lucky_wheel = lucky_wheel-1 WHERE user_id = ?",
         [userId]
       );
       reward = 100;
       type = "tickets";
     } else if (roll === 1) {
       await query(
-        "UPDATE gebruikers SET tickets = tickets+250, geluksrad = geluksrad-1 WHERE user_id = ?",
+        "UPDATE gebruikers SET tickets = tickets+250, lucky_wheel = lucky_wheel-1 WHERE user_id = ?",
         [userId]
       );
       reward = 250;
@@ -287,7 +287,7 @@ export const spinFortune = async (req, res) => {
       if (r.error)
         return res.status(400).json({ success: false, message: r.error });
       await query(
-        "UPDATE gebruikers SET geluksrad = geluksrad-1 WHERE user_id = ?",
+        "UPDATE gebruikers SET lucky_wheel = lucky_wheel-1 WHERE user_id = ?",
         [userId]
       );
       reward = r.name;
@@ -300,7 +300,7 @@ export const spinFortune = async (req, res) => {
       if (r.error)
         return res.status(400).json({ success: false, message: r.error });
       await query(
-        "UPDATE gebruikers SET geluksrad = geluksrad-1 WHERE user_id = ?",
+        "UPDATE gebruikers SET lucky_wheel = lucky_wheel-1 WHERE user_id = ?",
         [userId]
       );
       reward = r.name;
@@ -313,7 +313,7 @@ export const spinFortune = async (req, res) => {
       if (r.error)
         return res.status(400).json({ success: false, message: r.error });
       await query(
-        "UPDATE gebruikers SET geluksrad = geluksrad-1 WHERE user_id = ?",
+        "UPDATE gebruikers SET lucky_wheel = lucky_wheel-1 WHERE user_id = ?",
         [userId]
       );
       reward = r.name;
@@ -326,7 +326,7 @@ export const spinFortune = async (req, res) => {
       if (r.error)
         return res.status(400).json({ success: false, message: r.error });
       await query(
-        "UPDATE gebruikers SET geluksrad = geluksrad-1 WHERE user_id = ?",
+        "UPDATE gebruikers SET lucky_wheel = lucky_wheel-1 WHERE user_id = ?",
         [userId]
       );
       reward = r.name;

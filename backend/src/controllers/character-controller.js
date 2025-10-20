@@ -7,7 +7,7 @@ import jwt from "jsonwebtoken";
 // יצירת דמות חדשה
 export const createCharacter = async (req, res) => {
   try {
-    const { inlognaam, wereld, character } = req.body;
+    const { inlognaam, world, character } = req.body;
     const { acc_id } = req.user;
     const ip = req.ip || req.connection.remoteAddress;
 
@@ -90,7 +90,7 @@ export const createCharacter = async (req, res) => {
       "Kalos",
       "Alola",
     ];
-    if (!wereld || !validWorlds.includes(wereld)) {
+    if (!world || !validWorlds.includes(world)) {
       return res.status(400).json({
         success: false,
         message: "העולם שנבחר אינו תקין",
@@ -101,7 +101,7 @@ export const createCharacter = async (req, res) => {
     let needsGold = false;
     if (userCountResult[0].count >= 2) {
       const accountResult = await query(
-        "SELECT `gold` FROM `rekeningen` WHERE `acc_id` = ?",
+        "SELECT `gold` FROM `accounts` WHERE `acc_id` = ?",
         [acc_id]
       );
 
@@ -118,13 +118,13 @@ export const createCharacter = async (req, res) => {
     const result = await transaction(async (connection) => {
       const date_lo = new Date().toLocaleDateString("he-IL");
       const date_loh = new Date().toLocaleTimeString("he-IL");
-      const unlock = `${wereld}_block`;
+      const unlock = `${world}_block`;
 
       // הכנסת הדמות לטבלת המשתמשים
       const [userResult] = await connection.execute(
-        `INSERT INTO \`gebruikers\` (\`ultimo_login\`, \`ultimo_login_hour\`, \`acc_id\`, \`character\`, \`username\`, \`datum\`, \`aanmeld_datum\`, \`ip_aangemeld\`, \`wereld\`, \`${unlock}\`) 
+        `INSERT INTO \`gebruikers\` (\`ultimo_login\`, \`ultimo_login_hour\`, \`acc_id\`, \`character\`, \`username\`, \`date\`, \`registration_date\`, \`ip_registered\`, \`world\`, \`${unlock}\`) 
          VALUES (?, ?, ?, ?, ?, NOW(), NOW(), ?, ?, '1')`,
-        [date_lo, date_loh, acc_id, character, inlognaam, ip, wereld]
+        [date_lo, date_loh, acc_id, character, inlognaam, ip, world]
       );
 
       const user_id = userResult.insertId;
@@ -150,7 +150,7 @@ export const createCharacter = async (req, res) => {
       // הפחתת gold אם נדרש
       if (needsGold) {
         await connection.execute(
-          "UPDATE `rekeningen` SET `gold` = `gold` - 10 WHERE `acc_id` = ?",
+          "UPDATE `accounts` SET `gold` = `gold` - 10 WHERE `acc_id` = ?",
           [acc_id]
         );
       }
@@ -165,7 +165,7 @@ export const createCharacter = async (req, res) => {
         user_id: result,
         username: inlognaam,
         character: character,
-        wereld: wereld,
+        world: world,
       },
     });
   } catch (error) {
@@ -424,7 +424,7 @@ export const getAvailableStarterPokemon = async (req, res) => {
     }
 
     // בדיקה שהמשתמש עדיין לא קיבל פוקימון ראשון
-    if (character[0].eigekregen === 1) {
+    if (character[0].owned === 1) {
       return res.status(400).json({
         success: false,
         message: "כבר קיבלת פוקימון ראשון",
@@ -454,7 +454,7 @@ FROM pokemon_nieuw_starter pns
 INNER JOIN pokemon_wild pw ON pns.wild_id = pw.wild_id
 WHERE pw.wereld = ?
 ORDER BY pw.naam ASC;`,
-      [character[0].wereld]
+      [character[0].world]
     );
 
     res.json({
@@ -498,7 +498,7 @@ export const chooseStarterPokemon = async (req, res) => {
     }
 
     // בדיקה שהמשתמש עדיין לא קיבל פוקימון ראשון
-    if (character[0].eigekregen === 1) {
+    if (character[0].owned === 1) {
       return res.status(400).json({
         success: false,
         message: "כבר קיבלת פוקימון ראשון",
@@ -645,7 +645,7 @@ export const chooseStarterPokemon = async (req, res) => {
 
       // עדכון הדמות - סימון שקיבלה פוקימון ראשון
       await connection.execute(
-        "UPDATE `gebruikers` SET `aantalpokemon` = `aantalpokemon` + 1, `eigekregen` = 1 WHERE `user_id` = ?",
+        "UPDATE `gebruikers` SET `number_of_pokemon` = `number_of_pokemon` + 1, `owned` = 1 WHERE `user_id` = ?",
         [user_id]
       );
 
@@ -694,15 +694,15 @@ export const getUserProfile = async (req, res) => {
     // קבלת פרטי הפרופיל
     const profileQuery = `
       SELECT 
-        g.user_id, g.username, g.character, g.wereld, g.ultimo_login, 
+        g.user_id, g.username, g.character, g.world, g.ultimo_login, 
         g.antiguidade, g.clan, g.rang, g.rang_temp, g.silver, 
         g.premiumaccount, g.admin, g.online, g.character_num, 
-        g.profiel, g.teamzien, g.badgeszien, g.rank, g.aantalpokemon, 
-        g.badges, g.gewonnen, g.verloren, g.datum,
-        r.karma, r.email, r.ip_aangemeld, r.ip_ingelogd, r.gold,
+        g.profile, g.see_team, g.see_badges, g.rank, g.number_of_pokemon, 
+        g.badges, g.won, g.lost, g.date,
+        r.karma, r.email, r.ip_registered, r.ip_loggedin, r.gold,
         gi.\`badge case\`
       FROM gebruikers g
-      INNER JOIN rekeningen r ON g.acc_id = r.acc_id
+      INNER JOIN accounts r ON g.acc_id = r.acc_id
       LEFT JOIN gebruikers_item gi ON g.user_id = gi.user_id
       WHERE g.username = ? AND g.banned != 'Y'
       GROUP BY g.user_id
@@ -788,7 +788,7 @@ export const getUserProfile = async (req, res) => {
 
     // קבלת הפוקימונים של הצוות
     let teamPokemon = [];
-    if (profile.teamzien === 1 || profile.admin > 0) {
+    if (profile.see_team === 1 || profile.admin > 0) {
       const teamQuery = `
         SELECT 
           ps.*, pw.naam, pw.type1, pw.type2
@@ -803,7 +803,7 @@ export const getUserProfile = async (req, res) => {
 
     // קבלת תגים
     let badges = null;
-    if (profile.badgeszien === 1 && profile.badge_case === 1) {
+    if (profile.see_badges === 1 && profile.badge_case === 1) {
       const badgesQuery = "SELECT * FROM gebruikers_badges WHERE user_id = ?";
       const badgesResult = await query(badgesQuery, [profile.user_id]);
       if (badgesResult.length > 0) {
@@ -857,7 +857,7 @@ export const getUserProfile = async (req, res) => {
           user_id: profile.user_id,
           username: profile.username,
           character: profile.character,
-          wereld: profile.wereld,
+          world: profile.world,
           ultimo_login: profile.ultimo_login,
           antiguidade: profile.antiguidade,
           clan: profile.clan,
@@ -869,19 +869,19 @@ export const getUserProfile = async (req, res) => {
           admin: profile.admin,
           online: profile.online,
           character_num: profile.character_num,
-          profiel: profile.profiel,
-          teamzien: profile.teamzien,
-          badgeszien: profile.badgeszien,
+          profile: profile.profile,
+          see_team: profile.see_team,
+          see_badges: profile.see_badges,
           rank: profile.rank,
-          aantalpokemon: profile.aantalpokemon,
+          number_of_pokemon: profile.number_of_pokemon,
           badges: profile.badges,
-          gewonnen: profile.gewonnen,
-          verloren: profile.verloren,
-          datum: profile.datum,
+          won: profile.won,
+          lost: profile.lost,
+          date: profile.date,
           karma: profile.karma,
           email: profile.email,
-          ip_aangemeld: profile.ip_aangemeld,
-          ip_ingelogd: profile.ip_ingelogd,
+          ip_registered: profile.ip_registered,
+          ip_loggedin: profile.ip_loggedin,
           badge_case: profile.badge_case,
         },
         stats: {
@@ -900,7 +900,7 @@ export const getUserProfile = async (req, res) => {
         rankMedal,
         rankTempMedal,
         formatted: {
-          date: formatDate(profile.datum),
+          date: formatDate(profile.date),
           silver: formatMoney(profile.silver),
           gold: formatMoney(profile.gold),
         },

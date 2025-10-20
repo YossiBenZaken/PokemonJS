@@ -207,7 +207,7 @@ export const acceptEgg = async (req, res) => {
 
     // Update user Pokemon count and in_hand count
     await query(
-      "UPDATE gebruikers SET aantalpokemon = aantalpokemon + 1 WHERE user_id = ?",
+      "UPDATE gebruikers SET number_of_pokemon = number_of_pokemon + 1 WHERE user_id = ?",
       [userId]
     );
 

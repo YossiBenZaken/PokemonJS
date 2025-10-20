@@ -213,7 +213,7 @@ const getUserInventory = async (req, res) => {
 
     // קבלת זהב
     const account = await DB.query(
-      "SELECT gold FROM rekeningen WHERE acc_id = ?",
+      "SELECT gold FROM accounts WHERE acc_id = ?",
       [accId]
     );
 
@@ -292,7 +292,7 @@ const buyItem = async (req, res) => {
     );
 
     const account = await DB.query(
-      "SELECT gold FROM rekeningen WHERE acc_id = ?",
+      "SELECT gold FROM accounts WHERE acc_id = ?",
       [accId]
     );
 
@@ -356,7 +356,7 @@ const buyItem = async (req, res) => {
     }
 
     if (totalGold > 0) {
-      await DB.query("UPDATE rekeningen SET gold = gold - ? WHERE acc_id = ?", [
+      await DB.query("UPDATE accounts SET gold = gold - ? WHERE acc_id = ?", [
         totalGold,
         accId,
       ]);
@@ -419,7 +419,7 @@ const buyPokemon = async (req, res) => {
     );
 
     const account = await DB.query(
-      "SELECT gold FROM rekeningen WHERE acc_id = ?",
+      "SELECT gold FROM accounts WHERE acc_id = ?",
       [accId]
     );
 
@@ -450,13 +450,13 @@ const buyPokemon = async (req, res) => {
     // עדכון כסף
     if (pokemonData.silver > 0) {
       await DB.query(
-        "UPDATE gebruikers SET silver = silver - ?,`aantalpokemon`=`aantalpokemon`+'1' WHERE user_id = ?",
+        "UPDATE gebruikers SET silver = silver - ?,`number_of_pokemon`=`number_of_pokemon`+'1' WHERE user_id = ?",
         [pokemonData.silver, userId]
       );
     }
 
     if (pokemonData.gold > 0) {
-      await DB.query("UPDATE rekeningen SET gold = gold - ? WHERE acc_id = ?", [
+      await DB.query("UPDATE accounts SET gold = gold - ? WHERE acc_id = ?", [
         pokemonData.gold,
         accId,
       ]);

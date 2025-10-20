@@ -1110,7 +1110,7 @@ export const finishTrainerBattle = async (req, res) => {
       }
       victory = false;
       await query(
-        "UPDATE `gebruikers` SET `silver`=`silver`-?, `verloren`=`verloren`+'1',`points`=if (`points` > 0, (`points` - 60), 0),`points_temp`=if (`points_temp` > 0, (`points_temp` - 60), 0) WHERE `user_id`=?",
+        "UPDATE `gebruikers` SET `silver`=`silver`-?, `lost`=`lost`+'1',`points`=if (`points` > 0, (`points` - 60), 0),`points_temp`=if (`points_temp` > 0, (`points_temp` - 60), 0) WHERE `user_id`=?",
         [money, userId]
       );
     } else {
@@ -1185,7 +1185,7 @@ export const finishTrainerBattle = async (req, res) => {
           [userId]
         );
 
-        const gymWorld = `${user.wereld}_gym`;
+        const gymWorld = `${user.world}_gym`;
         if (user[gymWorld] === 7) {
           const unlockWorldDic = {
             Kanto: "Johto",
@@ -1196,7 +1196,7 @@ export const finishTrainerBattle = async (req, res) => {
             Kalos: "Alola",
             Alola: "Kanto",
           };
-          const unlockWorld = unlockWorldDic[user.wereld] + "_block";
+          const unlockWorld = unlockWorldDic[user.world] + "_block";
           await query(
             "UPDATE gebruikers SET badges = badges + '1', " +
               gymWorld +
@@ -1213,8 +1213,8 @@ export const finishTrainerBattle = async (req, res) => {
               new Date().toISOString().replace("T", " ").split(".")[0],
               userId,
               `השגת את <b>כל</b> התגים עבור <b>${
-                user.wereld
-              }</b> ופתחת גישה ל<b>אזור חדש</b>:${unlockWorldDic[user.wereld]}`,
+                user.world
+              }</b> ופתחת גישה ל<b>אזור חדש</b>:${unlockWorldDic[user.world]}`,
             ]
           );
         } else {
@@ -1244,7 +1244,7 @@ export const finishTrainerBattle = async (req, res) => {
       );
       reward *= silverTrainerValue.valor;
       await query(
-        "UPDATE `gebruikers` SET `gewonnen`=`gewonnen`+1,`silver`=`silver`+?,`points`=(`points`+100),`points_temp`=(`points_temp`+100) WHERE `user_id`=?",
+        "UPDATE `gebruikers` SET `won`=`won`+1,`silver`=`silver`+?,`points`=(`points`+100),`points_temp`=(`points_temp`+100) WHERE `user_id`=?",
         [reward, userId]
       );
       if (user["Badge case"] == 0) {

@@ -44,7 +44,7 @@ export const getGyms = async (req, res) => {
 
     const gyms = await query(
       "SELECT * FROM trainer WHERE wereld = ? ORDER BY id ASC",
-      [gebruiker.wereld]
+      [gebruiker.world]
     );
     const badgeRow =
       (
@@ -53,7 +53,7 @@ export const getGyms = async (req, res) => {
         ])
       )[0] || {};
 
-    const next = gebruiker[`${gebruiker.wereld}_gym`];
+    const next = gebruiker[`${gebruiker.world}_gym`];
 
     const gymsMapped = gyms.map((gym, i) => {
       let blocked = false;
@@ -152,7 +152,7 @@ export const postChallenge = async (req, res) => {
     if (!gymInfo)
       return res.json({ success: false, message: "זה לא מנהיג של מכון." });
 
-    const next = gebruiker[`${gebruiker.wereld}_gym`];
+    const next = gebruiker[`${gebruiker.world}_gym`];
     if (!(gebruiker.rank >= 3 && next === gymInfo.progress)) {
       return res.json({
         success: false,
@@ -169,7 +169,7 @@ export const postChallenge = async (req, res) => {
 
     if (gebruiker.rank < gymInfo.rank)
       return res.json({ success: false, message: "דרג המשתמש נמוך מדי." });
-    if (gebruiker.wereld !== gymInfo.wereld)
+    if (gebruiker.world !== gymInfo.wereld)
       return res.json({ success: false, message: "זה לא המפה שלך." });
 
     const badgeRow =

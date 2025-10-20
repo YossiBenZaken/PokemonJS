@@ -5,7 +5,7 @@ const getUserWallet = async (userId) => {
   const [user] = await query(
     `SELECT g.user_id, g.silver, r.gold
      FROM gebruikers g
-     LEFT JOIN rekeningen r ON g.acc_id = r.acc_id
+     LEFT JOIN accounts r ON g.acc_id = r.acc_id
      WHERE g.user_id = ? LIMIT 1`,
     [userId]
   );
@@ -164,7 +164,7 @@ export const learnMove = async (req, res) => {
     // Perform transaction: deduct funds and set move
     await transaction(async (conn) => {
       await conn.execute(`UPDATE gebruikers SET silver = silver - ? WHERE user_id = ?`, [price.silver, userId]);
-      await conn.execute(`UPDATE rekeningen SET gold = gold - ? WHERE acc_id = ?`, [price.gold, userId]);
+      await conn.execute(`UPDATE accounts SET gold = gold - ? WHERE acc_id = ?`, [price.gold, userId]);
       await conn.execute(`UPDATE pokemon_speler SET ${slot} = ? WHERE id = ?`, [moveName, pokemonId]);
     });
 

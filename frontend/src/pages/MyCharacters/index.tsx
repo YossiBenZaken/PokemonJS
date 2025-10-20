@@ -51,32 +51,32 @@ export interface Character {
   user_id: number;
   username: string;
   character: string;
-  wereld: string;
+  world: string;
   ultimo_login: string;
   ultimo_login_hour: string;
-  datum: string;
-  aanmeld_datum: string;
+  date: string;
+  registration_date: string;
   rank?: number;
   rankexp?: number;
-  rankexpnodig?: number;
+  rankexpnecessary?: number;
   banned?: string;
   admin?: number;
   premiumaccount?: number;
   antiguidade?: number;
   sec_key?: string;
   chat_key?: string;
-  eigekregen?: number;
-  pok_bezit?: string;
+  owned?: number;
+  pok_possession?: string;
   silver?: number;
   gold?: number;
   tickets: number;
-  geluksrad: number;
+  lucky_wheel: number;
   items: UserItem;
   map_sprite: number;
   quest_1: number;
   quest_2: number;
   daily_bonus: number;
-  pagina: string;
+  page: string;
 }
 
 export const MyCharactersPage: React.FC = () => {
@@ -140,7 +140,7 @@ export const MyCharactersPage: React.FC = () => {
             user_id: response.data.user_id,
             username: response.data.username,
             character: response.data.character,
-            wereld: response.data.wereld,
+            world: response.data.world,
             session_token: response.data.session_token,
             sec_key: response.data.sec_key,
             chat_key: response.data.chat_key,
@@ -354,11 +354,11 @@ export const MyCharactersPage: React.FC = () => {
                 <strong>דרגה:</strong> {selectedCharacter.rank || 0}
               </CharacterRank>
               <CharacterWorld>
-                <strong>עולם:</strong> {selectedCharacter.wereld}
+                <strong>עולם:</strong> {selectedCharacter.world}
               </CharacterWorld>
               <CharacterDate>
                 <strong>נוצר:</strong>{" "}
-                {new Date(selectedCharacter.aanmeld_datum).toLocaleDateString(
+                {new Date(selectedCharacter.registration_date).toLocaleDateString(
                   "he-IL"
                 )}
               </CharacterDate>
@@ -411,7 +411,7 @@ export const MyCharactersPage: React.FC = () => {
               </PlayButton>
 
               {/* Choose Starter Pokemon Button - רק אם הדמות עדיין לא קיבלה פוקימון */}
-              {selectedCharacter.eigekregen !== 1 && (
+              {selectedCharacter.owned !== 1 && (
                 <LoginButton
                   type="button"
                   onClick={() => {

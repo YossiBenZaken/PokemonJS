@@ -63,8 +63,8 @@ export interface BanStatusResponse {
 
 export interface BannedPlayer {
   username: string;
-  bloqueado_tempo: string;
-  razaobloqueado: string;
+  blocked_time: string;
+  reasonblocked: string;
 }
 
 export interface BanPlayerRequest {
@@ -105,8 +105,8 @@ export interface GetBannedIPsResponse {
 export interface AccountByIP {
   acc_id: number;
   username: string;
-  ip_aangemeld: string;
-  ip_ingelogd: string;
+  ip_registered: string;
+  ip_loggedin: string;
   email: string;
 }
 

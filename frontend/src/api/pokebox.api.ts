@@ -53,7 +53,7 @@ export interface BoxConfig {
 }
 
 export interface User {
-  huis: string;
+  house: string;
   inHand: number;
 }
 
