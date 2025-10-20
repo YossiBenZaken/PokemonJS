@@ -1,4 +1,6 @@
 import { Auth } from "./auth.js";
+import { Battle } from "./battle.js";
+import { Safari } from "./safari.js";
 import { System } from "./system.js";
 import jwt from "jsonwebtoken";
 
@@ -50,5 +52,7 @@ export function initializeSocket(io) {
     });
     Auth(socket);
     System(socket);
+    Battle(socket);
+    Safari(socket);
   });
 }

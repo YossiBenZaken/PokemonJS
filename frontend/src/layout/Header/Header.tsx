@@ -151,6 +151,8 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
     });
   }
 
+  const excludeLocations = ['/my-characters'];
+
   useEffect(() => {
     const checkAuth = async () => {
       const response = await AuthToken();
@@ -229,7 +231,7 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
         navigate("/attack/trainer");
       } else if (
         selectedCharacter.page === "attack" &&
-        location.pathname !== "/attack/wild"
+        location.pathname !== "/attack/wild" && !excludeLocations.includes(location.pathname)
       ) {
         navigate("/attack/wild");
       }

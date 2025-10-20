@@ -33,7 +33,6 @@ import {
 } from "../controllers/admin-controller.js";
 
 import express from "express";
-import { importGalarPokemons } from "../controllers/importPokemons.js";
 import jwt from "jsonwebtoken";
 import { query } from "../config/database.js";
 
@@ -121,8 +120,6 @@ router.get("/transferlist-logs-by-user", getTransferListLogsByUser);
 router.post("/create-pokemon", createPokemon);
 router.get("/tm-hm-list", getTMHMList);
 router.get("/move-tutor-list", getMoveTutorList);
-
-router.get("/import/galar", importGalarPokemons);
 
 // Give egg to player
 router.post("/give-egg", giveEgg);

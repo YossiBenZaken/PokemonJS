@@ -1,4 +1,10 @@
 import {
+  AanvalLog,
+  ComputerInfo,
+  PokemonInfo,
+  startWildBattleApi,
+} from "../../api/battle.api";
+import {
   AlolaMap,
   HoennMap,
   JohtoMap,
@@ -8,8 +14,8 @@ import {
   UnovaMap,
 } from "./AttackMapWorlds";
 import React, { useEffect, useState } from "react";
-import { initBattle, startWildBattleApi } from "../../api/battle.api";
 
+import { socket } from "../../App";
 import styled from "styled-components";
 import { useBattle } from "../../contexts/BattleContext";
 import { useGame } from "../../contexts/GameContext";
@@ -166,23 +172,35 @@ const AttackMap: React.FC = () => {
         );
 
         if (response.aanvalLogId) {
-          const { aanval_log, computer_info, pokemon_info } = await initBattle(
-            response.aanvalLogId
-          );
-          setAttackLog(aanval_log);
-          setComputerInfo(computer_info);
-          setPokemonInfo(pokemon_info);
-          // Set background based on terrain
-          let background = "";
-          if (terrainId === 3) {
-            const chance = Math.floor(Math.random() * 3) + 1;
-            background = `gras-${chance}`;
-          } else if (terrainId === 6) {
-            const chance = Math.floor(Math.random() * 2) + 1;
-            background = `water-${chance}`;
-          }
+          socket.emit(
+            "InitBattle",
+            response.aanvalLogId,
+            ({
+              aanval_log,
+              computer_info,
+              pokemon_info,
+            }: {
+              computer_info: ComputerInfo;
+              pokemon_info: PokemonInfo;
+              aanval_log: AanvalLog;
+            }) => {
+              setAttackLog(aanval_log);
+              setComputerInfo(computer_info);
+              setPokemonInfo(pokemon_info);
 
-          navigate("/attack/wild", { state: { background } });
+              // Set background based on terrain
+              let background = "";
+              if (terrainId === 3) {
+                const chance = Math.floor(Math.random() * 3) + 1;
+                background = `gras-${chance}`;
+              } else if (terrainId === 6) {
+                const chance = Math.floor(Math.random() * 2) + 1;
+                background = `water-${chance}`;
+              }
+
+              navigate("/attack/wild", { state: { background } });
+            }
+          );
         } else {
           setError("שגיאה ביצירת קרב");
         }
@@ -217,7 +235,7 @@ const AttackMap: React.FC = () => {
         return <KalosMap {...mapProps} />;
 
       case "Alola":
-        return <AlolaMap {...mapProps}/>
+        return <AlolaMap {...mapProps} />;
       default:
         return <div className="blue">מפה עבור {world} בבנייה</div>;
     }
