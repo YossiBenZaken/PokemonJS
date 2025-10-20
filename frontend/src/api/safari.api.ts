@@ -7,6 +7,7 @@ export interface MapInfo {
   start_x: number;
   start_y: number;
   tileArray: Array<number[]>;
+  message: string;
 }
 
 export interface UserOnMap {
@@ -33,15 +34,6 @@ export interface MoveResponse {
     },
     message: string;
 }
-export const getMap = async (mapId: number): Promise<MapInfo> => {
-  const { data } = await axiosInstance.get<MapInfo>(`/safari/map/${mapId}`);
-  return data;
-};
-
-export const getUserOnMap = async (mapId: number): Promise<UserOnMap> => {
-  const { data } = await axiosInstance.get<UserOnMap>(`/safari/users/${mapId}`);
-  return data;
-};
 
 export const moveOnMap = async (map: number, x: number, y: number): Promise<MoveResponse> => {
   const { data } = await axiosInstance.post<MoveResponse>(`/safari/move`, {

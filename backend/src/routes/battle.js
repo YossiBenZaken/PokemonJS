@@ -1,4 +1,4 @@
-import { InitBattle, acceptEvolution, currentBattle, getDataGrow, learnNewAttack } from "../controllers/battle-controller.js";
+import { acceptEvolution, getDataGrow, learnNewAttack } from "../controllers/battle-controller.js";
 import {
   attackChangePokemon,
   attackUsePotion,
@@ -20,7 +20,6 @@ import { extractAccId } from "../middleware/auth.js";
 
 const router = express.Router();
 
-router.post("/init", InitBattle);
 router.post("/trainer-attack", extractAccId, doTrainerAttack);
 router.post("/trainer-change-pokemon", extractAccId, trainerChangePokemon);
 router.post("/trainer-finish", extractAccId, finishTrainerBattle);
@@ -32,7 +31,6 @@ router.post("/start-wild-battle", extractAccId, startWildBattle);
 router.post("/wild-finish", extractAccId, finishWildBattle);
 router.post("/wild-attack", extractAccId, doWildAttack);
 router.get("/startRandomBattle", extractAccId, startRandomBattle);
-router.get("/current-battle", extractAccId, currentBattle);
 router.post("/accept-evo", extractAccId, acceptEvolution);
 router.get('/getDataGrow', extractAccId, getDataGrow);
 router.post('/learn-new-attack', extractAccId, learnNewAttack);

@@ -322,23 +322,6 @@ export const startWildBattleApi = async (
   return data;
 };
 
-export const initBattle = async (
-  aanval_log_id: number
-): Promise<{
-  computer_info: ComputerInfo;
-  pokemon_info: PokemonInfo;
-  aanval_log: AanvalLog;
-}> => {
-  const { data } = await axiosInstance.post<{
-    computer_info: ComputerInfo;
-    pokemon_info: PokemonInfo;
-    aanval_log: AanvalLog;
-  }>("/battle/init", {
-    aanval_log_id,
-  });
-  return data;
-};
-
 export const trainerAttack = async (
   attack_name: string | undefined,
   wie: string,
@@ -478,14 +461,6 @@ export const startRandomTrainer = async (): Promise<PostChallengeResponse> => {
   const { data } = await axiosInstance.get<PostChallengeResponse>(
     "/battle/startRandomBattle"
   );
-  return data;
-};
-
-export const getBattleLogId = async (): Promise<{
-  success: boolean;
-  attackLogId: number;
-}> => {
-  const { data } = await axiosInstance.get("/battle/current-battle");
   return data;
 };
 

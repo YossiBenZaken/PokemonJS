@@ -1,14 +1,20 @@
-import { initBattle, startRandomTrainer } from "../../api/battle.api";
+import {
+  AanvalLog,
+  ComputerInfo,
+  PokemonInfo,
+  startRandomTrainer,
+} from "../../api/battle.api";
 
 import { BoxContent } from "../Attack/TrainerAttack/styled";
 import React from "react";
+import { socket } from "../../App";
 import { useBattle } from "../../contexts/BattleContext";
 import { useNavigate } from "react-router-dom";
 
 const NpcPage: React.FC = () => {
   const { setChallengeData, setAttackLog, setComputerInfo, setPokemonInfo } =
     useBattle();
-    const navigate = useNavigate();
+  const navigate = useNavigate();
   const trainer = [
     "Rival Barry",
     "Scientist Chip",
@@ -24,18 +30,29 @@ const NpcPage: React.FC = () => {
     const response = await startRandomTrainer();
     if (response.success) {
       setChallengeData(response.data);
-      const { aanval_log, computer_info, pokemon_info } = await initBattle(
-        response.data.trainer.aanvalLogId
+      socket.emit(
+        "InitBattle",
+        response.data.trainer.aanvalLogId,
+        ({
+          aanval_log,
+          computer_info,
+          pokemon_info,
+        }: {
+          computer_info: ComputerInfo;
+          pokemon_info: PokemonInfo;
+          aanval_log: AanvalLog;
+        }) => {
+          setAttackLog(aanval_log);
+          setComputerInfo(computer_info);
+          setPokemonInfo(pokemon_info);
+          if (response.redirect) navigate(response.redirect);
+          else alert("האתגר נוצר — הטעינה תתבצע כעת");
+        }
       );
-      setAttackLog(aanval_log);
-      setComputerInfo(computer_info);
-      setPokemonInfo(pokemon_info);
-      if (response.redirect) navigate(response.redirect);
-      else alert("האתגר נוצר — הטעינה תתבצע כעת");
     }
   };
   return (
-    <BoxContent style={{width: '100%', height: '100%'}}>
+    <BoxContent style={{ width: "100%", height: "100%" }}>
       <table
         style={{
           borderSpacing: 0,

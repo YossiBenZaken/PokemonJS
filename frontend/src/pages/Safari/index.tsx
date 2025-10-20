@@ -1,7 +1,13 @@
-import { MapUser, getMap, getUserOnMap, moveOnMap } from "../../api/safari.api";
+import {
+  AanvalLog,
+  ComputerInfo,
+  PokemonInfo,
+  startWildBattleApi,
+} from "../../api/battle.api";
+import { MapInfo, MapUser, UserOnMap, moveOnMap } from "../../api/safari.api";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { initBattle, startWildBattleApi } from "../../api/battle.api";
 
+import { socket } from "../../App";
 import styled from "styled-components";
 import { useBattle } from "../../contexts/BattleContext";
 import { useGame } from "../../contexts/GameContext";
@@ -42,7 +48,8 @@ const MapCanvas = styled.div<{ mapId: number }>`
   position: relative;
   border: 2px solid #577599;
   border-radius: 5px;
-  background-image: url(${props =>require(`../../assets/images/maps/kanto/map${props.mapId}.png`)});
+  background-image: url(${(props) =>
+    require(`../../assets/images/maps/kanto/map${props.mapId}.png`)});
   background-size: cover;
   overflow: hidden;
 `;
@@ -191,29 +198,23 @@ const Safari: React.FC = () => {
   }, [currentMap]);
 
   const loadMapData = async (mapId: number) => {
-    try {
-      const response = await getMap(mapId);
-
+    socket.emit("getMapData", mapId, (response: MapInfo) => {
       if (response.success) {
         setMapData(response.tileArray);
         setPosition({ x: response.start_x, y: response.start_y });
+      } else {
+        console.error("Failed to load map:", response.message);
       }
-    } catch (error) {
-      console.error("Failed to load map:", error);
-    }
+    });
   };
 
   // Load nearby users
   const loadUsers = useCallback(async () => {
-    try {
-      const data = await getUserOnMap(currentMap);
-
+    socket.emit("getUserOnMap", currentMap, (data: UserOnMap) => {
       if (data.success) {
         setUsers(data.users);
       }
-    } catch (error) {
-      console.error("Failed to load users:", error);
-    }
+    });
   }, [currentMap]);
 
   useEffect(() => {
@@ -312,17 +313,34 @@ const Safari: React.FC = () => {
     if (!encounter) return;
 
     try {
-      const response = await startWildBattleApi(encounter.id, encounter.level, mapNames[currentMap]);
+      const response = await startWildBattleApi(
+        encounter.id,
+        encounter.level,
+        mapNames[currentMap]
+      );
 
       const data = response;
 
       if (data.aanvalLogId) {
         // Redirect to battle
-        const {aanval_log,computer_info,pokemon_info} = await initBattle(data.aanvalLogId);
-        setAttackLog(aanval_log);
-        setComputerInfo(computer_info);
-        setPokemonInfo(pokemon_info);
-        navigate(`/attack/wild`);
+        socket.emit(
+          "InitBattle",
+          data.aanvalLogId,
+          ({
+            aanval_log,
+            computer_info,
+            pokemon_info,
+          }: {
+            computer_info: ComputerInfo;
+            pokemon_info: PokemonInfo;
+            aanval_log: AanvalLog;
+          }) => {
+            setAttackLog(aanval_log);
+            setComputerInfo(computer_info);
+            setPokemonInfo(pokemon_info);
+            navigate(`/attack/wild`);
+          }
+        );
       } else {
         setMessage("Failed to start battle");
       }
@@ -346,9 +364,9 @@ const Safari: React.FC = () => {
           <MapCanvas ref={canvasRef} mapId={currentMap}>
             {/* Player sprite */}
             <Sprite
-              src={require(`../../assets/images/sprites/${currentMap === 2 ? "water/" : ""}${
-                selectedCharacter?.map_sprite
-              }.png`)}
+              src={require(`../../assets/images/sprites/${
+                currentMap === 2 ? "water/" : ""
+              }${selectedCharacter?.map_sprite}.png`)}
               x={position.x}
               y={position.y}
               isPlayer
@@ -359,9 +377,9 @@ const Safari: React.FC = () => {
             {users.slice(0, 10).map((user) => (
               <React.Fragment key={user.id}>
                 <Sprite
-                  src={require(`../../assets/images/sprites/${currentMap === 2 ? "water/" : ""}${
-                    user.sprite
-                  }.png`)}
+                  src={require(`../../assets/images/sprites/${
+                    currentMap === 2 ? "water/" : ""
+                  }${user.sprite}.png`)}
                   x={user.x}
                   y={user.y}
                   alt={user.username}
@@ -370,14 +388,14 @@ const Safari: React.FC = () => {
                 {user.map_wild && (
                   <Sprite
                     src={require(`../../assets/images/pokemon/icon/${user.map_wild}.gif`)}
-                    x={user.x }
-                    y={user.y }
+                    x={user.x}
+                    y={user.y}
                     alt={`${user.username}'s Pokemon`}
                     title={user.username}
                     style={{
-                        zIndex: 6,
-                        width: 32,
-                        height: 32
+                      zIndex: 6,
+                      width: 32,
+                      height: 32,
                     }}
                   />
                 )}
@@ -390,7 +408,7 @@ const Safari: React.FC = () => {
         <NavigationPanel>
           <NavigationButtons>
             <img
-              src={require('../../assets/images/maps/nav.png')}
+              src={require("../../assets/images/maps/nav.png")}
               alt="Navigation"
               useMap="#navMap"
               style={{ width: "90px", height: "90px" }}
@@ -433,7 +451,10 @@ const Safari: React.FC = () => {
                 onClick={() => setCurrentMap(mapId)}
                 title={mapNames[mapId]}
               >
-                <img src={require('../../assets/images/animation.gif')} alt={mapNames[mapId]} />
+                <img
+                  src={require("../../assets/images/animation.gif")}
+                  alt={mapNames[mapId]}
+                />
               </MapButton>
             ))}
             <MapButton
@@ -441,14 +462,20 @@ const Safari: React.FC = () => {
               active={false}
               onClick={() => (window.location.href = "/pokemoncenter")}
             >
-              <img src={require('../../assets/images/animation.gif')} alt="Pokemon Center" />
+              <img
+                src={require("../../assets/images/animation.gif")}
+                alt="Pokemon Center"
+              />
             </MapButton>
             <MapButton
               index={9}
               active={false}
               onClick={() => (window.location.href = "/market")}
             >
-              <img src={require('../../assets/images/animation.gif')} alt="Market" />
+              <img
+                src={require("../../assets/images/animation.gif")}
+                alt="Market"
+              />
             </MapButton>
           </MapSelector>
         </NavigationPanel>
@@ -460,22 +487,19 @@ const Safari: React.FC = () => {
               <EncounterCard>
                 <div
                   style={{
-                    backgroundImage: `url(${require(`../../assets/images/maps/${mapNames[
-                      currentMap
-                    ]}.png`)})`,
+                    backgroundImage: `url(${require(`../../assets/images/maps/${mapNames[currentMap]}.png`)})`,
                     backgroundPosition: "center bottom",
                     backgroundRepeat: "no-repeat",
                     padding: "20px",
                   }}
                 >
-                                    <h3>You found a {encounter.name}!</h3>
-                                    <p>Level: {encounter.level}</p>
+                  <h3>You found a {encounter.name}!</h3>
+                  <p>Level: {encounter.level}</p>
                   <img
                     src={require(`../../assets/images/pokemon/${encounter.id}.gif`)}
                     alt={encounter.name}
-                    style={{ maxWidth: "150px", margin: '0 auto' }}
+                    style={{ maxWidth: "150px", margin: "0 auto" }}
                   />
-
                 </div>
                 <ActionButton onClick={startWildBattle}>Battle!</ActionButton>
                 <ActionButton onClick={() => setEncounter(null)}>

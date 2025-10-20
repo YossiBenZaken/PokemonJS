@@ -49,42 +49,6 @@ export const getBattleInfo = async (aanval_log_id) => {
   };
 };
 
-export const InitBattle = async (req, res) => {
-  const { aanval_log_id } = req.body;
-
-  const { computer_info, pokemon_info, aanval_log } = await getBattleInfo(
-    aanval_log_id
-  );
-
-  res.json({
-    computer_info,
-    pokemon_info,
-    aanval_log,
-  });
-};
-
-export const currentBattle = async (req, res) => {
-  const userId = req.user?.user_id;
-  const [logId] = await query(
-    "SELECT `id` FROM `aanval_log` WHERE `user_id`=?",
-    [userId]
-  );
-  if (logId) {
-    return res.json({
-      success: true,
-      attackLogId: logId.id,
-    });
-  } else {
-    await query(
-      "UPDATE `gebruikers` SET `page`='attack_start' WHERE `user_id`=?",
-      [userId]
-    );
-    return res.json({
-      success: false,
-    });
-  }
-};
-
 export const acceptEvolution = async (req, res) => {
   const { pokemonId, evoId, decision } = req.body;
   const userId = req.user?.user_id;

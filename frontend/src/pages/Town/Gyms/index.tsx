@@ -1,7 +1,8 @@
+import { AanvalLog, ComputerInfo, PokemonInfo } from "../../../api/battle.api";
 import React, { useEffect, useState } from "react";
 import { getGyms, postChallenge } from "../../../api/gyms.api";
 
-import { initBattle } from "../../../api/battle.api";
+import { socket } from "../../../App";
 import styled from "styled-components";
 import { useBattle } from "../../../contexts/BattleContext";
 import { useGame } from "../../../contexts/GameContext";
@@ -128,12 +129,26 @@ const GymsPage: React.FC = () => {
       const resp = await postChallenge(sel.naam, selectedCharacter?.user_id);
       if (resp.success) {
         setChallengeData(resp.data);
-        const {aanval_log,computer_info,pokemon_info} = await initBattle(resp.data.trainer.aanvalLogId);
-        setAttackLog(aanval_log);
-        setComputerInfo(computer_info);
-        setPokemonInfo(pokemon_info);
-        if (resp.redirect) navigate(resp.redirect);
-        else alert("האתגר נוצר — הטעינה תתבצע כעת");
+        socket.emit(
+          "InitBattle",
+          resp.data.trainer.aanvalLogId,
+          ({
+            aanval_log,
+            computer_info,
+            pokemon_info,
+          }: {
+            computer_info: ComputerInfo;
+            pokemon_info: PokemonInfo;
+            aanval_log: AanvalLog;
+          }) => {
+            setAttackLog(aanval_log);
+            setComputerInfo(computer_info);
+            setPokemonInfo(pokemon_info);
+            if (resp.redirect) navigate(resp.redirect);
+            else alert("האתגר נוצר — הטעינה תתבצע כעת");
+          }
+        );
+
       } else {
         alert(resp.message || "שגיאה ביצירת אתגר");
       }
