@@ -80,10 +80,11 @@ export const handleMove = async (req, res) => {
           WHERE gebied = ? 
             AND zeldzaamheid = ? 
             AND aparece = 'sim'
+            AND wereld = ?
           ORDER BY RAND() 
           LIMIT 1
         `,
-          [area, rarity]
+          [area, rarity, user?.world || 'Kanto']
         );
 
         if (wildPokemon) {

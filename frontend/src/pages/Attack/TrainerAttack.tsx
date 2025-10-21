@@ -32,6 +32,7 @@ import {
   MyPokemonHpWrapper,
   MyPokemonName,
   MyPokemonNameWrapper,
+  Name,
   OpponentBar,
   OpponentBarContainer,
   OpponentName,
@@ -53,6 +54,7 @@ import { socket } from "../../App";
 import { useBattle } from "../../contexts/BattleContext";
 import { useGame } from "../../contexts/GameContext";
 import { useNavigate } from "react-router-dom";
+import { useAttack } from "./useAttack";
 
 const TrainerAttack: React.FC = () => {
   const {
@@ -68,6 +70,7 @@ const TrainerAttack: React.FC = () => {
   } = useBattle();
   const { attacks, myPokemons, selectedCharacter, itemInfo } = useGame();
   const navigate = useNavigate();
+  const { getColorOfPokemon, getRareOfPokemon } = useAttack();
 
   const [showPotionsScreen, setShowPotionsScreen] = useState<boolean>(false);
   const [showAttacks, setShowAttacks] = useState<boolean>(true);
@@ -156,30 +159,39 @@ const TrainerAttack: React.FC = () => {
 
   const initializeBattleState = async () => {
     if (!attackLog) {
-      socket.emit('currentBattle', ({ attackLogId, success}: {attackLogId: number, success: boolean}) => {
-        if (!success) {
-          navigate("/");
-          return;
-        }
-  
-        socket.emit(
-          "InitBattle",
+      socket.emit(
+        "currentBattle",
+        ({
           attackLogId,
-          ({
-            aanval_log,
-            computer_info,
-            pokemon_info,
-          }: {
-            computer_info: ComputerInfo;
-            pokemon_info: PokemonInfo;
-            aanval_log: AanvalLog;
-          }) => {
-            setAttackLog(aanval_log);
-            setComputerInfo(computer_info);
-            setPokemonInfo(pokemon_info);
+          success,
+        }: {
+          attackLogId: number;
+          success: boolean;
+        }) => {
+          if (!success) {
+            navigate("/");
+            return;
           }
-        );
-      });      
+
+          socket.emit(
+            "InitBattle",
+            attackLogId,
+            ({
+              aanval_log,
+              computer_info,
+              pokemon_info,
+            }: {
+              computer_info: ComputerInfo;
+              pokemon_info: PokemonInfo;
+              aanval_log: AanvalLog;
+            }) => {
+              setAttackLog(aanval_log);
+              setComputerInfo(computer_info);
+              setPokemonInfo(pokemon_info);
+            }
+          );
+        }
+      );
     }
   };
 
@@ -293,7 +305,7 @@ const TrainerAttack: React.FC = () => {
 
         // Update player Pokemon HP display if it was affected
         if (response.playerHp) {
-          const hpDisplay = document.getElementById("hpPokemon");
+          const hpDisplay = document.getElementById("");
           if (hpDisplay) {
             if (response.playerHp === 0) {
               hpDisplay.innerHTML = "";
@@ -483,7 +495,10 @@ const TrainerAttack: React.FC = () => {
 
       // Update HP bar
       const hpBar = document.getElementById("pokemon_life") as HTMLElement;
-      if (hpBar) hpBar.style.width = `${lifePercent}%`;
+      if (hpBar) {
+        hpBar.style.width = `${lifePercent}%`;
+        hpBar.innerText = `${lifePercent}%`;
+      }
 
       // Update Pokemon selection display
       const pokemonDisplay = document.querySelector(
@@ -502,7 +517,7 @@ const TrainerAttack: React.FC = () => {
       }
 
       // Update HP display
-      const hpDisplay = document.getElementById("hpPokemon");
+      const hpDisplay = document.getElementById("pokemon_life");
       if (hpDisplay) {
         hpDisplay.innerHTML = `${response.hp}/${response.maxHp}`;
       }
@@ -510,7 +525,10 @@ const TrainerAttack: React.FC = () => {
       const lifePercent = Math.round((response.hp / response.maxHp) * 100);
       // Update HP bar
       const hpBar = document.getElementById("computer_life") as HTMLElement;
-      if (hpBar) hpBar.style.width = `${lifePercent}%`;
+      if (hpBar) {
+        hpBar.style.width = `${lifePercent}%`;
+        hpBar.innerText = `${lifePercent}%`;
+      }
     }
 
     // Handle Pokemon transformations/switches
@@ -519,7 +537,7 @@ const TrainerAttack: React.FC = () => {
 
       if (response.who === "pokemon") {
         // Player Pokemon transformed
-        const hpDisplay = document.getElementById("hpPokemon");
+        const hpDisplay = document.getElementById("");
         if (hpDisplay) {
           hpDisplay.innerHTML = `${response.hp}/${response.maxHp}`;
         }
@@ -654,6 +672,7 @@ const TrainerAttack: React.FC = () => {
       const computerLifeEl = document.getElementById("computer_life");
       if (computerLifeEl) {
         computerLifeEl.style.width = `${computerLifePercent}%`;
+        computerLifeEl.innerText = `${computerLifePercent}%`;
       }
 
       // Mark old Pokemon as defeated
@@ -768,10 +787,10 @@ const TrainerAttack: React.FC = () => {
 
         if (pokemonNameEl) pokemonNameEl.innerHTML = changePokemon.naam;
         if (pokemonLevelEl) {
-          pokemonLevelEl.innerHTML = `${changePokemon.level} <div id='hpPokemon' style='margin-top: -4px;margin-left: 80px;position: absolute;'></div>`;
+          pokemonLevelEl.innerHTML = `${changePokemon.level} <div id='' style='margin-top: -4px;margin-left: 80px;position: absolute;'></div>`;
         }
 
-        const hpDisplay = document.getElementById("hpPokemon");
+        const hpDisplay = document.getElementById("");
         if (hpDisplay) {
           hpDisplay.innerHTML = `${changePokemon.leven}/${changePokemon.levenmax}`;
         }
@@ -789,7 +808,7 @@ const TrainerAttack: React.FC = () => {
           if (button) {
             if (move) {
               button.innerHTML = move;
-              button.style.backgroundImage =`url(${require(`../../assets/images/attack/moves/${moveType}.png`)})`;
+              button.style.backgroundImage = `url(${require(`../../assets/images/attack/moves/${moveType}.png`)})`;
               button.style.display = "block";
             } else {
               button.style.display = "none";
@@ -803,7 +822,7 @@ const TrainerAttack: React.FC = () => {
           if (zMoveBtn) {
             zMoveBtn.style.display = "block";
             zMoveBtn.innerHTML = zmove;
-            zMoveBtn.style.backgroundImage =`url(${require(`../../assets/images/attack/moves/${tz}.png`)})`;
+            zMoveBtn.style.backgroundImage = `url(${require(`../../assets/images/attack/moves/${tz}.png`)})`;
           }
         } else {
           const zMoveBtn = document.getElementById("use-zmove");
@@ -847,7 +866,7 @@ const TrainerAttack: React.FC = () => {
         const pokemonLifePercent = Math.round(
           (changePokemon.leven / changePokemon.levenmax) * 100
         );
-        const pokemonLifeEl = document.getElementById("pokemon_life");
+        const pokemonLifeEl = document.getElementById("");
         if (pokemonLifeEl) {
           pokemonLifeEl.style.width = `${pokemonLifePercent}%`;
         }
@@ -913,7 +932,7 @@ const TrainerAttack: React.FC = () => {
         if (good) {
           // Update Pokemon HP if it's the active Pokemon
           if (pokemon_infight) {
-            const pokemonLifeEl = document.getElementById("pokemon_life");
+            const pokemonLifeEl = document.getElementById("");
             const newHp = new_life;
             const maxHp = pokemonInfo.levenmax;
             const lifePercent = Math.round((newHp / maxHp) * 100);
@@ -924,7 +943,7 @@ const TrainerAttack: React.FC = () => {
           }
 
           // Update HP display
-          const hpDisplay = document.getElementById("hpPokemon");
+          const hpDisplay = document.getElementById("");
           if (pokemon_infight && hpDisplay) {
             hpDisplay.innerHTML = `${new_life}/${pokemonInfo.levenmax}`;
           }
@@ -1061,71 +1080,56 @@ const TrainerAttack: React.FC = () => {
   return (
     <BoxContent className="max-w-7xl mx-auto p-4 space-y-6">
       <Title>קרב נגד {attackLog?.trainer}</Title>
-      <GifAttack>
-        <img
-          src={require(`../../assets/images/attacks/_blank.gif`)}
-          alt="Trainer Attack"
-          style={{
-            width: 700,
-            float: "left",
-            height: 323,
-          }}
-        />
-      </GifAttack>
       <Weather id="weather">
         <img id="zmove" />
         <TableDuelArena>
           <tbody>
             <tr>
               <td>
-                <OpponentWrapper>
-                  <OpponentBar>
-                    <OpponentBarContainer>
-                      <strong>
-                        <LevelIconText>
-                          <img
-                            src={require(`../../assets/images/lvl.png`)}
-                            alt="Lvl"
-                            style={{
-                              height: 14,
-                            }}
-                          />{" "}
-                          ??{" "}
-                        </LevelIconText>
-                      </strong>
-                    </OpponentBarContainer>
-                    <HpWrapper>
-                      <HpRed>
-                        <Progress
-                          id="computer_life"
-                          style={{
-                            width: `${calculatePercent(computerInfo!)}%`,
-                          }}
-                          data-original-title={`${computerInfo?.leven}/${computerInfo?.levenmax}`}
-                        />
-                      </HpRed>
-                      <EffectWrapper
-                        id="computer_effect"
-                        style={{
-                          display: computerInfo.effect ? "block" : "none",
-                        }}
-                      >
-                        <img
-                          src={require(`../../assets/images/effects/${
-                            computerInfo.effect || "none"
-                          }.png`)}
-                          alt={computerInfo.effect}
-                        />
-                      </EffectWrapper>
-                    </HpWrapper>
+                <section
+                  style={{
+                    position: "absolute",
+                    right: 50,
+                    top: 50,
+                    height: 70,
+                    transform: "skew(20deg)",
+                    background: "#000000b3",
+                    backdropFilter: "blur(5px)",
+                    borderRadius: 8,
+                    padding: 5,
+                  }}
+                >
+                  <div
+                    style={{
+                      transform: "skew(-20deg)",
+                      paddingRight: 15,
+                      direction: "rtl",
+                    }}
+                  >
                     <OpponentNameWrapper>
                       <OpponentName>
-                        <strong>
+                        <Name
+                          color={getColorOfPokemon(computerInfo?.zeldzaamheid)}
+                        >
                           <span id="trainer_naam">
-                            {computerInfo?.naam_goed}
+                            {computerInfo?.naam_goed} ({computerInfo?.level},{" "}
+                            {getRareOfPokemon(computerInfo?.zeldzaamheid!)})
                           </span>
-                        </strong>
+                        </Name>
                         <ComputerStar style={{ display: computerInfo?.star }} />
+                        <EffectWrapper
+                          id="computer_effect"
+                          style={{
+                            display: computerInfo.effect ? "block" : "none",
+                          }}
+                        >
+                          <img
+                            src={require(`../../assets/images/effects/${
+                              computerInfo.effect || "none"
+                            }.png`)}
+                            alt={computerInfo.effect}
+                          />
+                        </EffectWrapper>
                       </OpponentName>
                       <PokeBallWrapper>
                         {Array.from({ length: 6 }, (_, i) => (
@@ -1141,8 +1145,25 @@ const TrainerAttack: React.FC = () => {
                         ))}
                       </PokeBallWrapper>
                     </OpponentNameWrapper>
-                  </OpponentBar>
-                </OpponentWrapper>
+                    <HpWrapper>
+                      <HpRed
+                        style={{
+                          marginTop: 6,
+                        }}
+                      >
+                        <Progress
+                          id="computer_life"
+                          style={{
+                            width: `${calculatePercent(computerInfo!)}%`,
+                          }}
+                          data-original-title={`${computerInfo?.leven}/${computerInfo?.levenmax}`}
+                        >
+                          {calculatePercent(computerInfo!)}%
+                        </Progress>
+                      </HpRed>
+                    </HpWrapper>
+                  </div>
+                </section>
               </td>
               <td>
                 <div id="dame" style={{ display: "none" }} />
@@ -1169,229 +1190,198 @@ const TrainerAttack: React.FC = () => {
                 />
               </td>
               <td>
-                <MyPokemonHpWrapper>
-                  <MyPokemonBar>
-                    <MyPokemonNameWrapper>
-                      <MyPokemonName>
-                        <strong>
-                          <span id="pokemon_naam">
-                            {pokemonInfo?.naam_goed}
-                          </span>
-                        </strong>
-                        <ComputerStar style={{ display: pokemonInfo?.star }} />
-                      </MyPokemonName>
-                    </MyPokemonNameWrapper>
-                    <strong
-                      style={{ position: "absolute", top: 17, right: 20 }}
-                    >
-                      <LevelIconText>
-                        <img
-                          src={require(`../../assets/images/lvl.png`)}
-                          alt="Lvl"
-                          style={{
-                            height: 14,
-                          }}
-                        />
-                        <span id="pokemon_level">{` ${pokemonInfo?.level} `}</span>
-                        <div
-                          id="hpPokemon"
-                          style={{
-                            position: "absolute",
-                            left: -80,
-                            top: 20,
-                            fontSize: 10,
-                          }}
-                        >
-                          {pokemonInfo?.leven}/{pokemonInfo?.levenmax}
-                        </div>
-                      </LevelIconText>
-                    </strong>
-                    <HpWrapper>
-                      <HpRed>
-                        <Progress
-                          id="pokemon_life"
-                          style={{ width: "100%" }}
-                          data-original-title={`${pokemonInfo?.leven}/${pokemonInfo?.levenmax}`}
-                        />
-                      </HpRed>
-                      <EffectWrapper
-                        id="pokemon_effect"
-                        style={{
-                          display: pokemonInfo.effect ? "block" : "none",
-                        }}
+                <MyPokemonBar>
+                  <MyPokemonNameWrapper>
+                    <MyPokemonName>
+                      <Name
+                        color={getColorOfPokemon(pokemonInfo?.zeldzaamheid!)}
                       >
-                        <img
-                          src={require(`../../assets/images/effects/${
-                            pokemonInfo.effect || "none"
-                          }.png`)}
-                          alt={pokemonInfo.effect}
-                        />
-                      </EffectWrapper>
-                    </HpWrapper>
-                    <ExpWrapper>
-                      <HpRed>
-                        <ExpProgress
-                          id="pokemon_exp"
-                          style={{
-                            width: `${Math.round(
-                              (pokemonInfo.exp! / pokemonInfo.expnodig!) * 100
-                            )}%`,
-                          }}
-                        />
-                      </HpRed>
-                    </ExpWrapper>
-                  </MyPokemonBar>
-                </MyPokemonHpWrapper>
+                        <span id="pokemon_naam">
+                          {pokemonInfo?.naam_goed} ({pokemonInfo?.level},{" "}
+                          {getRareOfPokemon(pokemonInfo?.zeldzaamheid!)})
+                        </span>
+                      </Name>
+                      <ComputerStar style={{ display: pokemonInfo?.star }} />
+                    </MyPokemonName>
+                  </MyPokemonNameWrapper>
+                  <HpWrapper>
+                    <HpRed
+                      style={{
+                        marginTop: 6,
+                      }}
+                    >
+                      <Progress
+                        id=""
+                        style={{ width: "100%" }}
+                        data-original-title={`${pokemonInfo?.leven}/${pokemonInfo?.levenmax}`}
+                      >
+                        {pokemonInfo?.leven}/{pokemonInfo?.levenmax}
+                      </Progress>
+                    </HpRed>
+                    <EffectWrapper
+                      id="pokemon_effect"
+                      style={{
+                        display: pokemonInfo.effect ? "block" : "none",
+                      }}
+                    >
+                      <img
+                        src={require(`../../assets/images/effects/${
+                          pokemonInfo.effect || "none"
+                        }.png`)}
+                        alt={pokemonInfo.effect}
+                      />
+                    </EffectWrapper>
+                  </HpWrapper>
+                  <ExpWrapper>
+                    <HpRed style={{
+                        marginTop: 0,
+                      }}>
+                      <ExpProgress
+                        id="pokemon_exp"
+                        style={{
+                          width: `${Math.round(
+                            (pokemonInfo.exp! / pokemonInfo.expnodig!) * 100
+                          )}%`,
+                        }}
+                      />
+                    </HpRed>
+                  </ExpWrapper>
+                </MyPokemonBar>
               </td>
-            </tr>
-            <tr>
-              <AttackWrapper colSpan={2}>
-                <center>
-                  <div
-                    id="atacar"
-                    style={{ display: showAttacks ? "block" : "none" }}
-                  >
-                    {pokemonAttacks.map((attack: string | undefined, index) => (
-                      <button
-                        key={index}
-                        id={`aanval-${index}`}
-                        onClick={() => handleAttackClick(attack!)}
-                        disabled={!battleState.spelerAttack}
-                        style={{
-                          background: `url(${require(`../../assets/images/attack/moves/${getTypeOfAttack(
-                            attack!
-                          )}.png`)}) no-repeat`,
-                          float: index % 2 === 0 ? "left" : "right",
-                          opacity: battleState.spelerAttack ? 1 : 0.5,
-                          cursor: battleState.spelerAttack
-                            ? "pointer"
-                            : "not-allowed",
-                        }}
-                        className="btn-type"
-                      >
-                        {attack}
-                      </button>
-                    ))}
-                    <br />
-                    <button
-                      id="use-zmove"
-                      onClick={() =>
-                        handleAttackClick(pokemonAttacks[0]!, true)
-                      }
-                      disabled={
-                        !battleState.spelerAttack || battleState.trainerZmove
-                      }
-                      className="zmove btn-type"
-                      style={{
-                        display: !battleState.trainerZmove ? "none" : "block",
-                        opacity: battleState.spelerAttack ? 1 : 0.5,
-                      }}
-                    ></button>{" "}
-                  </div>
-                  <div
-                    id="pokemon"
-                    style={{
-                      marginBottom: -27,
-                      display: showPokemons ? "block" : "none",
-                    }}
-                  >
-                    {myPokemons.map((pokemon, index) => {
-                      return (
-                        <BattlePokemon
-                          key={pokemon.id}
-                          id="change_pokemon"
-                          onClick={() => handlePokemonChange(index + 1)}
-                          style={{
-                            backgroundImage: `url(${require(`../../assets/images/${
-                              pokemon.shiny === 1 ? "shiny" : "pokemon"
-                            }/icon/${pokemon.wild_id}.gif`)})`,
-                            opacity:
-                              battleState.spelerWissel && pokemon.leven > 0
-                                ? 1
-                                : 0.5,
-                            cursor:
-                              battleState.spelerWissel && pokemon.leven > 0
-                                ? "pointer"
-                                : "not-allowed",
-                          }}
-                          data-original-title={`${pokemon.naam} HP: ${pokemon.leven}/${pokemon.levenmax}`}
-                        >
-                          {pokemon.naam}
-                          <HpRed style={{ height: 3, width: `86%` }}>
-                            <Progress
-                              style={{ width: `${calculatePercent(pokemon)}%` }}
-                            ></Progress>
-                          </HpRed>
-                        </BattlePokemon>
-                      );
-                    })}
-                  </div>
-                  <div
-                    id="mochila"
-                    style={{ display: showBag ? "block" : "none" }}
-                  >
-                    <div
-                      className="items-carousel"
-                      style={{
-                        width: "100%",
-                        marginBottom: -21,
-                        display: "flex",
-                        justifyContent: "center",
-                      }}
-                    >
-                      {potions.map((potion) => {
-                        const name = potion.naam as keyof ItemData;
-                        const quantity = selectedCharacter?.items[name];
-                        if (Number(quantity) > 0) {
-                          return (
-                            <div key={potion.naam} className="carousel-cell">
-                              <div
-                                data-item-name={potion.naam}
-                                data-item-type={potion.soort}
-                                onClick={() => {
-                                  if (battleState.spelerAttack) {
-                                    setShowPotionsScreen(true);
-                                    setSelectedPotion(name);
-                                  }
-                                }}
-                                style={{
-                                  opacity: battleState.spelerAttack ? 1 : 0.5,
-                                  cursor: battleState.spelerAttack
-                                    ? "pointer"
-                                    : "not-allowed",
-                                }}
-                              >
-                                <img
-                                  src={require(`../../assets/images/items/${potion.naam}.png`)}
-                                  className="image"
-                                  alt={potion.naam}
-                                />
-                                <span
-                                  className="badges qtd"
-                                  style={{
-                                    position: "absolute",
-                                    cursor: "pointer",
-                                    bottom: 5,
-                                    marginLeft: 10,
-                                  }}
-                                >
-                                  {quantity}
-                                </span>
-                              </div>
-                            </div>
-                          );
-                        } else {
-                          return null;
-                        }
-                      })}
-                    </div>
-                  </div>
-                </center>
-              </AttackWrapper>
             </tr>
           </tbody>
         </TableDuelArena>
       </Weather>
+      <AttackWrapper>
+        <center>
+          <div id="atacar" style={{ display: showAttacks ? "block" : "none" }}>
+            {pokemonAttacks.map((attack: string | undefined, index) => (
+              <button
+                key={index}
+                id={`aanval-${index}`}
+                onClick={() => handleAttackClick(attack!)}
+                disabled={!battleState.spelerAttack}
+                style={{
+                  background: `url(${require(`../../assets/images/attack/moves/${getTypeOfAttack(
+                    attack!
+                  )}.png`)}) no-repeat`,
+                  float: index % 2 === 0 ? "left" : "right",
+                  opacity: battleState.spelerAttack ? 1 : 0.5,
+                  cursor: battleState.spelerAttack ? "pointer" : "not-allowed",
+                }}
+                className="btn-type"
+              >
+                {attack}
+              </button>
+            ))}
+            <br />
+            <button
+              id="use-zmove"
+              onClick={() => handleAttackClick(pokemonAttacks[0]!, true)}
+              disabled={!battleState.spelerAttack || battleState.trainerZmove}
+              className="zmove btn-type"
+              style={{
+                display: !battleState.trainerZmove ? "none" : "block",
+                opacity: battleState.spelerAttack ? 1 : 0.5,
+              }}
+            ></button>{" "}
+          </div>
+          <div
+            id="pokemon"
+            style={{
+              marginBottom: -27,
+              display: showPokemons ? "block" : "none",
+            }}
+          >
+            {myPokemons.map((pokemon, index) => {
+              return (
+                <BattlePokemon
+                  key={pokemon.id}
+                  id="change_pokemon"
+                  onClick={() => handlePokemonChange(index + 1)}
+                  style={{
+                    backgroundImage: `url(${require(`../../assets/images/${
+                      pokemon.shiny === 1 ? "shiny" : "pokemon"
+                    }/icon/${pokemon.wild_id}.gif`)})`,
+                    opacity:
+                      battleState.spelerWissel && pokemon.leven > 0 ? 1 : 0.5,
+                    cursor:
+                      battleState.spelerWissel && pokemon.leven > 0
+                        ? "pointer"
+                        : "not-allowed",
+                  }}
+                  data-original-title={`${pokemon.naam} HP: ${pokemon.leven}/${pokemon.levenmax}`}
+                >
+                  {pokemon.naam}
+                  <HpRed style={{ height: 3, width: `86%` }}>
+                    <Progress
+                      style={{ width: `${calculatePercent(pokemon)}%` }}
+                    ></Progress>
+                  </HpRed>
+                </BattlePokemon>
+              );
+            })}
+          </div>
+          <div id="mochila" style={{ display: showBag ? "block" : "none" }}>
+            <div
+              className="items-carousel"
+              style={{
+                width: "100%",
+                marginBottom: -21,
+                display: "flex",
+                justifyContent: "center",
+              }}
+            >
+              {potions.map((potion) => {
+                const name = potion.naam as keyof ItemData;
+                const quantity = selectedCharacter?.items[name];
+                if (Number(quantity) > 0) {
+                  return (
+                    <div key={potion.naam} className="carousel-cell">
+                      <div
+                        data-item-name={potion.naam}
+                        data-item-type={potion.soort}
+                        onClick={() => {
+                          if (battleState.spelerAttack) {
+                            setShowPotionsScreen(true);
+                            setSelectedPotion(name);
+                          }
+                        }}
+                        style={{
+                          opacity: battleState.spelerAttack ? 1 : 0.5,
+                          cursor: battleState.spelerAttack
+                            ? "pointer"
+                            : "not-allowed",
+                            position: "relative",
+                        }}
+                      >
+                        <img
+                          src={require(`../../assets/images/items/${potion.naam}.png`)}
+                          className="image"
+                          alt={potion.naam}
+                        />
+                        <span
+                          className="badges qtd"
+                          style={{
+                            position: "absolute",
+                            cursor: "pointer",
+                            bottom: 5,
+                            marginLeft: 10,
+                          }}
+                        >
+                          {quantity}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                } else {
+                  return null;
+                }
+              })}
+            </div>
+          </div>
+        </center>
+      </AttackWrapper>
       <div
         className="potion_screen"
         style={{ display: showPotionsScreen ? "" : "none" }}
@@ -1449,8 +1439,7 @@ const TrainerAttack: React.FC = () => {
               <td
                 style={{
                   width: "53%",
-                  background:
-                    `url(${require("../../assets/images/layout/battle/text-content.png")}) no-repeat`,
+                  background: `url(${require("../../assets/images/layout/battle/text-content.png")}) no-repeat`,
                   backgroundSize: "100% 100%",
                   padding: 12,
                 }}

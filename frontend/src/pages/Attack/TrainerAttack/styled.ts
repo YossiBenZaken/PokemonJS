@@ -38,6 +38,7 @@ export const Weather = styled("div")(() => ({
   position: "relative",
   borderRadius: 5,
   overflow: "hidden",
+  margin: 0,
 }));
 export const hour = new Date().getHours();
 export const TableDuelArena = styled("table")(() => ({
@@ -48,6 +49,7 @@ export const TableDuelArena = styled("table")(() => ({
   backgroundSize: "100% 100%",
   backgroundRepeat: "no-repeat",
   borderSpacing: 1,
+  height: 480,
 }));
 
 export const BattleArea = styled("table")<{
@@ -89,6 +91,7 @@ export const BattleArea = styled("table")<{
     width: "100%",
     backgroundSize: "100% 100%",
     backgroundRepeat: "no-repeat",
+    height: 480,
   };
 });
 
@@ -104,11 +107,11 @@ export const HpRed = styled("div")(() => ({
   border: "#f2f2f2 1px solid",
   borderRadius: 4,
   clear: "both",
-  height: 8,
+  height: 14,
   marginLeft: 10,
-  marginTop: 1,
+  marginTop: "1rem",
   overflow: "hidden",
-  width: 130,
+  width: 170,
 }));
 
 export const Progress = styled("div")(() => ({
@@ -120,6 +123,10 @@ export const Progress = styled("div")(() => ({
   height: "100%",
   maxWidth: "100%",
   transition: "width 1s ease-in-out",
+  fontSize: 12,
+  color: "black",
+  textAlign: "center",
+  lineHeight: "14px",
 }));
 export const ExpProgress = styled("div")(() => ({
   background: `#0074D9`,
@@ -153,26 +160,40 @@ export const HpWrapper = styled.div`
   padding: 0 0 5px 43px;
 `;
 export const EffectWrapper = styled.div`
-  margin: -8px 0 0 142px;
+  position: absolute;
+  bottom: 5px;
+  left: 30px;
 `;
 export const OpponentNameWrapper = styled.div`
   padding: 5px 0 0 10px;
 `;
 export const OpponentName = styled.i`
-  font-size: medium;
-  text-shadow: 1px 1px 1px #fff;
+  font-size: 12px;
   display: flex;
-  align-items: center;
+  justify-content: start;
 `;
+
+export const Name = styled.strong`
+  ${(props) => props.color && `background: ${props.color}`};
+  padding: 0 7px;
+  border: 1px solid #d9d9d9;
+  border-radius: 5px;
+  color: white;
+`;
+
 export const PokeBallWrapper = styled.div`
   display: flex;
 `;
 export const OpponentPokemonImage = styled.img`
-  margin: 100px 0 0 60%;
+  position: absolute;
+  top: 170px;
+  right: 100px;
   filter: drop-shadow(0px 4px 2px) invert(8%);
 `;
 export const PokemonImage = styled.img`
-  margin: 40px 0 0 150px;
+  position: absolute;
+  bottom: 130px;
+  left: 100px;
   filter: drop-shadow(0px 4px 2px) invert(8%);
 `;
 
@@ -180,33 +201,33 @@ export const MyPokemonHpWrapper = styled.div`
   padding: 100px 0 0 150px;
 `;
 export const MyPokemonBar = styled("div")(() => ({
-  backgroundImage: `url(${require(`../../../assets/images/attack/new_bar.png`)})`,
-  backgroundRepeat: "no-repeat",
-  width: 240,
-  height: 90,
-  float: "right",
-  position: "relative",
+  position: "absolute",
+  left: 20,
+  bottom: 50,
+  height: 70,
+  transform: "skew(20deg)",
+  background: "#000000b3",
+  backdropFilter: "blur(5px)",
+  borderRadius: 8,
+  padding: 5,
 }));
 
 export const MyPokemonNameWrapper = styled.div`
-  padding: 16px 0 0 10px;
+  transform: skew(-20deg);
+  padding-right: 15px;
+  direction: rtl;
 `;
 export const MyPokemonName = styled.i`
-  font-size: medium;
-  text-shadow: 1px 1px 1px #fff;
+  font-size: 12px;
   display: flex;
-  align-items: center;
+  justify-content: start;
 `;
 
 export const ExpWrapper = styled.div`
-  padding: 0px 0 0px 70px;
+  padding: 0px 0 0px 44px;
 `;
-export const AttackWrapper = styled.td`
+export const AttackWrapper = styled.div`
   width: 100%;
-  background: url(${require("../../../assets/images/layout/battle/action-content.png")})
-    no-repeat;
-  padding: 10px 0;
-  background-size: 100% 100%;
   height: 74px;
 `;
 export const BattlePokemon = styled.div`

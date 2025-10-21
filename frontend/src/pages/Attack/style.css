@@ -1,143 +1,162 @@
 #zmove {
-    position: absolute;
-    z-index: 10000;
-    margin-left: 25%;
-    margin-top: 83px;
-    filter: drop-shadow(0px 4px 2px) invert(8%);
+  position: absolute;
+  z-index: 10000;
+  margin-left: 25%;
+  margin-top: 83px;
+  filter: drop-shadow(0px 4px 2px) invert(8%);
 }
 
-#dame,#dame2 {
-    background: url(../../assets/images/dame.gif) no-repeat;
-    width: 70px;
-    height: 70px;
-    color: #FFFF66;
-    font-size: 14px;
-    position: absolute;
-    padding: 25px 0px 0px 0px;
-    z-index: 99;
+#dame {
+  background: url(../../assets/images/dame.gif) no-repeat;
+  width: 70px;
+  height: 70px;
+  color: #ffff66;
+  font-size: 14px;
+  position: absolute;
+  right: 190px;
+  top: 170px;
+  z-index: 99;
+}
+
+#dame2 {
+  background: url(../../assets/images/dame.gif) no-repeat;
+  width: 70px;
+  height: 70px;
+  color: #ffff66;
+  font-size: 14px;
+  position: absolute;
+  left: 190px;
+  bottom: 170px;
+  z-index: 99;
 }
 
 .infront {
-    width: 330px;
-    height: 200px;
-    position: absolute;
-    padding: 70px 0px 0px 50px;
-    z-index: 99;
+  position: absolute;
+  z-index: 99;
+  right: 100px;
+  top: 170px;
 }
 
 .inback {
-    width: 330px;
-    height: 200px;
-    position: absolute;
-    padding: 10px 0px 0px 140px;
-    z-index: 1;
+  position: absolute;
+  left: 100px;
+  bottom: 130px;
+  z-index: 1;
 }
 
 .btn-type {
-    color: #eee;
-    height: 57px;
-    width: 154px;
-    margin: 3px 5px;
-    border: 0;
-    opacity: .8;
-    text-shadow: #000 1px -1px 2px, #000 -1px 1px 2px, #000 1px 1px 2px, #000 -1px -1px 2px;
-    cursor: pointer;
-    border-radius: 4px;
-    z-index: 10;
+  color: #eee;
+  height: 57px;
+  width: 154px;
+  margin: 3px 5px;
+  border: 0;
+  opacity: 0.8;
+  text-shadow: #000 1px -1px 2px, #000 -1px 1px 2px, #000 1px 1px 2px,
+    #000 -1px -1px 2px;
+  cursor: pointer;
+  border-radius: 4px;
+  z-index: 10;
 }
 
-input[type='submit'], button, #button, .button, a.paginate_button {
-    border: 1px solid #577599;
-    color: #fff;
-    border-radius: 3px;
-    padding: 7px 21px;
-    background-color: #2e3d53;
-    box-shadow: 0 2px 0 0 #0f1a2a;
-    text-transform: uppercase;
-    font-size: 12px;
-    font-weight: bold;
-    opacity: .9;
-    position: relative;
+input[type="submit"],
+button,
+#button,
+.button,
+a.paginate_button {
+  border: 1px solid #577599;
+  color: #fff;
+  border-radius: 3px;
+  padding: 7px 21px;
+  background-color: #2e3d53;
+  box-shadow: 0 2px 0 0 #0f1a2a;
+  text-transform: uppercase;
+  font-size: 12px;
+  font-weight: bold;
+  opacity: 0.9;
+  position: relative;
 }
 
-#pokemon-amie .orientation .image, .items-carousel .image {
-    background: #0C161D;
-    border: 2px #2C5A81 solid;
-    cursor: pointer;
-    border-radius: 7px;
-    height: 44px;
-    margin: 0 25px;
-    padding: 7px 6px;
-    width: 44px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+#pokemon-amie .orientation .image,
+.items-carousel .image {
+  background: #0c161d;
+  border: 2px #2c5a81 solid;
+  cursor: pointer;
+  border-radius: 7px;
+  height: 44px;
+  margin: 0 25px;
+  padding: 7px 6px;
+  width: 44px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
 }
 
 .badges {
-    background-color: red;
-    border: 1px solid #fff;
-    border-radius: 50%;
-    width: 18px;
-    height: 18px;
-    color: #fff;
-    line-height: 18px;
-    font-size: 10px;
-    text-align: center;
-    display: inline-block;
-    vertical-align: middle;
+  background-color: red;
+  border: 1px solid #fff;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  color: #fff;
+  line-height: 18px;
+  font-size: 10px;
+  text-align: center;
+  display: inline-block;
+  vertical-align: middle;
 }
 
 .selector {
-    margin: 0 auto;
-    padding: 0;
-    height: 62px;
-    width: 165px;
-    cursor: pointer;
-    display: inline-block;
-    transition: .3s;
+  margin: 0 auto;
+  padding: 0;
+  height: 62px;
+  width: 165px;
+  cursor: pointer;
+  display: inline-block;
+  transition: 0.3s;
 }
 
 .selector.attack {
-    background: url(../../assets/images/layout/battle/attack.png) no-repeat;
-    background-size: 100% 100%;
-    margin-bottom: -6px;
+  background: url(../../assets/images/layout/battle/attack.png) no-repeat;
+  background-size: 100% 100%;
+  margin-bottom: -6px;
 }
 
 .selector.attack:hover {
-	background: url('../../assets/images/layout/battle/attack-hover.png') no-repeat;
-	background-size: 100% 100%;
+  background: url("../../assets/images/layout/battle/attack-hover.png")
+    no-repeat;
+  background-size: 100% 100%;
 }
 
 .selector.bag {
-	background: url('../../assets/images/layout/battle/bag.png') no-repeat;
-	background-size: 100% 100%;
-	margin-left: -10px;
-    margin-bottom: -6px;
+  background: url("../../assets/images/layout/battle/bag.png") no-repeat;
+  background-size: 100% 100%;
+  margin-left: -10px;
+  margin-bottom: -6px;
 }
 
 .selector.bag:not(.blocked):hover {
-	background: url('../../assets/images/layout/battle/bag-hover.png') no-repeat;
-	background-size: 100% 100%;
+  background: url("../../assets/images/layout/battle/bag-hover.png") no-repeat;
+  background-size: 100% 100%;
 }
 
 .selector.pokemon {
-	background: url('../../assets/images/layout/battle/pokemon.png') no-repeat;
-	background-size: 100% 100%;
-	max-height: unset!important;
-	max-width: unset !important;
+  background: url("../../assets/images/layout/battle/pokemon.png") no-repeat;
+  background-size: 100% 100%;
+  max-height: unset !important;
+  max-width: unset !important;
 }
 
 .selector.pokemon:hover {
-	background: url('../../assets/images/layout/battle/pokemon-hover.png') no-repeat;
-	background-size: 100% 100%;
+  background: url("../../assets/images/layout/battle/pokemon-hover.png")
+    no-repeat;
+  background-size: 100% 100%;
 }
 
 .selector.run {
-	background: url('../../assets/images/layout/battle/run.png') no-repeat;
-	background-size: 100% 100%;
-	margin-left: -10px;
+  background: url("../../assets/images/layout/battle/run.png") no-repeat;
+  background-size: 100% 100%;
+  margin-left: -10px;
 }
 
 .selector.run:not(.blocked):hover {
-	background: url('../../assets/images/layout/battle/run-hover.png') no-repeat;
-	background-size: 100% 100%;
+  background: url("../../assets/images/layout/battle/run-hover.png") no-repeat;
+  background-size: 100% 100%;
 }
