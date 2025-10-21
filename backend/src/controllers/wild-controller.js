@@ -656,7 +656,8 @@ export const doWildAttack = async (req, res) => {
       battleLog,
       playerPokemon,
       computerPokemon,
-      attackStatus
+      attackStatus,
+      lifeDecrease
     );
 
     if (shouldExit && jsonResponse) {

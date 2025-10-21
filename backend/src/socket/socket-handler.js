@@ -40,7 +40,7 @@ export function initializeSocket(io) {
       clearTimeout(disconnectTimer);
       // מתחילים טיימר חדש
       socket.disconnectTimer = setTimeout(() => {
-        console.log(`⏰ ${socket.user.username} נותק מחוסר פעילות`);
+        console.log(`⏰ ${socket?.user?.username} נותק מחוסר פעילות`);
         socket.emit("sessionExpired", { reason: "inactivity" });
         socket.disconnect(true);
       }, 10 * 60 * 1000);
@@ -48,7 +48,7 @@ export function initializeSocket(io) {
     // 3️⃣ כשמתנתק
     socket.on("disconnect", (reason) => {
       clearTimeout(disconnectTimer);
-      console.log(`🔴 ${socket.user.username} נותק (${reason})`);
+      console.log(`🔴 ${socket?.user?.username} נותק (${reason})`);
     });
     Auth(socket);
     System(socket);

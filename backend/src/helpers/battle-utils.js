@@ -882,7 +882,8 @@ export async function applyAttackEffect(
   aanvalLog,
   playerPokemon,
   computerPokemon,
-  attackStatus
+  attackStatus,
+  lifeDecrease
 ) {
   let messageAdd = "";
   let shouldExit = false;

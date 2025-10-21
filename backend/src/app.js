@@ -62,7 +62,7 @@ app.get("/health", async (req, res) => {
 setupManualCronRoutes(app);
 
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, async () => {
+server.listen(PORT,'0.0.0.0', async () => {
   console.log(`🚀 השרת פועל על פורט ${PORT}`);
 
   // בדיקת חיבור למסד הנתונים בעת הפעלת השרת

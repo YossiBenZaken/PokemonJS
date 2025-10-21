@@ -9,7 +9,7 @@ export const validateCreateCharacter = [
     .matches(/^[a-zA-Z0-9]+$/)
     .withMessage('שם המשתמש יכול להכיל רק אותיות ומספרים באנגלית'),
   
-  body('wereld')
+  body('world')
     .isIn(['Kanto', 'Johto', 'Hoenn', 'Sinnoh', 'Unova', 'Kalos', 'Alola'])
     .withMessage('העולם שנבחר אינו תקין'),
   

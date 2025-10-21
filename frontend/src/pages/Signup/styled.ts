@@ -178,7 +178,7 @@ const InputWrapper = styled.div`
 
 const InputIcon = styled.div`
   position: absolute;
-  left: 0.75rem;
+  right: 0.75rem;
   top: 50%;
   transform: translateY(-50%);
   color: #9ca3af;
@@ -186,7 +186,7 @@ const InputIcon = styled.div`
 
 const Input = styled.input<{ hasicon?: boolean }>`
   width: 100%;
-  padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+  padding: 0.75rem 2.5rem 0.75rem 0.75rem;
   border: 2px solid #e5e7eb;
   border-radius: 0.75rem;
   background: #f9fafb;
@@ -216,7 +216,7 @@ const Input = styled.input<{ hasicon?: boolean }>`
 
 const PasswordToggle = styled.button`
   position: absolute;
-  right: 0.75rem;
+  left: 0.75rem;
   top: 50%;
   transform: translateY(-50%);
   color: #9ca3af;

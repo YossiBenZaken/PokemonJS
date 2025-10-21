@@ -358,9 +358,9 @@ export const MyCharactersPage: React.FC = () => {
               </CharacterWorld>
               <CharacterDate>
                 <strong>נוצר:</strong>{" "}
-                {new Date(selectedCharacter.registration_date).toLocaleDateString(
-                  "he-IL"
-                )}
+                {new Date(
+                  selectedCharacter.registration_date
+                ).toLocaleDateString("he-IL")}
               </CharacterDate>
               <CharacterStatus>
                 <strong>סטטוס:</strong>{" "}
@@ -394,21 +394,22 @@ export const MyCharactersPage: React.FC = () => {
                 marginBottom: "1rem",
               }}
             >
-              {/* Play Button */}
-              <PlayButton
-                onClick={handlePlayCharacter}
-                disabled={isPlaying || selectedCharacter.banned === "Y"}
-                isBanned={selectedCharacter.banned === "Y"}
-              >
-                {isPlaying ? <LoadingSpinner /> : <Play size={20} />}
-                <PlayButtonText>
-                  {selectedCharacter.banned === "Y"
-                    ? "דמות חסומה"
-                    : isPlaying
-                    ? "נכנס למשחק..."
-                    : "שחק עם " + selectedCharacter.username}
-                </PlayButtonText>
-              </PlayButton>
+              {selectedCharacter.owned === 1 && (
+                <PlayButton
+                  onClick={handlePlayCharacter}
+                  disabled={isPlaying || selectedCharacter.banned === "Y"}
+                  isBanned={selectedCharacter.banned === "Y"}
+                >
+                  {isPlaying ? <LoadingSpinner /> : <Play size={20} />}
+                  <PlayButtonText>
+                    {selectedCharacter.banned === "Y"
+                      ? "דמות חסומה"
+                      : isPlaying
+                      ? "נכנס למשחק..."
+                      : "שחק עם " + selectedCharacter.username}
+                  </PlayButtonText>
+                </PlayButton>
+              )}
 
               {/* Choose Starter Pokemon Button - רק אם הדמות עדיין לא קיבלה פוקימון */}
               {selectedCharacter.owned !== 1 && (
