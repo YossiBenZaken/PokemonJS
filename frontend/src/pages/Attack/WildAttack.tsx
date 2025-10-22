@@ -201,7 +201,7 @@ const WildAttack: React.FC = () => {
                     >
                       <Progress
                         id="pokemon_life"
-                        style={{ width: "100%" }}
+                        style={{  width: `${calculatePercent(pokemonInfo!)}%`, }}
                         data-original-title={`${pokemonInfo?.leven}/${pokemonInfo?.levenmax}`}
                       >
                         {pokemonInfo?.leven}/{pokemonInfo?.levenmax}

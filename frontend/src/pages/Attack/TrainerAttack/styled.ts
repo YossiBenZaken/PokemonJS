@@ -1,5 +1,38 @@
 import { AanvalLog } from "../../../api/battle.api";
-import styled from "styled-components";
+import styled, {keyframes} from "styled-components";
+
+// ✅ Define the keyframes
+const slideInFromRight = keyframes`
+  0% {
+    opacity: 0;
+    transform: translate(100px) scale(0.8);
+  }
+
+  60% {
+    transform: translate(-10px) scale(1.05);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(0) scale(1);
+  }
+`;
+
+const slideInFromLeft = keyframes`
+  0% {
+    opacity: 0;
+    transform: translate(-100px) scale(0.8);
+  }
+
+  60% {
+    transform: translate(10px) scale(1.05);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(0) scale(1);
+  }
+`;
 
 export const BoxContent = styled("div")(() => ({
   padding: 0,
@@ -162,12 +195,14 @@ export const OpponentPokemonImage = styled.img`
   top: 170px;
   right: 100px;
   filter: drop-shadow(0px 4px 2px) invert(8%);
+  animation: ${slideInFromRight} 0.8s ease-out forwards;
 `;
 export const PokemonImage = styled.img`
   position: absolute;
   bottom: 130px;
   left: 100px;
   filter: drop-shadow(0px 4px 2px) invert(8%);
+  animation: ${slideInFromLeft} 0.8s ease-out forwards;
 `;
 
 export const MyPokemonBar = styled("div")(() => ({

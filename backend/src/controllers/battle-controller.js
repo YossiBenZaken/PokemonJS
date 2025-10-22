@@ -15,7 +15,7 @@ export const getBattleInfo = async (aanval_log_id) => {
   );
 
   const enemyPokemons = await query(
-    "SELECT id FROM `pokemon_wild_gevecht` WHERE `aanval_log_id`= ?",
+    "SELECT id,leven FROM `pokemon_wild_gevecht` WHERE `aanval_log_id`= ?",
     [aanval_log_id]
   );
 

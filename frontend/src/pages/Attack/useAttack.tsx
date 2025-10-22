@@ -81,7 +81,7 @@ export const useAttack = (isTrainer: boolean = false) => {
   const [showBag, setShowBag] = useState<boolean>(false);
   const [selectedPotion, setSelectedPotion] = useState("");
   const [battleMessage, setBattleMessage] = useState("");
-  const [enemyPokemons, setEnemyPokemons] = useState<{id: number}[]>([]);
+  const [enemyPokemons, setEnemyPokemons] = useState<{ id: number, leven: number }[]>([]);
 
   useEffect(() => {
     initializeBattleState();
@@ -180,7 +180,7 @@ export const useAttack = (isTrainer: boolean = false) => {
               computer_info: ComputerInfo;
               pokemon_info: PokemonInfo;
               aanval_log: AanvalLog;
-              enemyPokemons: {id: number}[];
+              enemyPokemons: { id: number, leven: number }[];
             }) => {
               setAttackLog(aanval_log);
               setComputerInfo(computer_info);
@@ -616,12 +616,15 @@ export const useAttack = (isTrainer: boolean = false) => {
         const hpDisplay = document.getElementById("pokemon_life");
         if (hpDisplay) {
           hpDisplay.innerHTML = `${response.hp}/${response.maxHp}`;
+          hpDisplay.style.width = `${Math.round(
+            (response.hp / response.maxHp) * 100
+          )}%`;
         }
 
         // Update attack buttons
         for (let i = 0; i < 4; i++) {
           const button = document.querySelector(
-            `button:nth-of-type(${i + 1})`
+            `button.btn-type:nth-of-type(${i + 1})`
           ) as HTMLButtonElement;
           if (button && transformData[i + 2]) {
             button.innerHTML = transformData[i + 2];
@@ -792,22 +795,24 @@ export const useAttack = (isTrainer: boolean = false) => {
         // Change was successful
         // Update Pokemon name and level
         const pokemonNameEl = document.getElementById("pokemon_naam");
-        const pokemonLevelEl = document.getElementById("pokemon_level");
 
-        if (pokemonNameEl) pokemonNameEl.innerHTML = changePokemon.naam;
-        if (pokemonLevelEl) {
-          pokemonLevelEl.innerHTML = `${changePokemon.level} <div id='pokemon_life' style='margin-top: -4px;margin-left: 80px;position: absolute;'></div>`;
-        }
+        if (pokemonNameEl)
+          pokemonNameEl.innerHTML = `${changePokemon.naam} (${
+            changePokemon?.level
+          }, ${getRareOfPokemon(changePokemon?.zeldzaamheid!)})`;
 
         const hpDisplay = document.getElementById("pokemon_life");
         if (hpDisplay) {
           hpDisplay.innerHTML = `${changePokemon.leven}/${changePokemon.levenmax}`;
+          hpDisplay.style.width = `${Math.round(
+            (changePokemon.leven / changePokemon.levenmax) * 100
+          )}%`;
         }
 
         // Update move buttons
         for (let i = 0; i < 4; i++) {
           const button = document.querySelector(
-            `button:nth-of-type(${i + 1})`
+            `button.btn-type:nth-of-type(${i + 1})`
           ) as HTMLButtonElement;
           // גישה בטוחה לשדות במקום אינדקס דינמי על אובייקט טיפוסי
           const move = changePokemon?.[`aanval_${i + 1}`] || "";
@@ -817,7 +822,7 @@ export const useAttack = (isTrainer: boolean = false) => {
           if (button) {
             if (move) {
               button.innerHTML = move;
-              button.style.backgroundImage = `url(${require(`../../assets/images/attack/moves/${moveType}.png`)})`;
+              button.style.backgroundImage = `url(${require(`../../assets/images/attack/moves/${moveType.soort}.png`)})`;
               button.style.display = "block";
             } else {
               button.style.display = "none";
@@ -1163,6 +1168,6 @@ export const useAttack = (isTrainer: boolean = false) => {
     showPokemons,
     selectedPotion,
     battleMessage,
-    enemyPokemons
+    enemyPokemons,
   };
 };

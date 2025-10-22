@@ -128,7 +128,7 @@ const TrainerAttack: React.FC = () => {
                           <img
                             key={pokemon.id}
                             id={`trainer_${pokemon.id}`}
-                            src={require("../../assets/images/icons/pokeball.gif")}
+                            src={pokemon.leven > 0 ?require("../../assets/images/icons/pokeball.gif") : require("../../assets/images/icons/pokeball_black.gif")}
                             title="Ready"
                             alt="Ready"
                             width="14"
@@ -203,8 +203,9 @@ const TrainerAttack: React.FC = () => {
                       }}
                     >
                       <Progress
-                        id=""
-                        style={{ width: "100%" }}
+                        id="pokemon_life"
+                        style={{  width: `${calculatePercent(pokemonInfo!)}%`, }}
+                        
                         data-original-title={`${pokemonInfo?.leven}/${pokemonInfo?.levenmax}`}
                       >
                         {pokemonInfo?.leven}/{pokemonInfo?.levenmax}
