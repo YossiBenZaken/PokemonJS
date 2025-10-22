@@ -13,6 +13,12 @@ export const getBattleInfo = async (aanval_log_id) => {
     "SELECT pokemon_wild.*, pokemon_wild_gevecht.* FROM pokemon_wild INNER JOIN pokemon_wild_gevecht ON pokemon_wild_gevecht.wildid = pokemon_wild.wild_id WHERE pokemon_wild_gevecht.id= ?",
     [aanval_log.tegenstanderid]
   );
+
+  const enemyPokemons = await query(
+    "SELECT id,leven FROM `pokemon_wild_gevecht` WHERE `aanval_log_id`= ?",
+    [aanval_log_id]
+  );
+
   computer_info["naam_klein"] = computer_info.naam.toLowerCase();
   computer_info["naam_goed"] = computerNaam(computer_info.naam);
 
@@ -46,6 +52,7 @@ export const getBattleInfo = async (aanval_log_id) => {
     computer_info,
     pokemon_info,
     aanval_log,
+    enemyPokemons
   };
 };
 

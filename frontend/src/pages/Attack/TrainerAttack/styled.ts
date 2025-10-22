@@ -1,5 +1,38 @@
 import { AanvalLog } from "../../../api/battle.api";
-import styled from "styled-components";
+import styled, {keyframes} from "styled-components";
+
+// ✅ Define the keyframes
+const slideInFromRight = keyframes`
+  0% {
+    opacity: 0;
+    transform: translate(100px) scale(0.8);
+  }
+
+  60% {
+    transform: translate(-10px) scale(1.05);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(0) scale(1);
+  }
+`;
+
+const slideInFromLeft = keyframes`
+  0% {
+    opacity: 0;
+    transform: translate(-100px) scale(0.8);
+  }
+
+  60% {
+    transform: translate(10px) scale(1.05);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(0) scale(1);
+  }
+`;
 
 export const BoxContent = styled("div")(() => ({
   padding: 0,
@@ -23,15 +56,6 @@ export const Title = styled("h3")(() => ({
   fontWeight: "bold",
   color: "#9eadcd",
   textAlign: "center",
-}));
-
-export const GifAttack = styled("div")(() => ({
-  position: "absolute",
-  float: "right",
-  marginLeft: 165,
-  marginTop: 70,
-  zIndex: 0,
-  width: 700,
 }));
 
 export const Weather = styled("div")(() => ({
@@ -95,12 +119,6 @@ export const BattleArea = styled("table")<{
   };
 });
 
-export const OpponentBar = styled("div")(() => ({
-  backgroundImage: `url(${require(`../../../assets/images/attack/new_bar2.png`)})`,
-  backgroundRepeat: "no-repeat",
-  width: 240,
-  height: 90,
-}));
 
 export const HpRed = styled("div")(() => ({
   background: "#ccc",
@@ -144,18 +162,6 @@ export const ComputerStar = styled("span")(() => ({
   backgroundImage: `url(${require("../../../assets/images/icons/lidbetaald.png")})`,
 }));
 
-export const OpponentWrapper = styled.div`
-  padding: 0 0 100px 0;
-`;
-export const OpponentBarContainer = styled.div`
-  padding: 15px 0 0 120px;
-`;
-export const LevelIconText = styled.i`
-  font-size: medium;
-  text-shadow: 1px 1px 1px #fff;
-  display: flex;
-  align-items: center;
-`;
 export const HpWrapper = styled.div`
   padding: 0 0 5px 43px;
 `;
@@ -189,17 +195,16 @@ export const OpponentPokemonImage = styled.img`
   top: 170px;
   right: 100px;
   filter: drop-shadow(0px 4px 2px) invert(8%);
+  animation: ${slideInFromRight} 0.8s ease-out forwards;
 `;
 export const PokemonImage = styled.img`
   position: absolute;
   bottom: 130px;
   left: 100px;
   filter: drop-shadow(0px 4px 2px) invert(8%);
+  animation: ${slideInFromLeft} 0.8s ease-out forwards;
 `;
 
-export const MyPokemonHpWrapper = styled.div`
-  padding: 100px 0 0 150px;
-`;
 export const MyPokemonBar = styled("div")(() => ({
   position: "absolute",
   left: 20,

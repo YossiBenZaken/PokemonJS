@@ -295,9 +295,6 @@ const FountainPage: React.FC = () => {
             <PokemonImage
               src={require(`../../../assets/images/pokemon/${pokemon.wild_id}.gif`)}
               alt={pokemon.naam}
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = require('../../../assets/pokemon/front/001.png');
-              }}
             />
             <PokemonName>{pokemon.naam}</PokemonName>
             <PokemonInfo>

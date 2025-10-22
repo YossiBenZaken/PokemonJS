@@ -3,8 +3,8 @@ import { query } from "../config/database.js";
 
 export const Battle = async(socket) => {
     socket.on("InitBattle", async (attack_log_id, callback) => {
-        const {computer_info, pokemon_info, aanval_log} = await getBattleInfo(attack_log_id);
-        callback({computer_info,pokemon_info,aanval_log})
+        const {computer_info, pokemon_info, aanval_log, enemyPokemons} = await getBattleInfo(attack_log_id);
+        callback({computer_info,pokemon_info,aanval_log,enemyPokemons})
     })
     socket.on('currentBattle', async(callback) => {
         const userId = socket.user?.user_id;

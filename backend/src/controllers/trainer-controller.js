@@ -6,7 +6,6 @@ import {
   createPlayer,
   damageController,
   getAttackInfo,
-  getEffectDuration,
   getRandomInt,
   multipleHits,
   onePokemonExp,

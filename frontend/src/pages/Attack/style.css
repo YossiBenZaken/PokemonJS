@@ -119,22 +119,11 @@ a.paginate_button {
   margin-bottom: -6px;
 }
 
-.selector.attack:hover {
-  background: url("../../assets/images/layout/battle/attack-hover.png")
-    no-repeat;
-  background-size: 100% 100%;
-}
-
 .selector.bag {
   background: url("../../assets/images/layout/battle/bag.png") no-repeat;
   background-size: 100% 100%;
   margin-left: -10px;
   margin-bottom: -6px;
-}
-
-.selector.bag:not(.blocked):hover {
-  background: url("../../assets/images/layout/battle/bag-hover.png") no-repeat;
-  background-size: 100% 100%;
 }
 
 .selector.pokemon {
@@ -144,19 +133,8 @@ a.paginate_button {
   max-width: unset !important;
 }
 
-.selector.pokemon:hover {
-  background: url("../../assets/images/layout/battle/pokemon-hover.png")
-    no-repeat;
-  background-size: 100% 100%;
-}
-
 .selector.run {
   background: url("../../assets/images/layout/battle/run.png") no-repeat;
   background-size: 100% 100%;
   margin-left: -10px;
-}
-
-.selector.run:not(.blocked):hover {
-  background: url("../../assets/images/layout/battle/run-hover.png") no-repeat;
-  background-size: 100% 100%;
 }
