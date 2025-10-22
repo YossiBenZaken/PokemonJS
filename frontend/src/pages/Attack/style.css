@@ -106,8 +106,8 @@ a.paginate_button {
 .selector {
   margin: 0 auto;
   padding: 0;
-  height: 62px;
-  width: 165px;
+  height: 80px;
+  width: 80px;
   cursor: pointer;
   display: inline-block;
   transition: 0.3s;
@@ -116,25 +116,19 @@ a.paginate_button {
 .selector.attack {
   background: url(../../assets/images/layout/battle/attack.png) no-repeat;
   background-size: 100% 100%;
-  margin-bottom: -6px;
 }
 
 .selector.bag {
   background: url("../../assets/images/layout/battle/bag.png") no-repeat;
   background-size: 100% 100%;
-  margin-left: -10px;
-  margin-bottom: -6px;
 }
 
 .selector.pokemon {
   background: url("../../assets/images/layout/battle/pokemon.png") no-repeat;
   background-size: 100% 100%;
-  max-height: unset !important;
-  max-width: unset !important;
 }
 
 .selector.run {
   background: url("../../assets/images/layout/battle/run.png") no-repeat;
   background-size: 100% 100%;
-  margin-left: -10px;
 }

@@ -257,9 +257,8 @@ export const BattlePokemon = styled.div`
 `;
 
 export const TextBox = styled("div")(() => ({
-  marginTop: 7,
-  width: "95%",
-  height: 168,
+  width: "100%",
+  height: "100%",
   color: "#fff",
   textAlign: "left",
 }));

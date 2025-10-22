@@ -72,7 +72,7 @@ export const useAttack = (isTrainer: boolean = false) => {
     setAttackLog,
     setComputerInfo,
   } = useBattle();
-  const { attacks, selectedCharacter } = useGame();
+  const { attacks, selectedCharacter,setSelectedCharacter } = useGame();
   const navigate = useNavigate();
 
   const [showPotionsScreen, setShowPotionsScreen] = useState<boolean>(false);
@@ -81,7 +81,9 @@ export const useAttack = (isTrainer: boolean = false) => {
   const [showBag, setShowBag] = useState<boolean>(false);
   const [selectedPotion, setSelectedPotion] = useState("");
   const [battleMessage, setBattleMessage] = useState("");
-  const [enemyPokemons, setEnemyPokemons] = useState<{ id: number, leven: number }[]>([]);
+  const [enemyPokemons, setEnemyPokemons] = useState<
+    { id: number; leven: number }[]
+  >([]);
 
   useEffect(() => {
     initializeBattleState();
@@ -180,7 +182,7 @@ export const useAttack = (isTrainer: boolean = false) => {
               computer_info: ComputerInfo;
               pokemon_info: PokemonInfo;
               aanval_log: AanvalLog;
-              enemyPokemons: { id: number, leven: number }[];
+              enemyPokemons: { id: number; leven: number }[];
             }) => {
               setAttackLog(aanval_log);
               setComputerInfo(computer_info);
@@ -507,6 +509,15 @@ export const useAttack = (isTrainer: boolean = false) => {
 
           // Redirect after delay
           setTimeout(() => {
+            socket.emit(
+              "getUserInfo",
+              selectedCharacter?.user_id,
+              (response: any) => {
+                if (response.success) {
+                  setSelectedCharacter(response.data.user);
+                }
+              }
+            );
             if (response.dataOfLevelGrow.needsAttention) {
               setPokemonEvolve(response.dataOfLevelGrow);
               if (response.dataOfLevelGrow.newAttack) {

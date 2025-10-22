@@ -406,7 +406,7 @@ const WildAttack: React.FC = () => {
         <table style={{ width: "100%" }}>
           <tbody>
             <tr style={{ height: 150 }}>
-              <td style={{ width: "41%" }}>
+              <td>
                 <div style={{ textAlign: "center" }}>
                   <div
                     onClick={handleSelectAttack}
@@ -426,7 +426,7 @@ const WildAttack: React.FC = () => {
               </td>
               <td
                 style={{
-                  width: "53%",
+                  width: "80%",
                   background: `url(${require("../../assets/images/layout/battle/text-content.png")}) no-repeat`,
                   backgroundSize: "100% 100%",
                   padding: 12,

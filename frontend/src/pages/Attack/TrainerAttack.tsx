@@ -410,8 +410,8 @@ const TrainerAttack: React.FC = () => {
         <table style={{ width: "100%" }}>
           <tbody>
             <tr style={{ height: 150 }}>
-              <td style={{ width: "41%" }}>
-                <div style={{ textAlign: "center" }}>
+              <td>
+                <div style={{ display: 'grid', gridTemplateColumns: 'auto auto', gap: '1rem' }}>
                   <div
                     onClick={handleSelectAttack}
                     className="selector attack"
@@ -430,7 +430,7 @@ const TrainerAttack: React.FC = () => {
               </td>
               <td
                 style={{
-                  width: "53%",
+                  width: "80%",
                   background: `url(${require("../../assets/images/layout/battle/text-content.png")}) no-repeat`,
                   backgroundSize: "100% 100%",
                   padding: 12,
