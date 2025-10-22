@@ -25,15 +25,6 @@ export const Title = styled("h3")(() => ({
   textAlign: "center",
 }));
 
-export const GifAttack = styled("div")(() => ({
-  position: "absolute",
-  float: "right",
-  marginLeft: 165,
-  marginTop: 70,
-  zIndex: 0,
-  width: 700,
-}));
-
 export const Weather = styled("div")(() => ({
   position: "relative",
   borderRadius: 5,
@@ -95,12 +86,6 @@ export const BattleArea = styled("table")<{
   };
 });
 
-export const OpponentBar = styled("div")(() => ({
-  backgroundImage: `url(${require(`../../../assets/images/attack/new_bar2.png`)})`,
-  backgroundRepeat: "no-repeat",
-  width: 240,
-  height: 90,
-}));
 
 export const HpRed = styled("div")(() => ({
   background: "#ccc",
@@ -144,18 +129,6 @@ export const ComputerStar = styled("span")(() => ({
   backgroundImage: `url(${require("../../../assets/images/icons/lidbetaald.png")})`,
 }));
 
-export const OpponentWrapper = styled.div`
-  padding: 0 0 100px 0;
-`;
-export const OpponentBarContainer = styled.div`
-  padding: 15px 0 0 120px;
-`;
-export const LevelIconText = styled.i`
-  font-size: medium;
-  text-shadow: 1px 1px 1px #fff;
-  display: flex;
-  align-items: center;
-`;
 export const HpWrapper = styled.div`
   padding: 0 0 5px 43px;
 `;
@@ -197,9 +170,6 @@ export const PokemonImage = styled.img`
   filter: drop-shadow(0px 4px 2px) invert(8%);
 `;
 
-export const MyPokemonHpWrapper = styled.div`
-  padding: 100px 0 0 150px;
-`;
 export const MyPokemonBar = styled("div")(() => ({
   position: "absolute",
   left: 20,
