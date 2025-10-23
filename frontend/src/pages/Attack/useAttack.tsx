@@ -515,22 +515,22 @@ export const useAttack = (isTrainer: boolean = false) => {
             socket.emit(
               "getUserInfo",
               selectedCharacter?.user_id,
-              (response: any) => {
-                if (response.success) {
-                  setSelectedCharacter(response.data.user);
+              ({ success, data }: { success: boolean; data: any }) => {
+                if (success) {
+                  setSelectedCharacter(data.user);
+                  if (response.dataOfLevelGrow.needsAttention) {
+                    setPokemonEvolve(response.dataOfLevelGrow);
+                    if (response.dataOfLevelGrow.newAttack) {
+                      navigate("/poke-new-attack");
+                    } else {
+                      navigate("/poke-evolve");
+                    }
+                  } else {
+                    navigate("/attack/map");
+                  }
                 }
               }
             );
-            if (response.dataOfLevelGrow.needsAttention) {
-              setPokemonEvolve(response.dataOfLevelGrow);
-              if (response.dataOfLevelGrow.newAttack) {
-                navigate("/poke-new-attack");
-              } else {
-                navigate("/poke-evolve");
-              }
-            } else {
-              navigate("/attack/map");
-            }
           }, 7500);
         } catch (error) {
           console.error("End screen failed:", error);

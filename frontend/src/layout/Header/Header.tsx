@@ -229,11 +229,17 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
         location.pathname !== "/attack/trainer"
       ) {
         navigate("/attack/trainer");
+        return;
       } else if (
         selectedCharacter.page === "attack" &&
         location.pathname !== "/attack/wild" && !excludeLocations.includes(location.pathname)
       ) {
         navigate("/attack/wild");
+        return;
+      }
+      if(selectedCharacter.pokecenter_time > 0) {
+        navigate("/pokemoncenter");
+        return;
       }
     }
   }, [selectedCharacter, location.pathname, navigate]);
@@ -750,7 +756,6 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
           component="main"
           sx={{
             flexGrow: 1,
-            bgcolor: "#f1f5f9",
             minHeight: "95vh",
             padding: "0 0 0 64px",
             marginTop: "64px",

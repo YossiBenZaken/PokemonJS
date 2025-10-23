@@ -77,6 +77,7 @@ export interface Character {
   quest_2: number;
   daily_bonus: number;
   page: string;
+  pokecenter_time: number;
 }
 
 export const MyCharactersPage: React.FC = () => {
