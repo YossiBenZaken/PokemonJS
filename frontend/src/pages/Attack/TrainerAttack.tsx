@@ -33,7 +33,8 @@ import { useGame } from "../../contexts/GameContext";
 import { useAttack } from "./useAttack";
 
 const TrainerAttack: React.FC = () => {
-  const { attackLog, computerInfo, pokemonInfo, battleState } = useBattle();
+  const { attackLog, computerInfo, pokemonInfo, battleState, enemyPokemons } =
+    useBattle();
   const { myPokemons, selectedCharacter, itemInfo } = useGame();
   const {
     getColorOfPokemon,
@@ -55,11 +56,10 @@ const TrainerAttack: React.FC = () => {
     showAttacks,
     showBag,
     showPokemons,
-    enemyPokemons
   } = useAttack(true);
 
   const potions = itemInfo.filter((item) => item.soort === "potions");
-
+  console.log(enemyPokemons);
   // Check if battle data is loaded
   if (!attackLog || !computerInfo || !pokemonInfo) {
     return (
@@ -128,7 +128,11 @@ const TrainerAttack: React.FC = () => {
                           <img
                             key={pokemon.id}
                             id={`trainer_${pokemon.id}`}
-                            src={pokemon.leven > 0 ?require("../../assets/images/icons/pokeball.gif") : require("../../assets/images/icons/pokeball_black.gif")}
+                            src={
+                              pokemon.leven > 0
+                                ? require("../../assets/images/icons/pokeball.gif")
+                                : require("../../assets/images/icons/pokeball_black.gif")
+                            }
                             title="Ready"
                             alt="Ready"
                             width="14"
@@ -204,8 +208,7 @@ const TrainerAttack: React.FC = () => {
                     >
                       <Progress
                         id="pokemon_life"
-                        style={{  width: `${calculatePercent(pokemonInfo!)}%`, }}
-                        
+                        style={{ width: `${calculatePercent(pokemonInfo!)}%` }}
                         data-original-title={`${pokemonInfo?.leven}/${pokemonInfo?.levenmax}`}
                       >
                         {pokemonInfo?.leven}/{pokemonInfo?.levenmax}
@@ -411,7 +414,13 @@ const TrainerAttack: React.FC = () => {
           <tbody>
             <tr style={{ height: 150 }}>
               <td>
-                <div style={{ display: 'grid', gridTemplateColumns: 'auto auto', gap: '1rem' }}>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "auto auto",
+                    gap: "1rem",
+                  }}
+                >
                   <div
                     onClick={handleSelectAttack}
                     className="selector attack"

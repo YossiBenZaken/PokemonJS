@@ -12,7 +12,7 @@ import { useBattle } from "../../contexts/BattleContext";
 import { useNavigate } from "react-router-dom";
 
 const NpcPage: React.FC = () => {
-  const { setChallengeData, setAttackLog, setComputerInfo, setPokemonInfo } =
+  const { setChallengeData, setAttackLog, setComputerInfo, setPokemonInfo,setEnemyPokemons } =
     useBattle();
   const navigate = useNavigate();
   const trainer = [
@@ -37,14 +37,17 @@ const NpcPage: React.FC = () => {
           aanval_log,
           computer_info,
           pokemon_info,
+          enemyPokemons
         }: {
           computer_info: ComputerInfo;
           pokemon_info: PokemonInfo;
           aanval_log: AanvalLog;
+          enemyPokemons: { id: number; leven: number }[];
         }) => {
           setAttackLog(aanval_log);
           setComputerInfo(computer_info);
           setPokemonInfo(pokemon_info);
+          setEnemyPokemons(enemyPokemons);
           if (response.redirect) navigate(response.redirect);
           else alert("האתגר נוצר — הטעינה תתבצע כעת");
         }

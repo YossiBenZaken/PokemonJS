@@ -77,7 +77,7 @@ const ActionButton = styled.button<{ disabled?: boolean }>`
 
 const GymsPage: React.FC = () => {
   const { selectedCharacter } = useGame();
-  const { setChallengeData, setAttackLog, setComputerInfo, setPokemonInfo } =
+  const { setChallengeData, setAttackLog, setComputerInfo, setPokemonInfo, setEnemyPokemons } =
     useBattle();
   const [gyms, setGyms] = useState<any[]>([]);
   const [selected, setSelected] = useState(0);
@@ -136,14 +136,17 @@ const GymsPage: React.FC = () => {
             aanval_log,
             computer_info,
             pokemon_info,
+            enemyPokemons
           }: {
             computer_info: ComputerInfo;
             pokemon_info: PokemonInfo;
             aanval_log: AanvalLog;
+            enemyPokemons: { id: number; leven: number }[];
           }) => {
             setAttackLog(aanval_log);
             setComputerInfo(computer_info);
             setPokemonInfo(pokemon_info);
+            setEnemyPokemons(enemyPokemons);
             if (resp.redirect) navigate(resp.redirect);
             else alert("האתגר נוצר — הטעינה תתבצע כעת");
           }

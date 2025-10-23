@@ -41,6 +41,11 @@ interface BattleContextType {
 
   battleState: BattleState;
   dispatchBattle: React.Dispatch<any>;
+
+  enemyPokemons: { id: number; leven: number }[];
+  setEnemyPokemons: React.Dispatch<
+    React.SetStateAction<{ id: number; leven: number }[]>
+  >;
 }
 
 const BattleContext = createContext<BattleContextType | undefined>(undefined);
@@ -56,6 +61,9 @@ export const BattleProvider: React.FC<BattleProviderProps> = ({ children }) => {
   const [pokemonInfo, setPokemonInfo] = useState<PokemonInfo>();
   const [attackLog, setAttackLog] = useState<AanvalLog>();
   const [pokemonEvolve, setPokemonEvolve] = useState<DataGrow>();
+  const [enemyPokemons, setEnemyPokemons] = useState<
+    { id: number; leven: number }[]
+  >([]);
 
   const [battleState, dispatchBattle] = useReducer(
     battleReducer,
@@ -75,6 +83,8 @@ export const BattleProvider: React.FC<BattleProviderProps> = ({ children }) => {
     dispatchBattle,
     pokemonEvolve,
     setPokemonEvolve,
+    enemyPokemons,
+    setEnemyPokemons,
   };
 
   return (

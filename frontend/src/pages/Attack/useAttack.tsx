@@ -71,8 +71,9 @@ export const useAttack = (isTrainer: boolean = false) => {
     setPokemonEvolve,
     setAttackLog,
     setComputerInfo,
+    setEnemyPokemons,
   } = useBattle();
-  const { attacks, selectedCharacter,setSelectedCharacter } = useGame();
+  const { attacks, selectedCharacter, setSelectedCharacter } = useGame();
   const navigate = useNavigate();
 
   const [showPotionsScreen, setShowPotionsScreen] = useState<boolean>(false);
@@ -81,9 +82,6 @@ export const useAttack = (isTrainer: boolean = false) => {
   const [showBag, setShowBag] = useState<boolean>(false);
   const [selectedPotion, setSelectedPotion] = useState("");
   const [battleMessage, setBattleMessage] = useState("");
-  const [enemyPokemons, setEnemyPokemons] = useState<
-    { id: number; leven: number }[]
-  >([]);
 
   useEffect(() => {
     initializeBattleState();
@@ -132,6 +130,11 @@ export const useAttack = (isTrainer: boolean = false) => {
         spelerAttack = false;
         spelerWissel = false;
         showEndScreen("חכו עד שהקרב יסתיים.");
+        break;
+      case "trainer_wissel":
+        spelerAttack = false;
+        spelerWissel = false;
+        setTimeout(() => trainerChange(), 3000);
         break;
       default:
         message = `Error: ${attackLog.laatste_aanval}`;
@@ -1179,6 +1182,5 @@ export const useAttack = (isTrainer: boolean = false) => {
     showPokemons,
     selectedPotion,
     battleMessage,
-    enemyPokemons,
   };
 };
