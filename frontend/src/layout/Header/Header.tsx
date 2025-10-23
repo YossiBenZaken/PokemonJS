@@ -237,7 +237,8 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
         navigate("/attack/wild");
         return;
       }
-      if(selectedCharacter.pokecenter_time > 0) {
+      if(selectedCharacter.pokecenter_time > 0 && !excludeLocations.includes(location.pathname)) {
+        console.log(selectedCharacter)
         navigate("/pokemoncenter");
         return;
       }
