@@ -579,8 +579,8 @@ export const detectMultiAccounts = async (req, res) => {
          GROUP BY ip_registered 
          HAVING count > 1 
          ORDER BY count DESC 
-         LIMIT ?`,
-        [Number(limit)]
+         LIMIT ${limit}`,
+        []
       );
 
       multiAccounts = duplicateIPs.map((row) => ({
@@ -599,8 +599,8 @@ export const detectMultiAccounts = async (req, res) => {
          GROUP BY ip 
          HAVING count > 1 
          ORDER BY datum DESC
-         LIMIT ?`,
-        [Number(limit)]
+         LIMIT ${limit}`,
+        []
       );
 
       multiAccounts = duplicateIPs.map((row) => ({
@@ -644,8 +644,8 @@ export const getCombinedLogs = async (req, res) => {
       `SELECT id, sender, reciever, date, what, amount 
        FROM bank_logs 
        ORDER BY id DESC 
-       LIMIT ? OFFSET ?`,
-      [limitNum, offset]
+       LIMIT ${limitNum} OFFSET ${offset}`,
+      []
     );
 
     // Get messages with user info (joined with gebruikers)
@@ -654,8 +654,8 @@ export const getCombinedLogs = async (req, res) => {
        FROM berichten b
        INNER JOIN gebruikers g ON b.ontvanger_id = g.user_id 
        ORDER BY b.datum DESC 
-       LIMIT ? OFFSET ?`,
-      [limitNum, offset]
+       LIMIT ${limitNum} OFFSET ${offset}`,
+      []
     );
 
     return res.json({
@@ -712,8 +712,8 @@ export const getTransferListLogs = async (req, res) => {
        FROM transferlist_log tl
        INNER JOIN pokemon_wild pw ON tl.wild_id = pw.wild_id
        ORDER BY tl.id DESC 
-       LIMIT ? OFFSET ?`,
-      [limitNum, offset]
+       LIMIT ${limitNum} OFFSET ${offset}`,
+      []
     );
 
     return res.json({
@@ -783,8 +783,8 @@ export const getTransferListLogsByUser = async (req, res) => {
        INNER JOIN pokemon_wild pw ON tl.wild_id = pw.wild_id
        WHERE tl.buyer=? OR tl.seller=?
        ORDER BY tl.id DESC 
-       LIMIT ? OFFSET ?`,
-      [user.user_id, user.user_id, limitNum, offset]
+       LIMIT ${limitNum} OFFSET ${offset}`,
+      [user.user_id, user.user_id]
     );
 
     return res.json({

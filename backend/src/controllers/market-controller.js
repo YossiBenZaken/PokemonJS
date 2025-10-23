@@ -188,8 +188,7 @@ const getMarketItems = async (req, res) => {
              WHERE markt.soort = ? AND markt.beschikbaar = 1`;
     }
 
-    sql += " ORDER BY silver, gold LIMIT ? OFFSET ?";
-    params.push(limit, offset);
+    sql += ` ORDER BY silver, gold LIMIT ${limit} OFFSET ${offset}`;
 
     const items = await DB.query(sql, params);
 

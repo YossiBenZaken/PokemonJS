@@ -356,8 +356,8 @@ export const getTransactionHistory = async (req, res) => {
       SELECT * FROM bank_logs 
       WHERE sender = ? OR reciever = ? 
       ORDER BY date DESC 
-      LIMIT ? OFFSET ?
-    `, [user.username, user.username, parseInt(limit), offset]);
+      LIMIT ${parseInt(limit)} OFFSET ${offset}
+    `, [user.username, user.username]);
 
     // Get total count
     const [countResult] = await query(`

@@ -31,8 +31,8 @@ export const getNotifications = async (req, res) => {
       FROM gebeurtenis 
       WHERE ontvanger_id = ? 
       ORDER BY id DESC 
-      LIMIT ?
-    `, [userId, notificationLimit]);
+      LIMIT ${notificationLimit}
+    `, [userId]);
 
     // Mark all notifications as read
     if (notifications.length > 0) {
