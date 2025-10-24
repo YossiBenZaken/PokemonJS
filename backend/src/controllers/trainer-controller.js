@@ -25,6 +25,7 @@ import {
 
 import { query } from "../config/database.js";
 import { startTrainerAttack } from "./gyms-controller.js";
+import { getFeatureValue } from "../middleware/feature-flags.js";
 
 export const startTrainerBattle = async (req) => {
   const userId = req.body.userId;
@@ -1239,10 +1240,8 @@ export const finishTrainerBattle = async (req, res) => {
       reward = Math.round(
         trainer.prijs * (getRandomInt(95, 110 + user.rank + 20) / 20)
       );
-      const [silverTrainerValue] = await query(
-        "SELECT * FROM `configs` WHERE config='silver'"
-      );
-      reward *= silverTrainerValue.valor;
+      const silverTrainerValue = await getFeatureValue("silver_multiplier");
+      reward *= silverTrainerValue;
       await query(
         "UPDATE `gebruikers` SET `won`=`won`+1,`silver`=`silver`+?,`points`=(`points`+100),`points_temp`=(`points_temp`+100) WHERE `user_id`=?",
         [reward, userId]

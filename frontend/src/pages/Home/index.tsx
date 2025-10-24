@@ -27,8 +27,10 @@ import {
 } from "lucide-react";
 
 import React from "react";
+import { useFlagsmith } from "../../contexts/Flagsmith";
 
 export const Home: React.FC = () => {
+  const {isReady} = useFlagsmith();
   const backgroundElements = Array.from({ length: 8 }, (_, i) => ({
     id: i,
     top: Math.random() * 80,
@@ -68,6 +70,10 @@ export const Home: React.FC = () => {
       description: "Enjoy fun mini-games and activities between battles"
     }
   ];
+
+  if(!isReady) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <Container>

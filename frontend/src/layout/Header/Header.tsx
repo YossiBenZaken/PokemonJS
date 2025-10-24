@@ -53,6 +53,7 @@ import { getDataGrow } from "../../api/battle.api";
 import { socket } from "../../App";
 import { useBattle } from "../../contexts/BattleContext";
 import { useGame } from "../../contexts/GameContext";
+import { useFlagsmith } from "../../contexts/Flagsmith";
 
 const drawerWidth = 220;
 
@@ -105,7 +106,7 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
     useState<DailyBonusResponse>();
   const location = useLocation();
   const [notification, setNotification] = useState(0);
-  const [unreadMessages, seUnreadMessages] = useState(0);
+  const [unreadMessages, setUnreadMessages] = useState(0);
   const {
     selectedCharacter,
     setSelectedCharacter,
@@ -119,10 +120,9 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
     setAttacks,
     setAbilities,
     setItemInfo,
-    setConfig,
-    config,
   } = useGame();
   const { setPokemonEvolve } = useBattle();
+  const {getValue} = useFlagsmith();
   const navigationItems: { path: string; label: string; icon: any }[] = [
     { path: "/", label: "בית", icon: <Home size={20} /> },
     { path: "/box", label: "הפוקימונים", icon: <Computer size={20} /> },
@@ -158,7 +158,7 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
       const response = await AuthToken();
       if (response.success) {
         setNotification(response.data.eventsCount);
-        seUnreadMessages(response.data.unreadMessage);
+        setUnreadMessages(response.data.unreadMessage);
         setSelectedCharacter(response.data.user);
         setIsLoggedIn(true);
       } else {
@@ -185,7 +185,6 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
       setAttacks(res.data.attacks);
       setAbilities(res.data.abilities);
       setItemInfo(res.data.itemInfo);
-      setConfig(res.data.config);
     });
   }, [setAbilities, setAttacks, setItemInfo, setKarakters, setRanks]);
 
@@ -246,10 +245,10 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
   }, [selectedCharacter, location.pathname, navigate]);
 
   const updateCharacter = async () => {
-    socket.emit("getUserInfo", selectedCharacter?.user_id, (response: any) => {
+    socket.emit("getUserInfo", selectedCharacter?.user_id, async (response: any) => {
       if (response.success) {
         setNotification(response.data.eventsCount);
-        seUnreadMessages(response.data.unreadMessage);
+        setUnreadMessages(response.data.unreadMessage);
         setSelectedCharacter(response.data.user);
         setIsLoggedIn(true);
       } else {
@@ -344,8 +343,8 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
 
   const [seasonName, seasonNumber] = isSeason();
   const bonusArray = ["Double", "Triple", "Quadruple"];
-  const expConfig = config.find((c) => c.config === "exp");
-  const silverConfig = config.find((c) => c.config === "silver");
+  const expConfig = getValue<number>("exp_multiplier", 1);
+  const silverConfig = getValue<number>("silver_multiplier", 1);
   return (
     <>
       <Snackbar
@@ -454,28 +453,28 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
                   />
                 )}
               {expConfig &&
-                Number(expConfig.valor) > 1 &&
-                Number(expConfig.valor) < 5 && (
+                expConfig > 1 &&
+                expConfig < 5 && (
                   <img
-                    src={require(`../../assets/images/icons/avatar/${expConfig.valor}x-exp.png`)}
+                    src={require(`../../assets/images/icons/avatar/${expConfig}x-exp.png`)}
                     title={`קמפיין ${
-                      bonusArray[Number(expConfig.valor) - 2]
+                      bonusArray[expConfig - 2]
                     } EXP בעיצומו!`}
                     alt={`קמפיין ${
-                      bonusArray[Number(expConfig.valor) - 2]
+                      bonusArray[expConfig - 2]
                     } EXP בעיצומו!`}
                   />
                 )}
               {silverConfig &&
-                Number(silverConfig.valor) > 1 &&
-                Number(silverConfig.valor) < 5 && (
+                silverConfig > 1 &&
+                silverConfig < 5 && (
                   <img
-                    src={require(`../../assets/images/icons/avatar/${silverConfig.valor}x-silver.png`)}
+                    src={require(`../../assets/images/icons/avatar/${silverConfig}x-silver.png`)}
                     title={`קמפיין ${
-                      bonusArray[Number(silverConfig.valor) - 2]
+                      bonusArray[silverConfig - 2]
                     } סילבר בעיצומו!`}
                     alt={`קמפיין ${
-                      bonusArray[Number(silverConfig.valor) - 2]
+                      bonusArray[silverConfig - 2]
                     } סילבר בעיצומו!`}
                   />
                 )}

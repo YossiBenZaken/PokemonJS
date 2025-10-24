@@ -1,4 +1,10 @@
-import React, { ReactNode, createContext, useContext, useState } from "react";
+import React, {
+  ReactNode,
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
 import { Ability } from "../models/ability.model";
 import { Attack } from "../models/attack.model";
@@ -8,6 +14,7 @@ import Cookies from "js-cookie";
 import { ItemInfo } from "../models/item.model";
 import { Karakter } from "../models/karakter.model";
 import { Rank } from "../models/rank.model";
+import { useFlagsmith } from "./Flagsmith";
 
 interface GameSession {
   user_id: number;
@@ -45,11 +52,6 @@ interface GameContextType {
   itemInfo: ItemInfo[];
 
   setItemInfo: (data: ItemInfo[]) => void;
-  
-  config: Config[];
-
-  setConfig: (data: Config[]) => void;
-
 
   setRanks: (data: Rank[]) => void;
 
@@ -86,7 +88,6 @@ interface GameProviderProps {
 }
 
 export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
-
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(
     null
   );
@@ -107,7 +108,22 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
 
   const [itemInfo, setItemInfo] = useState<ItemInfo[]>([]);
 
-  const [config, setConfig] = useState<Config[]>([]);
+  const { identifyUser } = useFlagsmith();
+
+  useEffect(() => {
+    const fetchAndIdentifyUser = async () => {
+      if (selectedCharacter === null) return;
+      const identifiedUser = await identifyUser(
+        selectedCharacter.user_id.toString(),
+        {
+          world: selectedCharacter.world,
+        }
+      );
+    };
+    if (selectedCharacter?.world) {
+      fetchAndIdentifyUser();
+    }
+  }, [selectedCharacter?.world]);
 
   // כניסה למשחק עם דמות
   const loginWithCharacter = (character: Character) => {
@@ -156,8 +172,6 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
     setAbilities,
     itemInfo,
     setItemInfo,
-    config,
-    setConfig,
   };
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;

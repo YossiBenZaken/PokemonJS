@@ -45,6 +45,7 @@ import { UserItem } from "../../models/item.model";
 import { itemsApi } from "../../api/items.api";
 import { useGame } from "../../contexts/GameContext";
 import { useNavigate } from "react-router-dom";
+import { useFlagsmith } from "../../contexts/Flagsmith";
 
 export interface Character {
   id?: number;
@@ -83,6 +84,7 @@ export interface Character {
 export const MyCharactersPage: React.FC = () => {
   const navigate = useNavigate();
   const { loginWithCharacter: setGameCharacter, setIsLoggedIn } = useGame();
+  const { identifyUser } = useFlagsmith();
   const [characters, setCharacters] = useState<Character[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { selectedCharacter, setSelectedCharacter } = useGame();

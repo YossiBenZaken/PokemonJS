@@ -43,6 +43,7 @@ import { io } from "socket.io-client";
 import { prefixer } from "stylis";
 import rtlPlugin from "@mui/stylis-plugin-rtl";
 import { SignupPage } from "./pages/Signup";
+import { FlagsmithProvider } from "./contexts/Flagsmith";
 
 const cacheRtl = createCache({
   key: "pokemon",
@@ -68,179 +69,181 @@ function App() {
   return (
     <CacheProvider value={cacheRtl}>
       <ThemeProvider theme={theme}>
-        <GameProvider>
-          <BattleProvider>
-            <Router>
-              <Header>
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/login" element={<LoginPage />} />
-                  <Route path="/signup" element={<SignupPage />} />
-                  <Route
-                    path="/new-character"
-                    element={
-                      <PrivateRoute>
-                        <NewCharacterPage />
-                      </PrivateRoute>
-                    }
-                  />
-                  <Route
-                    path="/npc"
-                    element={
-                      <PrivateRoute>
-                        <NpcPage />
-                      </PrivateRoute>
-                    }
-                  />
-                  <Route
-                    path="/admin"
-                    element={
-                      <PrivateRoute admin={true}>
-                        <AdminPage />
-                      </PrivateRoute>
-                    }
-                  >
-                    {AdminRoutes()}
-                  </Route>
-                  <Route
-                    path="/poke-evolve"
-                    element={
-                      <PrivateRoute>
-                        <PokeEvolvePage />
-                      </PrivateRoute>
-                    }
-                  />
-                  <Route
-                    path="/poke-new-attack"
-                    element={
-                      <PrivateRoute>
-                        <PokeNewAttackPage />
-                      </PrivateRoute>
-                    }
-                  />
-                  <Route
-                    path="/statistics"
-                    element={
-                      <PrivateRoute>
-                        <LeaderboardsPage />
-                      </PrivateRoute>
-                    }
-                  />
-                  <Route
-                    path="/safari"
-                    element={
-                      <PrivateRoute>
-                        <Safari />
-                      </PrivateRoute>
-                    }
-                  />
-                  <Route
-                    path="/pokedex"
-                    element={
-                      <PrivateRoute>
-                        <PokedexPage />
-                      </PrivateRoute>
-                    }
-                  />
-                  <Route
-                    path="/daily_quests"
-                    element={
-                      <PrivateRoute>
-                        <DailyQuestsPage />
-                      </PrivateRoute>
-                    }
-                  />
-                  <Route
-                    path="/box"
-                    element={
-                      <PrivateRoute>
-                        <PokeBox />
-                      </PrivateRoute>
-                    }
-                  />
-                  <Route
-                    path="/badges"
-                    element={
-                      <PrivateRoute>
-                        <BadgeCase />
-                      </PrivateRoute>
-                    }
-                  />
-                  <Route
-                    path="/fishing"
-                    element={
-                      <PrivateRoute>
-                        <FishingPage />
-                      </PrivateRoute>
-                    }
-                  />
-                  <Route
-                    path="/judge"
-                    element={
-                      <PrivateRoute>
-                        <Judge />
-                      </PrivateRoute>
-                    }
-                  />
-                  <Route
-                    path="/my-characters"
-                    element={
-                      <PrivateRoute>
-                        <MyCharactersPage />
-                      </PrivateRoute>
-                    }
-                  />
-                  <Route
-                    path="/choose-pokemon"
-                    element={
-                      <PrivateRoute>
-                        <ChoosePokemonPage />
-                      </PrivateRoute>
-                    }
-                  />
-                  <Route
-                    path="/profile/:username"
-                    element={
-                      <PrivateRoute>
-                        <ProfilePage />
-                      </PrivateRoute>
-                    }
-                  />
-                  <Route
-                    path="/events"
-                    element={
-                      <PrivateRoute>
-                        <Notifications />
-                      </PrivateRoute>
-                    }
-                  />
-                  <Route
-                    path="/house-shop"
-                    element={
-                      <PrivateRoute>
-                        <HouseShopPage />
-                      </PrivateRoute>
-                    }
-                  />
-                  <Route
-                    path="/items"
-                    element={
-                      <PrivateRoute>
-                        <ItemsPage />
-                      </PrivateRoute>
-                    }
-                  />
-                  <Route path="/information" element={<InformationPage />} />
-                  <Route path="/attack/trainer" element={<TrainerAttack />} />
-                  <Route path="/attack/wild" element={<WildAttack />} />
-                  <Route path="/attack/map" element={<AttackMap />} />
-                  {InboxRoutes}
-                  {TownRoutes}
-                </Routes>
-              </Header>
-            </Router>
-          </BattleProvider>
-        </GameProvider>
+        <FlagsmithProvider environmentKey={process.env.REACT_APP_FLAGSMITH_ENV_ID!}>
+          <GameProvider>
+            <BattleProvider>
+              <Router>
+                <Header>
+                  <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/signup" element={<SignupPage />} />
+                    <Route
+                      path="/new-character"
+                      element={
+                        <PrivateRoute>
+                          <NewCharacterPage />
+                        </PrivateRoute>
+                      }
+                    />
+                    <Route
+                      path="/npc"
+                      element={
+                        <PrivateRoute>
+                          <NpcPage />
+                        </PrivateRoute>
+                      }
+                    />
+                    <Route
+                      path="/admin"
+                      element={
+                        <PrivateRoute admin={true}>
+                          <AdminPage />
+                        </PrivateRoute>
+                      }
+                    >
+                      {AdminRoutes()}
+                    </Route>
+                    <Route
+                      path="/poke-evolve"
+                      element={
+                        <PrivateRoute>
+                          <PokeEvolvePage />
+                        </PrivateRoute>
+                      }
+                    />
+                    <Route
+                      path="/poke-new-attack"
+                      element={
+                        <PrivateRoute>
+                          <PokeNewAttackPage />
+                        </PrivateRoute>
+                      }
+                    />
+                    <Route
+                      path="/statistics"
+                      element={
+                        <PrivateRoute>
+                          <LeaderboardsPage />
+                        </PrivateRoute>
+                      }
+                    />
+                    <Route
+                      path="/safari"
+                      element={
+                        <PrivateRoute>
+                          <Safari />
+                        </PrivateRoute>
+                      }
+                    />
+                    <Route
+                      path="/pokedex"
+                      element={
+                        <PrivateRoute>
+                          <PokedexPage />
+                        </PrivateRoute>
+                      }
+                    />
+                    <Route
+                      path="/daily_quests"
+                      element={
+                        <PrivateRoute>
+                          <DailyQuestsPage />
+                        </PrivateRoute>
+                      }
+                    />
+                    <Route
+                      path="/box"
+                      element={
+                        <PrivateRoute>
+                          <PokeBox />
+                        </PrivateRoute>
+                      }
+                    />
+                    <Route
+                      path="/badges"
+                      element={
+                        <PrivateRoute>
+                          <BadgeCase />
+                        </PrivateRoute>
+                      }
+                    />
+                    <Route
+                      path="/fishing"
+                      element={
+                        <PrivateRoute>
+                          <FishingPage />
+                        </PrivateRoute>
+                      }
+                    />
+                    <Route
+                      path="/judge"
+                      element={
+                        <PrivateRoute>
+                          <Judge />
+                        </PrivateRoute>
+                      }
+                    />
+                    <Route
+                      path="/my-characters"
+                      element={
+                        <PrivateRoute>
+                          <MyCharactersPage />
+                        </PrivateRoute>
+                      }
+                    />
+                    <Route
+                      path="/choose-pokemon"
+                      element={
+                        <PrivateRoute>
+                          <ChoosePokemonPage />
+                        </PrivateRoute>
+                      }
+                    />
+                    <Route
+                      path="/profile/:username"
+                      element={
+                        <PrivateRoute>
+                          <ProfilePage />
+                        </PrivateRoute>
+                      }
+                    />
+                    <Route
+                      path="/events"
+                      element={
+                        <PrivateRoute>
+                          <Notifications />
+                        </PrivateRoute>
+                      }
+                    />
+                    <Route
+                      path="/house-shop"
+                      element={
+                        <PrivateRoute>
+                          <HouseShopPage />
+                        </PrivateRoute>
+                      }
+                    />
+                    <Route
+                      path="/items"
+                      element={
+                        <PrivateRoute>
+                          <ItemsPage />
+                        </PrivateRoute>
+                      }
+                    />
+                    <Route path="/information" element={<InformationPage />} />
+                    <Route path="/attack/trainer" element={<TrainerAttack />} />
+                    <Route path="/attack/wild" element={<WildAttack />} />
+                    <Route path="/attack/map" element={<AttackMap />} />
+                    {InboxRoutes}
+                    {TownRoutes}
+                  </Routes>
+                </Header>
+              </Router>
+            </BattleProvider>
+          </GameProvider>
+        </FlagsmithProvider>
       </ThemeProvider>
     </CacheProvider>
   );

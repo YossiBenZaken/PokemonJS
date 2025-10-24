@@ -59,7 +59,6 @@ const TrainerAttack: React.FC = () => {
   } = useAttack(true);
 
   const potions = itemInfo.filter((item) => item.soort === "potions");
-  console.log(enemyPokemons);
   // Check if battle data is loaded
   if (!attackLog || !computerInfo || !pokemonInfo) {
     return (

@@ -1,5 +1,6 @@
 import { pokemonNaam } from "../controllers/battle-controller.js";
 import { query } from "../config/database.js";
+import {getFeatureValue} from '../middleware/feature-flags.js';
 
 export function getRandomInt(min, max) {
   // מחזיר מספר שלם בין min ל-max כולל
@@ -696,10 +697,7 @@ export async function onePokemonExp(
           );
           const user = userResults[0];
 
-          const expConfigResults = await query(
-            "SELECT * FROM configs WHERE config = 'exp'"
-          );
-          const valorDaExp = expConfigResults[0];
+          const valorDaExp = await getFeatureValue('exp_multiplier');
 
           let extraExp = 1.5;
           extraExp += parseFloat(usedInfo.trade) || 0;
@@ -714,7 +712,7 @@ export async function onePokemonExp(
               (computerInfo.base_exp * computerInfo.level * extraExp) /
                 7 /
                 aantal
-            ) * valorDaExp.valor;
+            ) * valorDaExp;
 
           // טיפול בפריטים מיוחדים
           const effortUpdates = {

@@ -21,6 +21,11 @@ jobs:
           cd frontend
           npm install
 
+      - name: Inject environment variables
+        run: |
+          echo "REACT_APP_SDK_KEY=${{ secrets.REACT_APP_FLAGSMITH_ENV_ID }}" > ./frontend/.env.production
+          echo "REACT_APP_API_URL=${{ secrets.REACT_APP_API_URL }}" >> ./frontend/.env.production
+
       - name: Build frontend
         run: |
           cd frontend

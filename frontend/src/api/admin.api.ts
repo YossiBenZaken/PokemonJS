@@ -486,29 +486,3 @@ export const givePremiumToPlayer = async (
   });
   return data;
 };
-
-// Game configurations
-export interface GameConfigs {
-  exp: number;
-  silver: number;
-}
-
-export interface GetGameConfigsResponse {
-  success: boolean;
-  configs: GameConfigs;
-}
-
-export const getGameConfigs = async (): Promise<GetGameConfigsResponse> => {
-  const { data } = await axiosInstance.get("/admin/game-configs");
-  return data;
-};
-
-export const updateExpMultiplier = async (multiplier: number): Promise<BanPlayerResponse> => {
-  const { data } = await axiosInstance.post("/admin/update-exp-multiplier", { multiplier });
-  return data;
-};
-
-export const updateSilverMultiplier = async (multiplier: number): Promise<BanPlayerResponse> => {
-  const { data } = await axiosInstance.post("/admin/update-silver-multiplier", { multiplier });
-  return data;
-};

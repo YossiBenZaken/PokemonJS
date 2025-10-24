@@ -11,7 +11,6 @@ import {
   getBannedIPs,
   getBannedPlayers,
   getCombinedLogs,
-  getGameConfigs,
   getMoveTutorList,
   getPokemons,
   getTMHMList,
@@ -28,8 +27,6 @@ import {
   unbanAccount,
   unbanIP,
   unbanPlayer,
-  updateExpMultiplier,
-  updateSilverMultiplier,
 } from "../controllers/admin-controller.js";
 
 import express from "express";
@@ -133,10 +130,5 @@ router.post("/give-premium-all", givePremiumToAll);
 
 // Give premium to specific player
 router.post("/give-premium-player", givePremiumToPlayer);
-
-// GameConfig
-router.get('/game-configs', getGameConfigs);
-router.post('/update-exp-multiplier', updateExpMultiplier);
-router.post('/update-silver-multiplier', updateSilverMultiplier);
 
 export default router;
