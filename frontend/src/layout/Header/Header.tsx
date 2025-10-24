@@ -54,6 +54,7 @@ import { socket } from "../../App";
 import { useBattle } from "../../contexts/BattleContext";
 import { useGame } from "../../contexts/GameContext";
 import { useFlagsmith } from "../../contexts/Flagsmith";
+import { sendGTMEvent } from "../../services/gtm";
 
 const drawerWidth = 220;
 
@@ -265,6 +266,11 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
   };
 
   const toggleUserMenu = () => {
+    sendGTMEvent("click_cta", {
+      label: "toggle_user_menu",
+      page: location.pathname,
+      user_id: selectedCharacter?.user_id || null,
+    })
     setIsUserMenuOpen(!isUserMenuOpen);
   };
 
