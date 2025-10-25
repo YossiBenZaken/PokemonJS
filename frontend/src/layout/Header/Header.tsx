@@ -270,14 +270,73 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
       label: "toggle_user_menu",
       page: location.pathname,
       user_id: selectedCharacter?.user_id || null,
-    })
+    });
     setIsUserMenuOpen(!isUserMenuOpen);
   };
 
+  // שליחת אוונט ל-GTM בכניסה ל-Header (page_view)
+  useEffect(() => {
+    sendGTMEvent("page_view", {
+      page: location.pathname,
+      user_id: selectedCharacter?.user_id || null,
+    });
+  }, [location.pathname, selectedCharacter?.user_id]);
+
   const handleLogout = async () => {
+    sendGTMEvent("logout", {
+      page: location.pathname,
+      user_id: selectedCharacter?.user_id || null,
+    });
     logoutFromGame();
     setIsLoggedIn(false);
     handleClose();
+  };
+
+  // שליחת אוונט ל-GTM בלחיצה על "השחקנים שלי"
+  const handleMyCharactersClick = () => {
+    sendGTMEvent("click_my_characters", {
+      page: location.pathname,
+      user_id: selectedCharacter?.user_id || null,
+    });
+    navigate("/my-characters");
+    handleClose();
+  };
+
+  // שליחת אוונט ל-GTM בלחיצה על שם המשתמש (פרופיל)
+  const handleProfileClick = () => {
+    sendGTMEvent("click_profile", {
+      page: location.pathname,
+      user_id: selectedCharacter?.user_id || null,
+    });
+    navigate("/profile/" + selectedCharacter?.username);
+  };
+
+  // שליחת אוונט ל-GTM בקבלת בונוס יומי
+  const handleDailyBonus = () => {
+    sendGTMEvent("click_daily_bonus", {
+      page: location.pathname,
+      user_id: selectedCharacter?.user_id || null,
+    });
+    getDailyBonus();
+  };
+
+  // שליחת אוונט ל-GTM בלחיצה על דיילי קווסטים
+  const handleDailyQuestsClick = () => {
+    sendGTMEvent("click_daily_quests", {
+      page: location.pathname,
+      user_id: selectedCharacter?.user_id || null,
+    });
+    navigate("/daily-quests");
+  };
+
+  // שליחת אוונט ל-GTM בפתיחה/סגירה של הסיידבר
+  const handleDrawerToggle = () => {
+    sendGTMEvent("toggle_sidebar", {
+      page: location.pathname,
+      user_id: selectedCharacter?.user_id || null,
+      drawer_open: !drawer,
+    });
+    setDrawer(!drawer);
   };
 
   const handleClose = () => {
@@ -397,7 +456,7 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
               <IconButton
                 color="inherit"
                 edge="start"
-                onClick={() => setDrawer(!drawer)}
+                onClick={handleDrawerToggle}
                 sx={{ marginLeft: 2 }}
               >
                 <MenuIcon size={22} />
@@ -433,7 +492,7 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
                         lineHeight: "11px",
                         fontSize: 8,
                       }}
-                      onClick={() => navigate("/daily-quests")}
+                      onClick={handleDailyQuestsClick}
                     >
                       {2 -
                         (selectedCharacter["quest_1"] +
@@ -455,7 +514,7 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
                     src={require("../../assets/images/icons/avatar/pokeball.png")}
                     alt="לחץ כאן כדי לקבל את הבונוס היומי שלך."
                     title="לחץ כאן כדי לקבל את הבונוס היומי שלך."
-                    onClick={getDailyBonus}
+                    onClick={handleDailyBonus}
                   />
                 )}
               {expConfig &&
@@ -500,10 +559,7 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
                 {isUserMenuOpen && (
                   <UserMenu>
                     <UserMenuItem
-                      onClick={() => {
-                        navigate("/my-characters");
-                        handleClose();
-                      }}
+                      onClick={handleMyCharactersClick}
                     >
                       <Users size={16} />
                       <span>השחקנים שלי</span>
@@ -537,9 +593,7 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
                     <Typography
                       variant="subtitle1"
                       sx={{ fontWeight: 600, cursor: "pointer" }}
-                      onClick={() => {
-                        navigate("/profile/" + selectedCharacter?.username);
-                      }}
+                      onClick={handleProfileClick}
                     >
                       {selectedCharacter?.username}
                     </Typography>
