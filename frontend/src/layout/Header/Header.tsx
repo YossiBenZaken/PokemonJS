@@ -679,6 +679,14 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
                           backgroundColor: "#334155",
                         },
                       }}
+                      onClick={() => {
+                        sendGTMEvent("navigation_click", {
+                          page: location.pathname,
+                          user_id: selectedCharacter?.user_id || null,
+                          nav_path: item.path,
+                          nav_label: item.label,
+                        });
+                      }}
                     >
                       <ListItemIcon sx={{ color: "inherit", minWidth: 36 }}>
                         {item.icon}
@@ -751,6 +759,14 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
                           "&.Mui-selected": {
                             backgroundColor: "#334155",
                           },
+                        }}
+                        onClick={() => {
+                          sendGTMEvent("navigation_click", {
+                            page: location.pathname,
+                            user_id: selectedCharacter?.user_id || null,
+                            nav_path: item.path,
+                            nav_label: item.label,
+                          });
                         }}
                       >
                         <ListItemIcon sx={{ color: "inherit", minWidth: 0 }}>

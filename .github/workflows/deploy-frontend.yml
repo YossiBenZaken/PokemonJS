@@ -11,35 +11,27 @@ on:
 jobs:
   deploy-frontend:
     runs-on: ubuntu-latest
-    env:
-      REACT_APP_FLAGSMITH_ENV_ID: ${{ secrets.REACT_APP_FLAGSMITH_ENV_ID }}
-      REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Cache node modules
-        id: cache-node-modules
-        uses: actions/cache@v3
-        with:
-          path: frontend/node_modules
-          key: ${{ runner.os }}-node-modules-${{ hashFiles('frontend/package-lock.json') }}
-
-      - name: Install deps if needed & Build
-        working-directory: frontend
+      - name: Install frontend deps
         run: |
-          if [ ! -d "node_modules" ] || [ "$(git diff --name-only HEAD^ HEAD | grep 'package-lock.json')" != "" ]; then
-            echo "Installing dependencies..."
-            npm install
-          else
-            echo "Skipping npm install (cache valid)"
-          fi
-          echo "REACT_APP_FLAGSMITH_ENV_ID=$REACT_APP_FLAGSMITH_ENV_ID" > .env.production
-          echo "REACT_APP_API_URL=$REACT_APP_API_URL" >> .env.production
+          cd frontend
+          npm install
+
+      - name: Inject environment variables
+        run: |
+          echo "REACT_APP_FLAGSMITH_ENV_ID=${{ secrets.REACT_APP_FLAGSMITH_ENV_ID }}" > ./frontend/.env.production
+          echo "REACT_APP_API_URL=${{ secrets.REACT_APP_API_URL }}" >> ./frontend/.env.production
+
+      - name: Build frontend
+        run: |
+          cd frontend
           CI=false npm run build
 
-      - name: Deploy build to server
+      - name: Deploy frontend build
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -48,7 +40,7 @@ jobs:
           source: "frontend/build/*"
           target: "/Users/${{ secrets.SERVER_USER }}/server/sites"
 
-      - name: Restart Nginx container
+      - name: Restart Nginx container (optional)
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -56,4 +48,4 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             cd /Users/${{ secrets.SERVER_USER }}/server
-            docker compose restart nginx || true
+            /usr/local/bin/docker compose restart nginx || true
