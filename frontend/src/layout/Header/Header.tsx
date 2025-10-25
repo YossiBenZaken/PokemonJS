@@ -269,7 +269,7 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
     sendGTMEvent("click_cta", {
       label: "toggle_user_menu",
       page: location.pathname,
-      user_id: selectedCharacter?.user_id || null,
+      app_user_id: selectedCharacter?.user_id || null,
     });
     setIsUserMenuOpen(!isUserMenuOpen);
   };
@@ -278,14 +278,14 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
   useEffect(() => {
     sendGTMEvent("page_view", {
       page: location.pathname,
-      user_id: selectedCharacter?.user_id || null,
+      app_user_id: selectedCharacter?.user_id || null,
     });
   }, [location.pathname, selectedCharacter?.user_id]);
 
   const handleLogout = async () => {
     sendGTMEvent("logout", {
       page: location.pathname,
-      user_id: selectedCharacter?.user_id || null,
+      app_user_id: selectedCharacter?.user_id || null,
     });
     logoutFromGame();
     setIsLoggedIn(false);
@@ -296,7 +296,7 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
   const handleMyCharactersClick = () => {
     sendGTMEvent("click_my_characters", {
       page: location.pathname,
-      user_id: selectedCharacter?.user_id || null,
+      app_user_id: selectedCharacter?.user_id || null,
     });
     navigate("/my-characters");
     handleClose();
@@ -306,7 +306,7 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
   const handleProfileClick = () => {
     sendGTMEvent("click_profile", {
       page: location.pathname,
-      user_id: selectedCharacter?.user_id || null,
+      app_user_id: selectedCharacter?.user_id || null,
     });
     navigate("/profile/" + selectedCharacter?.username);
   };
@@ -315,7 +315,7 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
   const handleDailyBonus = () => {
     sendGTMEvent("click_daily_bonus", {
       page: location.pathname,
-      user_id: selectedCharacter?.user_id || null,
+      app_user_id: selectedCharacter?.user_id || null,
     });
     getDailyBonus();
   };
@@ -324,7 +324,7 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
   const handleDailyQuestsClick = () => {
     sendGTMEvent("click_daily_quests", {
       page: location.pathname,
-      user_id: selectedCharacter?.user_id || null,
+      app_user_id: selectedCharacter?.user_id || null,
     });
     navigate("/daily-quests");
   };
@@ -333,7 +333,7 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
   const handleDrawerToggle = () => {
     sendGTMEvent("toggle_sidebar", {
       page: location.pathname,
-      user_id: selectedCharacter?.user_id || null,
+      app_user_id: selectedCharacter?.user_id || null,
       drawer_open: !drawer,
     });
     setDrawer(!drawer);
@@ -682,7 +682,7 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
                       onClick={() => {
                         sendGTMEvent("navigation_click", {
                           page: location.pathname,
-                          user_id: selectedCharacter?.user_id || null,
+                          app_user_id: selectedCharacter?.user_id || null,
                           nav_path: item.path,
                           nav_label: item.label,
                         });
@@ -763,7 +763,7 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
                         onClick={() => {
                           sendGTMEvent("navigation_click", {
                             page: location.pathname,
-                            user_id: selectedCharacter?.user_id || null,
+                            app_user_id: selectedCharacter?.user_id || null,
                             nav_path: item.path,
                             nav_label: item.label,
                           });
