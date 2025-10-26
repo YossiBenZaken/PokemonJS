@@ -1450,7 +1450,7 @@ export const updateLevelChoice = async (req, res) => {
 
     // Check if user has premium (rank >= 16)
     const [user] = await query(
-      "SELECT rank FROM gebruikers WHERE user_id = ?",
+      "SELECT `rank` FROM gebruikers WHERE user_id = ?",
       [userId]
     );
 

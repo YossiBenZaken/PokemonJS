@@ -40,7 +40,7 @@ export const executeTrade = async (req, res) => {
 
     // Check user restrictions and rank
     const [user] = await query(
-      "SELECT username, rank, `restrict` FROM gebruikers WHERE user_id = ?",
+      "SELECT username, `rank`, `restrict` FROM gebruikers WHERE user_id = ?",
       [userId]
     );
 

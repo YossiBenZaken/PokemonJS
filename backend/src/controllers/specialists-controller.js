@@ -202,7 +202,7 @@ export const changeNickname = async (req, res) => {
 
     // Get user info
     const [user] = await query(
-      "SELECT rank, silver, premiumaccount FROM gebruikers WHERE user_id = ?",
+      "SELECT `rank`, `silver`, `premiumaccount` FROM gebruikers WHERE user_id = ?",
       [userId]
     );
 
