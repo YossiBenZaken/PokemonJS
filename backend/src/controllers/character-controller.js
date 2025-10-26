@@ -1200,7 +1200,7 @@ export const getUserSettings = async (req, res) => {
     const [user] = await query(
       `SELECT 
         see_team, see_badges, chat, duel_invitation, 
-        exibepokes, lvl_choose, rank,
+        exibepokes, lvl_choose, \`rank\`,
         'Badge case' as badgeCase
        FROM gebruikers 
        WHERE user_id = ?`,
