@@ -97,7 +97,7 @@ export const handleMove = async (req, res) => {
             level = Math.floor(Math.random() * (maxLevel - minLevel + 1)) + minLevel;
           } else {
             // Use your rankpokemon function logic here
-            level = await calculatePokemonLevel(user.rank);
+            level = await calculatePokemonLevel(user);
           }
 
           // Check for evolution
@@ -244,14 +244,48 @@ async function checkEvolution(wildId, level) {
 }
 
 // Helper function to calculate Pokemon level based on rank
-export async function calculatePokemonLevel(rank) {
-  // Implement your rankpokemon logic here
-  // This is a simplified version - replace with your actual logic
-  const baseLevel = 5;
-  const levelIncrease = Math.floor(rank / 2);
-  const randomVariation = Math.floor(Math.random() * 6) - 2; // -2 to +3
+export async function calculatePokemonLevel(user) {
+  if(user.rank > 15 && user.lvl_choose != "") {
+    return getRandomLevel(user.lvl_choose);
+  }
   
-  return Math.max(1, baseLevel + levelIncrease + randomVariation);
+  switch(user.rank) {
+    case 1: return 5;
+    case 2: return getRandomLevel("5-10");
+    case 3: return getRandomLevel("5-15"); 
+    case 4: return getRandomLevel("8-20");
+    case 5: return getRandomLevel("10-25");
+    case 6: return getRandomLevel("13-30");
+    case 7: return getRandomLevel("15-35");
+    case 8: return getRandomLevel("18-40");
+    case 9: return getRandomLevel("20-45");
+    case 10: return getRandomLevel("25-50");
+    case 11: return getRandomLevel("28-55");
+    case 12: return getRandomLevel("30-60");
+    case 13: return getRandomLevel("33-65");
+    case 14: return getRandomLevel("35-70");
+    case 15: return getRandomLevel("38-75");
+    case 16: return getRandomLevel("40-80");
+    case 17: return getRandomLevel("43-85");
+    case 18: return getRandomLevel("45-90");
+    case 19: return getRandomLevel("48-95");
+    case 20: case 21:case 22: case 23: case 24:  case 25: case 26: return getRandomLevel("50-100");
+    case 27: return getRandomLevel("55-100");
+    case 28: return getRandomLevel("60-100");
+    case 29: return getRandomLevel("65-100");
+    case 30: return getRandomLevel("70-100");
+    case 31: return getRandomLevel("80-100");
+    case 32: return getRandomLevel("90-100");
+    case 33: return getRandomLevel("50-100");
+    default: return 5;
+  }
+}
+
+const getRandomLevel = (lvl_choose) => {
+    const levelRange = lvl_choose.split("-");
+    const minLevel = parseInt(levelRange[0]);
+    const maxLevel = parseInt(levelRange[1]);
+    return Math.floor(Math.random() * (maxLevel - minLevel + 1)) + minLevel;
 }
 
 // Export functions

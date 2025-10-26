@@ -506,7 +506,7 @@ function isValidDate(d) {
   return d instanceof Date && !isNaN(d);
 }
 
-function passwordHashed(password) {
+export function passwordHashed(password) {
   // md5(strrev(keyzitapass))
   const salt = crypto
     .createHash("md5")

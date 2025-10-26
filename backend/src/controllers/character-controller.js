@@ -3,6 +3,7 @@ import { query, transaction } from "../config/database.js";
 import crypto from "crypto";
 import { date } from "../helpers/date.js";
 import jwt from "jsonwebtoken";
+import { passwordHashed } from "./auth-controller.js";
 
 // יצירת דמות חדשה
 export const createCharacter = async (req, res) => {
@@ -1189,5 +1190,291 @@ export const getFishingLeaders = async (req, res) => {
         message: "שגיאה בשליפת טבלאות",
         error: err.message,
       });
+  }
+};
+
+export const getUserSettings = async (req, res) => {
+  try {
+    const userId = req.user.user_id;
+
+    const [user] = await query(
+      `SELECT 
+        see_team, see_badges, chat, duel_invitation, 
+        exibepokes, lvl_choose, rank,
+        'Badge case' as badgeCase
+       FROM gebruikers 
+       WHERE user_id = ?`,
+      [userId]
+    );
+
+    const [account] = await query(
+      "SELECT email, shared FROM accounts WHERE acc_id = ?",
+      [req.user.acc_id]
+    );
+
+    // Parse shared users
+    const sharedUsers = account.shared ? account.shared.split(',').filter(Boolean) : [];
+    
+    // Get shared usernames
+    const sharedWithDetails = [];
+    for (const sharedId of sharedUsers) {
+      const [sharedUser] = await query(
+        "SELECT user_id, username FROM gebruikers WHERE user_id = ?",
+        [sharedId]
+      );
+      if (sharedUser) {
+        sharedWithDetails.push(sharedUser);
+      }
+    }
+
+    return res.json({
+      success: true,
+      settings: {
+        ...user,
+        email: account.email,
+        sharedWith: sharedWithDetails,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "שגיאה בטעינת הגדרות",
+      error: error.message,
+    });
+  }
+};
+
+export const updatePersonalSettings = async (req, res) => {
+  try {
+    const userId = req.user.user_id;
+    const { see_team, see_badges, chat, duel_invitation, exibepokes } = req.body;
+
+    // Validation
+    if (![0, 1].includes(Number(see_team)) || 
+        ![0, 1].includes(Number(see_badges)) || 
+        ![0, 1].includes(Number(duel_invitation)) ||
+        ![0, 1].includes(Number(chat))) {
+      return res.status(400).json({
+        success: false,
+        message: "ערכים לא תקינים",
+      });
+    }
+
+    await query(
+      `UPDATE gebruikers SET 
+        see_team = ?, 
+        see_badges = ?, 
+        chat = ?,
+        duel_invitation = ?, 
+        exibepokes = ?
+       WHERE user_id = ?`,
+      [see_team, see_badges, chat, duel_invitation, exibepokes, userId]
+    );
+
+    return res.json({
+      success: true,
+      message: "הגדרות אישיות עודכנו בהצלחה!",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "שגיאה בעדכון הגדרות",
+      error: error.message,
+    });
+  }
+};
+
+export const changePassword = async (req, res) => {
+  try {
+    const accId = req.user.acc_id;
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "כל השדות נדרשים",
+      });
+    }
+
+    if (currentPassword === newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "הסיסמה הישנה והחדשה זהות",
+      });
+    }
+
+    if (newPassword.length < 5) {
+      return res.status(400).json({
+        success: false,
+        message: "הסיסמה קצרה מדי (מינימום 5 תווים)",
+      });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "הסיסמה החדשה ואימות הסיסמה לא תואמים",
+      });
+    }
+
+    // Get current password hash
+    const [account] = await query(
+      "SELECT password, username FROM accounts WHERE acc_id = ?",
+      [accId]
+    );
+
+    // Verify current password
+    const hashedPassword = passwordHashed(currentPassword);
+    const isValid = hashedPassword != account.password;
+    if (!isValid) {
+      return res.status(400).json({
+        success: false,
+        message: "הסיסמה הנוכחית שגויה",
+      });
+    }
+
+    // Hash new password
+    const newPasswordHash = passwordHashed(newPassword);
+    const oldPasswordHash = passwordHashed(currentPassword);
+
+    // Update password
+    await query(
+      "UPDATE accounts SET password = ? WHERE acc_id = ?",
+      [newPasswordHash, accId]
+    );
+
+    // Log password change
+    await query(
+      `INSERT INTO log_troca_senha (id_user, nick_user, senha_antiga, senha_nova) 
+       VALUES (?, ?, ?, ?)`,
+      [accId, account.username, oldPasswordHash, newPasswordHash]
+    );
+
+    return res.json({
+      success: true,
+      message: "הסיסמה שונתה בהצלחה!",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "שגיאה בשינוי סיסמה",
+      error: error.message,
+    });
+  }
+};
+
+export const changeEmail = async (req, res) => {
+  try {
+    const accId = req.user.acc_id;
+    const { newEmail, confirmEmail } = req.body;
+
+    if (!newEmail) {
+      return res.status(400).json({
+        success: false,
+        message: "הזן אימייל",
+      });
+    }
+
+    const emailRegex = /^[A-Z0-9._%-]+@[A-Z0-9][A-Z0-9.-]{0,61}[A-Z0-9]\.[A-Z]{2,6}$/i;
+    if (!emailRegex.test(newEmail)) {
+      return res.status(400).json({
+        success: false,
+        message: "הזן אימייל תקין",
+      });
+    }
+
+    if (newEmail !== confirmEmail) {
+      return res.status(400).json({
+        success: false,
+        message: "האימיילים לא זהים",
+      });
+    }
+
+    // Check if email already exists
+    const existing = await query(
+      "SELECT email FROM accounts WHERE email = ? AND acc_id != ?",
+      [newEmail, accId]
+    );
+
+    if (existing && existing.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: "האימייל כבר בשימוש",
+      });
+    }
+
+    // Get old email and username
+    const [account] = await query(
+      "SELECT email, username FROM accounts WHERE acc_id = ?",
+      [accId]
+    );
+
+    // Update email
+    await query(
+      "UPDATE accounts SET email = ? WHERE acc_id = ?",
+      [newEmail, accId]
+    );
+
+    // Log email change
+    await query(
+      `INSERT INTO log_troca_email (id_user, nick_user, de_email, para_email) 
+       VALUES (?, ?, ?, ?)`,
+      [accId, account.username, account.email, newEmail]
+    );
+
+    return res.json({
+      success: true,
+      message: `האימייל שונה בהצלחה! האימייל החדש: ${newEmail}`,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "שגיאה בשינוי אימייל",
+      error: error.message,
+    });
+  }
+};
+
+export const updateLevelChoice = async (req, res) => {
+  try {
+    const userId = req.user.user_id;
+    const { levelRange } = req.body;
+
+    const allowedRanges = ['5-20', '20-40', '40-60', '60-80'];
+    if (!allowedRanges.includes(levelRange)) {
+      return res.status(400).json({
+        success: false,
+        message: "טווח רמות לא תקין",
+      });
+    }
+
+    // Check if user has premium (rank >= 16)
+    const [user] = await query(
+      "SELECT rank FROM gebruikers WHERE user_id = ?",
+      [userId]
+    );
+
+    if (user.rank < 16) {
+      return res.status(403).json({
+        success: false,
+        message: "תכונה זו זמינה רק למשתמשי Premium",
+      });
+    }
+
+    await query(
+      "UPDATE gebruikers SET lvl_choose = ? WHERE user_id = ?",
+      [levelRange, userId]
+    );
+
+    return res.json({
+      success: true,
+      message: `עכשיו תמצא פוקימונים ברמות ${levelRange}`,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "שגיאה בעדכון רמות",
+      error: error.message,
+    });
   }
 };

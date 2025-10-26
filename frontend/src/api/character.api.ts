@@ -1,5 +1,4 @@
 import { Character } from "../pages/MyCharacters";
-import { UserItem } from "../models/item.model";
 import { axiosInstance } from "./axios";
 
 export interface CreateCharacterRequest {
@@ -89,8 +88,8 @@ export interface StarterPokemon {
   attack_base: number;
   defence_base: number;
   speed_base: number;
-  'spc.attack_base': number;
-  'spc.defence_base': number;
+  "spc.attack_base": number;
+  "spc.defence_base": number;
   hp_base: number;
   aanval_1: string;
   aanval_2: string;
@@ -336,19 +335,21 @@ export const fish = async (userId: number): Promise<any> => {
   return data;
 };
 
-export const getFishingLeaders = async(): Promise<any> => {
+export const getFishingLeaders = async (): Promise<any> => {
   const { data } = await axiosInstance.get("/characters/get-fishing-leaders");
   return data;
-}
+};
 
-export const judgePokemon = async(userId: number,pokemonId: number): Promise<JudgeResult> => {
-  const {data} = await axiosInstance.post('/characters/judge', {
+export const judgePokemon = async (
+  userId: number,
+  pokemonId: number
+): Promise<JudgeResult> => {
+  const { data } = await axiosInstance.post("/characters/judge", {
     userId,
-    pokemonId
+    pokemonId,
   });
   return data.data;
-
-}
+};
 
 export type JudgeResult = {
   pokemon: { id: number; name: string };
@@ -448,3 +449,71 @@ export interface GetUserProfileResponse {
     formatted: ProfileFormatted;
   };
 }
+
+export interface UserSettings {
+  see_team: number;
+  see_badges: number;
+  chat: string;
+  duel_invitation: number;
+  exibepokes: string;
+  lvl_choose: string;
+  rank: number;
+  badgeCase: number;
+  email: string;
+  sharedWith: Array<{ user_id: number; username: string }>;
+}
+
+export const getUserSettings = async (): Promise<{
+  success: boolean;
+  settings: UserSettings;
+}> => {
+  const { data } = await axiosInstance.get("/characters/account-settings");
+  return data;
+};
+
+export interface PersonalSettingsUpdate {
+  see_team: number;
+  see_badges: number;
+  chat: string;
+  duel_invitation: number;
+  exibepokes: string;
+}
+
+export const updatePersonalSettings = async (
+  settings: PersonalSettingsUpdate
+): Promise<{ success: boolean; message: string }> => {
+  const { data } = await axiosInstance.put(
+    "/characters/account-settings/personal",
+    settings
+  );
+  return data;
+};
+
+export const changePassword = async (
+  currentPassword: string,
+  newPassword: string,
+  confirmPassword: string
+): Promise<{ success: boolean; message: string }> => {
+  const { data } = await axiosInstance.put("/characters/account-settings/password", {
+    currentPassword,
+    newPassword,
+    confirmPassword,
+  });
+  return data;
+};
+
+export const changeEmail = async (
+  newEmail: string,
+  confirmEmail: string
+): Promise<{ success: boolean; message: string }> => {
+  const { data } = await axiosInstance.put("/characters/account-settings/email", {
+    newEmail,
+    confirmEmail,
+  });
+  return data;
+};
+
+export const updateLevelChoice = async (levelRange: string): Promise<{ success: boolean; message: string }> => {
+  const { data } = await axiosInstance.put("/characters/account-settings/level-choice", { levelRange });
+  return data;
+};

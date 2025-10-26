@@ -39,7 +39,7 @@ export const startWildBattle = async (req, res) => {
       [gebied, user.world, rarity]
     );
     computer_id = randomComputer.wild_id;
-    computer_level = await calculatePokemonLevel(user.rank);
+    computer_level = await calculatePokemonLevel(user);
   }
 
   // 1. מחיקת קרבות ישנים

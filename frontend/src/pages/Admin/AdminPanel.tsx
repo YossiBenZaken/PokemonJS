@@ -74,7 +74,6 @@ const actions: Action[] = [
     path: "/admin/mass-donation",
     icon: <Coins />,
   },
-  { label: "קונפיגורציה", level: 2, path: "/admin/config", icon: <Database /> },
 ];
 
 export default function AdminPanel() {

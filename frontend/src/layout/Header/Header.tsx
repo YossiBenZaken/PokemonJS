@@ -301,6 +301,15 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
     navigate("/my-characters");
     handleClose();
   };
+  
+  const handleAccountSettings = () => {
+    sendGTMEvent("click_account_settings", {
+      page: location.pathname,
+      app_user_id: selectedCharacter?.user_id || null,
+    });
+    navigate("/account-settings");
+    handleClose();
+  };
 
   // שליחת אוונט ל-GTM בלחיצה על שם המשתמש (פרופיל)
   const handleProfileClick = () => {
@@ -563,6 +572,12 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
                     >
                       <Users size={16} />
                       <span>השחקנים שלי</span>
+                    </UserMenuItem>
+                    <UserMenuItem
+                      onClick={handleAccountSettings}
+                    >
+                      <Users size={16} />
+                      <span>עריכת פרופיל</span>
                     </UserMenuItem>
                     <hr
                       style={{

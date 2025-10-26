@@ -44,6 +44,7 @@ import { prefixer } from "stylis";
 import rtlPlugin from "@mui/stylis-plugin-rtl";
 import { SignupPage } from "./pages/Signup";
 import { FlagsmithProvider } from "./contexts/Flagsmith";
+import AccountSettingsPage from "./pages/Profile/AccountSettingsPage";
 
 const cacheRtl = createCache({
   key: "pokemon",
@@ -83,6 +84,14 @@ function App() {
                       element={
                         <PrivateRoute>
                           <NewCharacterPage />
+                        </PrivateRoute>
+                      }
+                    />
+                    <Route
+                      path="/account-settings"
+                      element={
+                        <PrivateRoute>
+                          <AccountSettingsPage />
                         </PrivateRoute>
                       }
                     />
