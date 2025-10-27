@@ -1,4 +1,4 @@
-import { AanvalLog } from "../../../api/battle.api";
+import { AttackLog } from "../../../api/battle.api";
 import styled, {keyframes} from "styled-components";
 
 // ✅ Define the keyframes
@@ -77,7 +77,7 @@ export const TableDuelArena = styled("table")(() => ({
 }));
 
 export const BattleArea = styled("table")<{
-  attackLog: AanvalLog;
+  attackLog: AttackLog;
   background: string | undefined;
 }>(({ attackLog, background }) => {
   let backgroundImage = "";

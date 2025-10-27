@@ -3,7 +3,7 @@ import { useBattle } from "../../contexts/BattleContext";
 import { socket } from "../../App";
 import { useNavigate } from "react-router-dom";
 import {
-  AanvalLog,
+  AttackLog,
   attackChangePokemon,
   AttackChangePokemonResponse,
   attackUsePokeball,
@@ -177,17 +177,17 @@ export const useAttack = (isTrainer: boolean = false) => {
             "InitBattle",
             attackLogId,
             ({
-              aanval_log,
+              attack_log,
               computer_info,
               pokemon_info,
               enemyPokemons,
             }: {
               computer_info: ComputerInfo;
               pokemon_info: PokemonInfo;
-              aanval_log: AanvalLog;
+              attack_log: AttackLog;
               enemyPokemons: { id: number; leven: number }[];
             }) => {
-              setAttackLog(aanval_log);
+              setAttackLog(attack_log);
               setComputerInfo(computer_info);
               setPokemonInfo(pokemon_info);
               setEnemyPokemons(enemyPokemons);
@@ -836,7 +836,7 @@ export const useAttack = (isTrainer: boolean = false) => {
           if (button) {
             if (move) {
               button.innerHTML = move;
-              button.style.backgroundImage = `url(${require(`../../assets/images/attack/moves/${moveType.soort}.png`)})`;
+              button.style.backgroundImage = `url(${require(`../../assets/images/attack/moves/${moveType.type}.png`)})`;
               button.style.display = "block";
             } else {
               button.style.display = "none";
@@ -1087,7 +1087,7 @@ export const useAttack = (isTrainer: boolean = false) => {
 
   const getTypeOfAttack = (attackName: string) => {
     return (
-      attacks.find((attack) => attack.naam === attackName)?.soort || "Normal"
+      attacks.find((attack) => attack.name === attackName)?.type || "Normal"
     );
   };
 

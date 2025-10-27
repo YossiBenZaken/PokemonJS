@@ -1,5 +1,5 @@
 import {
-  AanvalLog,
+  AttackLog,
   ComputerInfo,
   DataGrow,
   PokemonInfo,
@@ -33,8 +33,8 @@ interface BattleContextType {
   pokemonInfo: PokemonInfo | undefined;
   setPokemonInfo: React.Dispatch<React.SetStateAction<PokemonInfo | undefined>>;
 
-  attackLog: AanvalLog | undefined;
-  setAttackLog: React.Dispatch<React.SetStateAction<AanvalLog | undefined>>;
+  attackLog: AttackLog | undefined;
+  setAttackLog: React.Dispatch<React.SetStateAction<AttackLog | undefined>>;
 
   pokemonEvolve: DataGrow | undefined;
   setPokemonEvolve: React.Dispatch<React.SetStateAction<DataGrow|undefined>>;
@@ -59,7 +59,7 @@ export const BattleProvider: React.FC<BattleProviderProps> = ({ children }) => {
 
   const [computerInfo, setComputerInfo] = useState<ComputerInfo>();
   const [pokemonInfo, setPokemonInfo] = useState<PokemonInfo>();
-  const [attackLog, setAttackLog] = useState<AanvalLog>();
+  const [attackLog, setAttackLog] = useState<AttackLog>();
   const [pokemonEvolve, setPokemonEvolve] = useState<DataGrow>();
   const [enemyPokemons, setEnemyPokemons] = useState<
     { id: number; leven: number }[]

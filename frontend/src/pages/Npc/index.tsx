@@ -1,5 +1,5 @@
 import {
-  AanvalLog,
+  AttackLog,
   ComputerInfo,
   PokemonInfo,
   startRandomTrainer,
@@ -32,19 +32,19 @@ const NpcPage: React.FC = () => {
       setChallengeData(response.data);
       socket.emit(
         "InitBattle",
-        response.data.trainer.aanvalLogId,
+        response.data.trainer.attackLogId,
         ({
-          aanval_log,
+          attack_log,
           computer_info,
           pokemon_info,
           enemyPokemons
         }: {
           computer_info: ComputerInfo;
           pokemon_info: PokemonInfo;
-          aanval_log: AanvalLog;
+          attack_log: AttackLog;
           enemyPokemons: { id: number; leven: number }[];
         }) => {
-          setAttackLog(aanval_log);
+          setAttackLog(attack_log);
           setComputerInfo(computer_info);
           setPokemonInfo(pokemon_info);
           setEnemyPokemons(enemyPokemons);

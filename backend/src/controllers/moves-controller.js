@@ -86,13 +86,13 @@ export const listAvailableMoves = async (req, res) => {
       );
 
       for (const row of levelRows) {
-        const [move] = await query("SELECT * FROM aanval WHERE naam = ? LIMIT 1", [row.aanval]);
+        const [move] = await query("SELECT * FROM attack WHERE name = ? LIMIT 1", [row.aanval]);
         if (!move) continue;
-        if (move.naam === "Sketch") continue;
-        if (hasMoveAlready(pokemon, move.naam)) continue;
+        if (move.name === "Sketch") continue;
+        if (hasMoveAlready(pokemon, move.name)) continue;
 
         const price = calculateReminderCost(move);
-        moves.push({ name: move.naam, type: move.soort, price });
+        moves.push({ name: move.name, type: move.type, price });
       }
     }
 
@@ -125,7 +125,7 @@ export const learnMove = async (req, res) => {
       if (!row) return res.status(404).json({ success: false, message: "מהלך לא נתמך" });
       price = { silver: Number(row.silver) || 0, gold: Number(row.gold) || 0 };
     } else {
-      const [move] = await query("SELECT * FROM aanval WHERE naam = ? LIMIT 1", [moveName]);
+      const [move] = await query("SELECT * FROM attack WHERE naam = ? LIMIT 1", [moveName]);
       if (!move) return res.status(404).json({ success: false, message: "מהלך לא נמצא" });
       // verify learned by level
       const [allowed] = await query(

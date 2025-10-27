@@ -1,10 +1,10 @@
 export interface Attack {
     id: number
-    naam: string
+    name: string
     sterkte: number
     hp_schade: number
     critical: number
-    soort: string
+    type: string
     mis: string
     aantalkeer: string
     effect_kans: string

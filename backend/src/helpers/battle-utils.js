@@ -138,7 +138,7 @@ export function createNewComputerStats(
   return newComputer;
 }
 
-export async function createPlayer(userId, aanvalLogId) {
+export async function createPlayer(userId, attackLogId) {
   const pokemons = await query(
     "SELECT * FROM pokemon_speler WHERE user_id=? AND opzak='ja' ORDER BY opzak_nummer ASC",
     [userId]
@@ -146,12 +146,12 @@ export async function createPlayer(userId, aanvalLogId) {
   for (const p of pokemons) {
     await query(
       `INSERT INTO pokemon_speler_gevecht 
-          (id, user_id, aanval_log_id, levenmax, leven, attack, defence, speed, \`spc.attack\`, \`spc.defence\`, exp, totalexp, effect, hoelang) 
+          (id, user_id, attack_log_id, levenmax, leven, attack, defence, speed, \`spc.attack\`, \`spc.defence\`, exp, totalexp, effect, hoelang) 
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         p.id,
         userId,
-        aanvalLogId,
+        attackLogId,
         p.levenmax,
         p.leven,
         p.attack,
@@ -168,16 +168,16 @@ export async function createPlayer(userId, aanvalLogId) {
   }
 }
 
-export async function saveAttack(userId, attackInfo, aanvalLogId) {
+export async function saveAttack(userId, attackInfo, attackLogId) {
   const gebruikt = `,${attackInfo.pokemonid},`;
   await query(
-    "UPDATE aanval_log SET laatste_aanval=?, tegenstanderid=?, pokemonid=?, gebruikt_id=? WHERE id=?",
+    "UPDATE attack_log SET laatste_aanval=?, tegenstanderid=?, pokemonid=?, gebruikt_id=? WHERE id=?",
     [
       attackInfo.begin,
       attackInfo.computer_id,
       attackInfo.pokemonid,
       gebruikt,
-      aanvalLogId,
+      attackLogId,
     ]
   );
   await query("UPDATE gebruikers SET page='trainer-attack' WHERE user_id=?", [
@@ -241,7 +241,7 @@ export async function updatePokedex(wild_id, wat, userId) {
 }
 
 export const cleanupBattle = async (userId) => {
-  await query("DELETE FROM aanval_log WHERE user_id=?", [userId]);
+  await query("DELETE FROM attack_log WHERE user_id=?", [userId]);
   await query("DELETE FROM pokemon_speler_gevecht WHERE user_id=?", [userId]);
 
   const inHand = await query(
@@ -256,17 +256,17 @@ export const cleanupBattle = async (userId) => {
 /**
  * מוחק את נתוני הקרב
  */
-export async function removeAttack(userId, aanvalLogId) {
+export async function removeAttack(userId, attackLogId) {
   await query("UPDATE gebruikers SET page='attack_start' WHERE user_id=?", [
     userId,
   ]);
-  await query("DELETE FROM pokemon_wild_gevecht WHERE aanval_log_id=?", [
-    aanvalLogId,
+  await query("DELETE FROM pokemon_wild_gevecht WHERE attack_log_id=?", [
+    attackLogId,
   ]);
-  await query("DELETE FROM pokemon_speler_gevecht WHERE aanval_log_id=?", [
-    aanvalLogId,
+  await query("DELETE FROM pokemon_speler_gevecht WHERE attack_log_id=?", [
+    attackLogId,
   ]);
-  await query("DELETE FROM aanval_log WHERE id=?", [aanvalLogId]);
+  await query("DELETE FROM attack_log WHERE id=?", [attackLogId]);
 }
 
 /**
@@ -648,13 +648,13 @@ export async function levelGroei(levelNieuw, pokemon, userId) {
 }
 
 export async function onePokemonExp(
-  aanvalLog,
+  attackLog,
   pokemonInfo,
   computerInfo,
   userId
 ) {
   try {
-    const ids = aanvalLog.gebruikt_id
+    const ids = attackLog.gebruikt_id
       .split(",")
       .filter((id) => id.trim() !== "");
     const ret = { bericht: "<br />", exp: null };
@@ -806,9 +806,9 @@ export async function onePokemonExp(
     }
 
     // עדכון רשימת פוקימונים שהשתתפו
-    await query("UPDATE aanval_log SET gebruikt_id = ? WHERE id = ?", [
+    await query("UPDATE attack_log SET gebruikt_id = ? WHERE id = ?", [
       `,${pokemonInfo.id},`,
-      aanvalLog.id,
+      attackLog.id,
     ]);
 
     return ret;
@@ -819,7 +819,7 @@ export async function onePokemonExp(
 }
 
 export const getAttackInfo = async (attackName) => {
-  const [attack] = await query("SELECT * FROM aanval WHERE naam = ?", [
+  const [attack] = await query("SELECT * FROM attack WHERE name = ?", [
     attackName,
   ]);
 
@@ -836,19 +836,19 @@ export const multipleHits = (attackInfo, damage) => {
         ? Math.floor(Math.random() * 2) + 2
         : Math.floor(Math.random() * 2) + 4;
     finalDamage = damage * times;
-    message = `<br/>${attackInfo.naam} hit ${times} times!`;
+    message = `<br/>${attackInfo.name} hit ${times} times!`;
   } else if (attackInfo.aantalkeer === "1-2") {
     const times = Math.random() < 0.75 ? 1 : 2;
     finalDamage = damage * times;
     if (times === 2)
-      message = `<br/>${attackInfo.naam} hit twice due to Parental Bond!`;
+      message = `<br/>${attackInfo.name} hit twice due to Parental Bond!`;
   } else if (
     attackInfo.aantalkeer !== "1" &&
     !isNaN(parseInt(attackInfo.aantalkeer))
   ) {
     const times = parseInt(attackInfo.aantalkeer);
     finalDamage = damage * times;
-    message = `<br/>${attackInfo.naam} hit ${times} times!`;
+    message = `<br/>${attackInfo.name} hit ${times} times!`;
   }
 
   return { damage: finalDamage, message };
@@ -877,7 +877,7 @@ export async function applyAttackEffect(
   attackInfo,
   opponentInfo,
   attackerInfo,
-  aanvalLog,
+  attackLog,
   playerPokemon,
   computerPokemon,
   attackStatus,
@@ -928,7 +928,7 @@ export async function applyAttackEffect(
           [effectInfo.actie, turns, opponentInfo.id]
         );
 
-        let message = `${attackerInfo.naam_goed} השתמש ב${attackInfo.naam}, והיה לזה אפקט.`;
+        let message = `${attackerInfo.naam_goed} השתמש ב${attackInfo.name}, והיה לזה אפקט.`;
         message +=
           req.query.wie === "computer"
             ? "<br />It is your turn now."
@@ -936,8 +936,8 @@ export async function applyAttackEffect(
 
         // עדכון לוג המתקפה
         await query(
-          "UPDATE aanval_log SET laatste_aanval = ?, beurten = beurten + 1 WHERE id = ?",
-          [attackStatus.lastAttack, aanvalLog.id]
+          "UPDATE attack_log SET laatste_aanval = ?, beurten = beurten + 1 WHERE id = ?",
+          [attackStatus.lastAttack, attackLog.id]
         );
 
         // החזרת JSON response
@@ -961,11 +961,11 @@ export async function applyAttackEffect(
           whoPlayer: attackStatus.you,
           steps: stappen,
           playerHp: attackerInfo.leven,
-          attackType: attackInfo.soort || "",
+          attackType: attackInfo.type || "",
           pokemonEffect: playerPokemon.effect || "",
           computerEffect: computerPokemon.effect || "",
           transform: transform,
-          weather: aanvalLog.weather || "",
+          weather: attackLog.weather || "",
         };
       }
       // EFFECTS NEGATIEF (אפקטים שליליים קבועים)
@@ -1587,7 +1587,7 @@ export const damageController = async (
     attackerInfo.item = "";
   }
 
-  const atkName = attackInfo.naam;
+  const atkName = attackInfo.name;
   const basedOn = getAttackCategory(atkName); // Get move category
 
   // Mold Breaker abilities
@@ -1704,7 +1704,7 @@ export const damageController = async (
   }
 
   // Move type
-  const golpeType = attackInfo.soort;
+  const golpeType = attackInfo.type;
 
   // Abilities affecting power (#1)
   const typeChangeAbilities = [

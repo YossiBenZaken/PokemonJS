@@ -40,7 +40,7 @@ export interface PostChallengeData {
   pokemonid: number;
   begin: string;
   trainer: {
-    aanvalLogId: number;
+    attackLogId: number;
     begin_zien: boolean;
   };
 }

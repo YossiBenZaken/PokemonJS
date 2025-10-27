@@ -1,4 +1,4 @@
-import { AanvalLog, ComputerInfo, PokemonInfo } from "../../../api/battle.api";
+import { AttackLog, ComputerInfo, PokemonInfo } from "../../../api/battle.api";
 import React, { useEffect, useState } from "react";
 import { getGyms, postChallenge } from "../../../api/gyms.api";
 
@@ -131,19 +131,19 @@ const GymsPage: React.FC = () => {
         setChallengeData(resp.data);
         socket.emit(
           "InitBattle",
-          resp.data.trainer.aanvalLogId,
+          resp.data.trainer.attackLogId,
           ({
-            aanval_log,
+            attack_log,
             computer_info,
             pokemon_info,
             enemyPokemons
           }: {
             computer_info: ComputerInfo;
             pokemon_info: PokemonInfo;
-            aanval_log: AanvalLog;
+            attack_log: AttackLog;
             enemyPokemons: { id: number; leven: number }[];
           }) => {
-            setAttackLog(aanval_log);
+            setAttackLog(attack_log);
             setComputerInfo(computer_info);
             setPokemonInfo(pokemon_info);
             setEnemyPokemons(enemyPokemons);

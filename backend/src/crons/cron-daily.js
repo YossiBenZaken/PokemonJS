@@ -278,7 +278,7 @@ const optimizeTables = async () => {
     "pokemon_wild_gevecht",
     "conversas",
     "conversas_messages",
-    "aanval_log",
+    "attack_log",
     "cron",
     "inlog_fout",
     "inlog_logs",

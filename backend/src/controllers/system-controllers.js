@@ -10,7 +10,7 @@ export const getAssets = async (req, res) => {
     const karakters = await query(
       "SELECT * FROM `karakters` ORDER BY `karakter_naam` ASC"
     );
-    const attacks = await query("SELECT * FROM aanval ORDER BY naam ASC");
+    const attacks = await query("SELECT * FROM attack ORDER BY name ASC");
     const abilities = await query(
       "SELECT * FROM `abilities` ORDER BY `name` ASC"
     );
@@ -552,7 +552,7 @@ async function processQuestData(quest, user, questNumber) {
         if (tmData) {
           const [attackData] = await query(
             `
-            SELECT soort FROM aanval WHERE naam = ?
+            SELECT type FROM attack WHERE name = ?
           `,
             [tmData.omschrijving]
           );
@@ -561,7 +561,7 @@ async function processQuestData(quest, user, questNumber) {
             quantity: questData.recomp_quant,
             item: item.naam,
             type: "tm",
-            attackType: attackData?.soort,
+            attackType: attackData?.type,
           };
         }
       } else {

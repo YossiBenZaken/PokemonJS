@@ -37,7 +37,7 @@ export interface ComputerInfo {
   ability: number;
   id: number;
   wildid: number;
-  aanval_log_id: number;
+  attack_log_id: number;
   shiny: number;
   level: number;
   levenmax: number;
@@ -148,7 +148,7 @@ export interface PokemonInfo {
   capture_date?: string;
   has_calc?: number;
   poke_reset?: number;
-  aanval_log_id?: number;
+  attack_log_id?: number;
   duel_id?: number;
   hit_ratio_down?: number;
   poison?: number;
@@ -160,7 +160,7 @@ export interface PokemonInfo {
   star?: string;
 }
 
-export interface AanvalLog {
+export interface AttackLog {
   id?: number;
   user_id?: number;
   gebied?: string;
@@ -314,8 +314,8 @@ export const startWildBattleApi = async (
   level: number | undefined,
   area: string,
   rarity: number | undefined = undefined
-): Promise<{ aanvalLogId: number }> => {
-  const { data } = await axiosInstance.post<{ aanvalLogId: number }>(
+): Promise<{ attackLogId: number }> => {
+  const { data } = await axiosInstance.post<{ attackLogId: number }>(
     "/battle/start-wild-battle",
     { computer_id: pokemonId, computer_level: level, gebied: area, rarity }
   );
@@ -325,7 +325,7 @@ export const startWildBattleApi = async (
 export const trainerAttack = async (
   attack_name: string | undefined,
   wie: string,
-  aanval_log_id: number,
+  attack_log_id: number,
   zmove: boolean = false
 ): Promise<BattleResponse> => {
   const { data } = await axiosInstance.post<BattleResponse>(
@@ -333,7 +333,7 @@ export const trainerAttack = async (
     {
       attack_name,
       wie,
-      aanval_log_id,
+      attack_log_id,
       zmove: zmove ? "y" : "",
     }
   );
@@ -343,7 +343,7 @@ export const trainerAttack = async (
 export const wildAttack = async (
   attack_name: string | undefined,
   wie: string,
-  aanval_log_id: number,
+  attack_log_id: number,
   zmove: boolean = false
 ): Promise<BattleResponse> => {
   const { data } = await axiosInstance.post<BattleResponse>(
@@ -351,7 +351,7 @@ export const wildAttack = async (
     {
       attack_name,
       wie,
-      aanval_log_id,
+      attack_log_id,
       zmove: zmove ? "y" : "",
     }
   );
@@ -361,7 +361,7 @@ export const wildAttack = async (
 export const trainerChangePokemonApi = async (
   pokemon_info_name: string,
   computer_info_name: string,
-  aanval_log_id: number,
+  attack_log_id: number,
   userId: number | undefined
 ): Promise<TrainerChangePokemonResponse> => {
   const { data } = await axiosInstance.post<TrainerChangePokemonResponse>(
@@ -369,7 +369,7 @@ export const trainerChangePokemonApi = async (
     {
       pokemon_info_name,
       computer_info_name,
-      aanval_log_id,
+      attack_log_id,
       userId,
     }
   );
@@ -377,44 +377,44 @@ export const trainerChangePokemonApi = async (
 };
 
 export const trainerFinish = async (
-  aanval_log_id: number
+  attack_log_id: number
 ): Promise<TrainerFinishResponse> => {
   const { data } = await axiosInstance.post<any>("/battle/trainer-finish", {
-    aanval_log_id,
+    attack_log_id,
   });
   return data.data;
 };
 
 export const wildFinish = async (
-  aanval_log_id: number
+  attack_log_id: number
 ): Promise<WildFinishResponse> => {
   const { data } = await axiosInstance.post<any>("/battle/wild-finish", {
-    aanval_log_id,
+    attack_log_id,
   });
   return data.data;
 };
 
 export const attackChangePokemon = async (
   opzak_nummer: number,
-  aanval_log_id: number
+  attack_log_id: number
 ): Promise<AttackChangePokemonResponse> => {
   const { data } = await axiosInstance.post<AttackChangePokemonResponse>(
     "/battle/attack-change-pokemon",
     {
       opzak_nummer,
-      aanval_log_id,
+      attack_log_id,
     }
   );
   return data;
 };
 
 export const trainerAttackRun = async (
-  aanval_log_id: number
+  attack_log_id: number
 ): Promise<TrainerAttackRunResponse> => {
   const { data } = await axiosInstance.post<TrainerAttackRunResponse>(
     "/battle/trainer-attack-run",
     {
-      aanval_log_id,
+      attack_log_id,
     }
   );
   return data;
@@ -425,7 +425,7 @@ export const attackUsePotion = async (
   computer_info_name: string,
   option_id: number,
   potion_pokemon_id: number,
-  aanval_log_id: number
+  attack_log_id: number
 ): Promise<AttackUsePotionResponse> => {
   const { data } = await axiosInstance.post<AttackUsePotionResponse>(
     "/battle/attack-use-potion",
@@ -434,13 +434,13 @@ export const attackUsePotion = async (
       computer_info_name,
       option_id,
       potion_pokemon_id,
-      aanval_log_id,
+      attack_log_id,
     }
   );
   return data;
 };
 export const attackUsePokeball = async (
-  aanval_log_id: number,
+  attack_log_id: number,
   item: string,
   option_id: string,
   computerEffect: string
@@ -448,7 +448,7 @@ export const attackUsePokeball = async (
   const { data } = await axiosInstance.post<AttackUsePokeballResponse>(
     "/battle/attack-use-pokeball",
     {
-      aanval_log_id,
+      attack_log_id,
       item,
       option_id,
       computerEffect,
