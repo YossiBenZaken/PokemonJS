@@ -39,22 +39,22 @@ export const startTrainerBattle = async (req) => {
     // 1. מחיקת קרבות ישנים
     await cleanupBattle(userId);
 
-    // 2. יצירת aanval_log חדש
+    // 2. יצירת attack_log חדש
     const insertLog = await query(
-      "INSERT INTO aanval_log (user_id, gebied, trainer) VALUES (?, ?, ?)",
+      "INSERT INTO attack_log (user_id, gebied, trainer) VALUES (?, ?, ?)",
       [userId, gebied, trainer]
     );
-    const aanvalLogId = insertLog.insertId;
+    const attackLogId = insertLog.insertId;
 
     // 3. בניית היריב (Trainer עם פוקימונים)
     const attackInfo = await createNewTrainer(
       trainer,
       trainerAveLevel,
-      aanvalLogId
+      attackLogId
     );
 
     // 4. הכנסת הפוקימונים של השחקן
-    await createPlayer(userId, aanvalLogId);
+    await createPlayer(userId, attackLogId);
 
     // 5. בדיקה מי מתחיל לפי Speed
     const finalInfo = await whoCanStart(userId, attackInfo);
@@ -62,9 +62,9 @@ export const startTrainerBattle = async (req) => {
     if (!finalInfo.bericht) {
       // שמירת מצב הקרב
       updatePokedex(attackInfo.computer_wildid, "zien", userId);
-      await saveAttack(userId, finalInfo, aanvalLogId);
+      await saveAttack(userId, finalInfo, attackLogId);
       finalInfo["trainer"] = {
-        aanvalLogId,
+        attackLogId,
         begin_zien: true,
       };
     } else {
@@ -84,7 +84,7 @@ export const startTrainerBattle = async (req) => {
   }
 };
 
-async function createNewTrainer(trainer, trainerAveLevel, aanvalLogId) {
+async function createNewTrainer(trainer, trainerAveLevel, attackLogId) {
   const [trainerInfo] = await query(
     `SELECT trainer.*, trainer_pokemon.* 
        FROM trainer 
@@ -139,11 +139,11 @@ async function createNewTrainer(trainer, trainerAveLevel, aanvalLogId) {
     // הוספת הפוקימון לטבלת קרב
     const insertComputer = await query(
       `INSERT INTO pokemon_wild_gevecht 
-         (wildid, aanval_log_id, level, levenmax, leven, attack, defence, speed, \`spc.attack\`, \`spc.defence\`, aanval_1, aanval_2, aanval_3, aanval_4, ability)
+         (wildid, attack_log_id, level, levenmax, leven, attack, defence, speed, \`spc.attack\`, \`spc.defence\`, aanval_1, aanval_2, aanval_3, aanval_4, ability)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         newComputer.id,
-        aanvalLogId,
+        attackLogId,
         level,
         newComputer.hpstat,
         newComputer.hpstat,
@@ -242,7 +242,7 @@ export const getBattleData = async (battleLogId) => {
   const battleInit = await getBattleInfo(battleLogId);
   if(battleInit) {
     return {
-      battleLog: battleInit.aanval_log,
+      battleLog: battleInit.attack_log,
       playerPokemon: battleInit.pokemon_info,
       computerPokemon: battleInit.computer_info,
     };
@@ -254,13 +254,13 @@ export const getBattleData = async (battleLogId) => {
 // Main attack handler
 export const doTrainerAttack = async (req, res) => {
   try {
-    let { attack_name, wie, aanval_log_id, zmove } = req.body;
+    let { attack_name, wie, attack_log_id, zmove } = req.body;
     const userId = req.user?.user_id; // Assuming auth middleware sets this
-    if (!wie || !aanval_log_id) {
+    if (!wie || !attack_log_id) {
       return res.status(400).send("Missing required parameters");
     }
 
-    const battleLogId = parseInt(aanval_log_id);
+    const battleLogId = parseInt(attack_log_id);
     const isZMove = zmove === "y";
 
     // Get battle data
@@ -300,7 +300,7 @@ export const doTrainerAttack = async (req, res) => {
         SELECT COUNT(*) as count 
         FROM pokemon_speler_gevecht psg 
         INNER JOIN pokemon_speler ps ON psg.id = ps.id 
-        WHERE psg.aanval_log_id = ? AND psg.leven > 0 AND ps.ei = 0
+        WHERE psg.attack_log_id = ? AND psg.leven > 0 AND ps.ei = 0
       `,
         [battleLogId]
       );
@@ -309,14 +309,14 @@ export const doTrainerAttack = async (req, res) => {
         fightEnd = 1;
         message = `${playerPokemon.naam_goed} fainted! Fight over!`;
         await query(
-          'UPDATE aanval_log SET laatste_aanval = "end_screen" WHERE id = ?',
+          'UPDATE attack_log SET laatste_aanval = "end_screen" WHERE id = ?',
           [battleLogId]
         );
       } else {
         fightEnd = 0;
         message = `${playerPokemon.naam_goed} fainted! Choose another Pokemon!`;
         await query(
-          'UPDATE aanval_log SET laatste_aanval = "speler_wissel" WHERE id = ?',
+          'UPDATE attack_log SET laatste_aanval = "speler_wissel" WHERE id = ?',
           [battleLogId]
         );
       }
@@ -353,21 +353,21 @@ export const doTrainerAttack = async (req, res) => {
       fightEnd = 1;
 
       const aliveComputers = await query(
-        "SELECT COUNT(*) as count FROM pokemon_wild_gevecht WHERE aanval_log_id = ? AND leven > 0",
+        "SELECT COUNT(*) as count FROM pokemon_wild_gevecht WHERE attack_log_id = ? AND leven > 0",
         [battleLogId]
       );
 
       if (aliveComputers[0].count === 0) {
         message = `${computerPokemon.naam_goed} fainted! Fight over!`;
         await query(
-          'UPDATE aanval_log SET laatste_aanval = "end_screen" WHERE id = ?',
+          'UPDATE attack_log SET laatste_aanval = "end_screen" WHERE id = ?',
           [battleLogId]
         );
       } else {
         fightEnd = 0;
         message = `${computerPokemon.naam_goed} fainted! ${battleLog.trainer} will choose another Pokemon!`;
         await query(
-          'UPDATE aanval_log SET laatste_aanval = "trainer_wissel" WHERE id = ?',
+          'UPDATE attack_log SET laatste_aanval = "trainer_wissel" WHERE id = ?',
           [battleLogId]
         );
       }
@@ -498,7 +498,7 @@ export const doTrainerAttack = async (req, res) => {
       if (battleLog.zmove === 0) {
         zmove = (await ZMoves.move(attackInfo))[0];
         if (zmove == attack_name) {
-          await query("UPDATE aanval_log SET zmove = 1 WHERE id = ?", [
+          await query("UPDATE attack_log SET zmove = 1 WHERE id = ?", [
             battleLogId,
           ]);
         }
@@ -594,7 +594,7 @@ export const doTrainerAttack = async (req, res) => {
         );
 
         await query(
-          "UPDATE aanval_log SET laatste_aanval = ?, beurten = beurten + 1 WHERE id = ?",
+          "UPDATE attack_log SET laatste_aanval = ?, beurten = beurten + 1 WHERE id = ?",
           [attackStatus.lastAttack, battleLogId]
         );
 
@@ -656,7 +656,7 @@ export const doTrainerAttack = async (req, res) => {
       }
 
       await query(
-        "UPDATE aanval_log SET laatste_aanval = ?, beurten = beurten + 1, laatste_aanval_speler = ? WHERE id = ?",
+        "UPDATE attack_log SET laatste_aanval = ?, beurten = beurten + 1, laatste_aanval_speler = ? WHERE id = ?",
         [
           attackStatus.lastAttack,
           wie === "pokemon" ? attackInfo.naam : "",
@@ -845,7 +845,7 @@ export const doTrainerAttack = async (req, res) => {
           SELECT COUNT(*) as count 
           FROM pokemon_speler_gevecht psg 
           INNER JOIN pokemon_speler ps ON psg.id = ps.id 
-          WHERE psg.aanval_log_id = ? AND psg.leven > 0 AND ps.ei = 0
+          WHERE psg.attack_log_id = ? AND psg.leven > 0 AND ps.ei = 0
         `,
           [battleLogId]
         );
@@ -861,7 +861,7 @@ export const doTrainerAttack = async (req, res) => {
       } else if (attackStatus.lastAttack === "pokemon") {
         // Computer Pokemon fainted
         const aliveComputers = await query(
-          "SELECT COUNT(*) as count FROM pokemon_wild_gevecht WHERE aanval_log_id = ? AND leven > 0",
+          "SELECT COUNT(*) as count FROM pokemon_wild_gevecht WHERE attack_log_id = ? AND leven > 0",
           [battleLogId]
         );
 
@@ -904,7 +904,7 @@ export const doTrainerAttack = async (req, res) => {
 
     // Update battle log
     await query(
-      "UPDATE aanval_log SET laatste_aanval = ?, beurten = beurten + 1, laatste_aanval_speler = ?, laatste_aanval_computer = ? WHERE id = ?",
+      "UPDATE attack_log SET laatste_aanval = ?, beurten = beurten + 1, laatste_aanval_speler = ?, laatste_aanval_computer = ? WHERE id = ?",
       [
         attackStatus.lastAttack,
         wie === "pokemon" ? attackInfo.naam : "",
@@ -947,17 +947,17 @@ export const doTrainerAttack = async (req, res) => {
 // Trainer change Pokemon handler
 export const trainerChangePokemon = async (req, res) => {
   try {
-    const { pokemon_info_name, computer_info_name, aanval_log_id, userId } =
+    const { pokemon_info_name, computer_info_name, attack_log_id, userId } =
       req.body;
 
-    if (!pokemon_info_name || !computer_info_name || !aanval_log_id) {
+    if (!pokemon_info_name || !computer_info_name || !attack_log_id) {
       return res.status(400).send("Missing required parameters");
     }
 
-    const battleLogId = parseInt(aanval_log_id);
+    const battleLogId = parseInt(attack_log_id);
 
     // Get battle log
-    const [battleLog] = await query("SELECT * FROM aanval_log WHERE id = ?", [
+    const [battleLog] = await query("SELECT * FROM attack_log WHERE id = ?", [
       battleLogId,
     ]);
 
@@ -1001,7 +1001,7 @@ export const trainerChangePokemon = async (req, res) => {
         SELECT pw.naam, pw.wild_id, pwg.id, pwg.levenmax, pwg.leven, pwg.speed, pwg.effect
         FROM pokemon_wild pw
         INNER JOIN pokemon_wild_gevecht pwg ON pw.wild_id = pwg.wildid
-        WHERE pwg.aanval_log_id = ? AND pwg.leven > 0
+        WHERE pwg.attack_log_id = ? AND pwg.leven > 0
         ORDER BY RAND()
         LIMIT 1
       `,
@@ -1030,7 +1030,7 @@ export const trainerChangePokemon = async (req, res) => {
 
       // Update battle log with new computer Pokemon
       await query(
-        "UPDATE aanval_log SET laatste_aanval = ?, tegenstanderid = ? WHERE id = ?",
+        "UPDATE attack_log SET laatste_aanval = ?, tegenstanderid = ? WHERE id = ?",
         [lastMove, newComputer.id, battleLogId]
       );
 
@@ -1064,7 +1064,7 @@ export const trainerChangePokemon = async (req, res) => {
  * סיום קרב מאמן
  */
 export const finishTrainerBattle = async (req, res) => {
-  const { aanval_log_id } = req.body;
+  const { attack_log_id } = req.body;
   const userId = req.user?.user_id;
   const accId = req.user.acc_id;
   if (!userId) {
@@ -1081,8 +1081,8 @@ export const finishTrainerBattle = async (req, res) => {
     let badge = null;
     let hm = "";
 
-    const [logs] = await query("SELECT * FROM aanval_log WHERE id = ?", [
-      aanval_log_id,
+    const [logs] = await query("SELECT * FROM attack_log WHERE id = ?", [
+      attack_log_id,
     ]);
     if (!logs) {
       return res
@@ -1287,12 +1287,12 @@ export const finishTrainerBattle = async (req, res) => {
  * שינוי פוקימון
  */
 export const attackChangePokemon = async (req, res) => {
-  const { opzak_nummer, aanval_log_id } = req.body;
+  const { opzak_nummer, attack_log_id } = req.body;
   const userId = req.user?.user_id;
   let good = false;
   let refresh = false;
   let message = "";
-  const { battleLog, computerPokemon } = await getBattleData(aanval_log_id);
+  const { battleLog, computerPokemon } = await getBattleData(attack_log_id);
   // Security check
   if (battleLog.user_id !== userId) {
     return res.status(403).send("Unauthorized");
@@ -1354,7 +1354,7 @@ export const attackChangePokemon = async (req, res) => {
         used = `${battleLog["gebruikt_id"]},${changePokemon.id},`;
       }
       await query(
-        "UPDATE `aanval_log` SET `laatste_aanval`=? ,`aanval_bezig_speler`='', `pokemonid`=?, `gebruikt_id`=? WHERE `id`=?",
+        "UPDATE `attack_log` SET `laatste_aanval`=? ,`aanval_bezig_speler`='', `pokemonid`=?, `gebruikt_id`=? WHERE `id`=?",
         [lastMove, changePokemon.id, used, battleLog.id]
       );
 
@@ -1859,12 +1859,12 @@ export class ZMoves {
 }
 
 export const trainerAttackRun = async (req, res) => {
-  const { aanval_log_id } = req.body;
+  const { attack_log_id } = req.body;
   const userId = req.user?.user_id;
   let good = false;
   let message = "";
   const { battleLog, computerPokemon, playerPokemon } = await getBattleData(
-    aanval_log_id
+    attack_log_id
   );
   if (battleLog.user_id !== userId) {
     return res.status(403).send("Unauthorized");
@@ -1901,12 +1901,12 @@ export const trainerAttackRun = async (req, res) => {
         );
       }
 
-      removeAttack(userId, aanval_log_id);
+      removeAttack(userId, attack_log_id);
     } else {
       message = "נכשלת בניסיון לברוח מ" + computerPokemon.naam_goed;
       await query(
-        "UPDATE `aanval_log` SET `laatste_aanval`='pokemon', `beurten`=`beurten`+'1' WHERE `id`=?",
-        [aanval_log_id]
+        "UPDATE `attack_log` SET `laatste_aanval`='pokemon', `beurten`=`beurten`+'1' WHERE `id`=?",
+        [attack_log_id]
       );
     }
   }
@@ -1923,10 +1923,10 @@ export const attackUsePotion = async (req, res) => {
     computer_info_name,
     option_id,
     potion_pokemon_id,
-    aanval_log_id,
+    attack_log_id,
   } = req.body;
   const userId = req.user?.user_id;
-  const { battleLog } = await getBattleData(aanval_log_id);
+  const { battleLog } = await getBattleData(attack_log_id);
   if (battleLog.user_id !== userId) {
     return res.status(403).send("Unauthorized");
   }
@@ -2030,8 +2030,8 @@ export const attackUsePotion = async (req, res) => {
       [new_life, pokemon_effect, pokemon_info.id]
     );
     await query(
-      "UPDATE `aanval_log` SET `laatste_aanval`='pokemon' WHERE `id`=?",
-      [aanval_log_id]
+      "UPDATE `attack_log` SET `laatste_aanval`='pokemon' WHERE `id`=?",
+      [attack_log_id]
     );
     await query(
       "UPDATE `gebruikers_item` SET `" +

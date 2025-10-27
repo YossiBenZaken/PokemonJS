@@ -1,5 +1,5 @@
 import {
-  AanvalLog,
+  AttackLog,
   ComputerInfo,
   PokemonInfo,
   startWildBattleApi,
@@ -171,20 +171,20 @@ const AttackMap: React.FC = () => {
           rarity
         );
 
-        if (response.aanvalLogId) {
+        if (response.attackLogId) {
           socket.emit(
             "InitBattle",
-            response.aanvalLogId,
+            response.attackLogId,
             ({
-              aanval_log,
+              attack_log,
               computer_info,
               pokemon_info,
             }: {
               computer_info: ComputerInfo;
               pokemon_info: PokemonInfo;
-              aanval_log: AanvalLog;
+              attack_log: AttackLog;
             }) => {
-              setAttackLog(aanval_log);
+              setAttackLog(attack_log);
               setComputerInfo(computer_info);
               setPokemonInfo(pokemon_info);
 

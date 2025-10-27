@@ -1,5 +1,5 @@
 import {
-  AanvalLog,
+  AttackLog,
   ComputerInfo,
   PokemonInfo,
   startWildBattleApi,
@@ -321,21 +321,21 @@ const Safari: React.FC = () => {
 
       const data = response;
 
-      if (data.aanvalLogId) {
+      if (data.attackLogId) {
         // Redirect to battle
         socket.emit(
           "InitBattle",
-          data.aanvalLogId,
+          data.attackLogId,
           ({
-            aanval_log,
+            attack_log,
             computer_info,
             pokemon_info,
           }: {
             computer_info: ComputerInfo;
             pokemon_info: PokemonInfo;
-            aanval_log: AanvalLog;
+            attack_log: AttackLog;
           }) => {
-            setAttackLog(aanval_log);
+            setAttackLog(attack_log);
             setComputerInfo(computer_info);
             setPokemonInfo(pokemon_info);
             navigate(`/attack/wild`);
