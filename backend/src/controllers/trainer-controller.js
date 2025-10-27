@@ -623,7 +623,7 @@ export const doTrainerAttack = async (req, res) => {
           whoPlayer: attackStatus.you,
           steps,
           playerHp: attackerInfo.leven,
-          attackType: attackInfo.soort || "",
+          attackType: attackInfo.type || "",
           pokemonEffect: playerPokemon.effect || "",
           computerEffect: computerPokemon.effect || "",
           transform,
@@ -635,9 +635,9 @@ export const doTrainerAttack = async (req, res) => {
     // Handle Metronome
     if (attack_name === "Metronome") {
       const [randomAttack] = await query(
-        "SELECT naam FROM aanval WHERE is_zmoves = 0 ORDER BY RAND() LIMIT 1"
+        "SELECT name FROM attack WHERE is_zmoves = 0 ORDER BY RAND() LIMIT 1"
       );
-      attack_name = randomAttack.naam;
+      attack_name = randomAttack.name;
       const newAttackInfo = await getAttackInfo(attack_name);
       if (newAttackInfo) attackInfo = newAttackInfo;
     }
@@ -647,7 +647,7 @@ export const doTrainerAttack = async (req, res) => {
     let missChance = attackInfo.mis + hitRatioDown;
 
     if (missChance > 0 && Math.random() * 100 <= missChance) {
-      message = `${attackerInfo.naam_goed} used ${attackInfo.naam}, but it missed!`;
+      message = `${attackerInfo.naam_goed} used ${attackInfo.name}, but it missed!`;
 
       if (wie === "computer") {
         message += " Your turn!";
@@ -659,7 +659,7 @@ export const doTrainerAttack = async (req, res) => {
         "UPDATE attack_log SET laatste_aanval = ?, beurten = beurten + 1, laatste_aanval_speler = ? WHERE id = ?",
         [
           attackStatus.lastAttack,
-          wie === "pokemon" ? attackInfo.naam : "",
+          wie === "pokemon" ? attackInfo.name : "",
           battleLogId,
         ]
       );
@@ -683,7 +683,7 @@ export const doTrainerAttack = async (req, res) => {
         whoPlayer: attackStatus.you,
         steps,
         playerHp: attackerInfo.leven,
-        attackType: attackInfo.soort || "",
+        attackType: attackInfo.type || "",
         pokemonEffect: playerPokemon.effect || "",
         computerEffect: computerPokemon.effect || "",
         transform,
@@ -692,7 +692,7 @@ export const doTrainerAttack = async (req, res) => {
     }
 
     // Handle special attacks
-    if (attackInfo.naam === "Transform") {
+    if (attackInfo.name === "Transform") {
       transform = `${opponentInfo.wild_id},${opponentInfo.shiny || 0},${
         opponentInfo.aanval_1 || ""
       },${opponentInfo.aanval_2 || ""},${opponentInfo.aanval_3 || ""},${
@@ -734,7 +734,7 @@ export const doTrainerAttack = async (req, res) => {
       const criticalChance = Math.round((attackerInfo.speed * 100) / 128);
       if (
         Math.random() * 100 <= criticalChance ||
-        ["Frost Breath", "Storm Throw"].includes(attackInfo.naam)
+        ["Frost Breath", "Storm Throw"].includes(attackInfo.name)
       ) {
         lifeDecrease = Math.floor(lifeDecrease * 1.5);
         messageAdd += "<br/>Critical hit!";
@@ -807,7 +807,7 @@ export const doTrainerAttack = async (req, res) => {
 
     // Handle self-destruct moves
     if (
-      ["Self-Destruct", "Explosion", "Mind Blown"].includes(attackInfo.naam)
+      ["Self-Destruct", "Explosion", "Mind Blown"].includes(attackInfo.name)
     ) {
       await query(
         `UPDATE ${attackStatus.tableFight} SET leven = 0 WHERE id = ?`,
@@ -825,7 +825,7 @@ export const doTrainerAttack = async (req, res) => {
 
     // Handle False Swipe
     if (
-      ["False Swipe", "Hold Back"].includes(attackInfo.naam) &&
+      ["False Swipe", "Hold Back"].includes(attackInfo.name) &&
       lifeRemaining <= 0
     ) {
       lifeRemaining = 1;
@@ -851,11 +851,11 @@ export const doTrainerAttack = async (req, res) => {
         );
 
         if (alivePokemon[0].count <= 1) {
-          message = `${computerPokemon.naam_goed} used ${attackInfo.naam}! ${playerPokemon.naam_goed} fainted! You lose!`;
+          message = `${computerPokemon.naam_goed} used ${attackInfo.name}! ${playerPokemon.naam_goed} fainted! You lose!`;
           attackStatus.lastAttack = "end_screen";
         } else {
           fightEnd = 0;
-          message = `${computerPokemon.naam_goed} used ${attackInfo.naam}! ${playerPokemon.naam_goed} fainted! Choose another Pokemon!`;
+          message = `${computerPokemon.naam_goed} used ${attackInfo.name}! ${playerPokemon.naam_goed} fainted! Choose another Pokemon!`;
           attackStatus.lastAttack = "speler_wissel";
         }
       } else if (attackStatus.lastAttack === "pokemon") {
@@ -867,11 +867,11 @@ export const doTrainerAttack = async (req, res) => {
 
         if (aliveComputers[0].count <= 1) {
           fightEnd = 1;
-          message = `${playerPokemon.naam_goed} used ${attackInfo.naam}! ${computerPokemon.naam_goed} fainted! You win!`;
+          message = `${playerPokemon.naam_goed} used ${attackInfo.name}! ${computerPokemon.naam_goed} fainted! You win!`;
           attackStatus.lastAttack = "end_screen";
         } else {
           fightEnd = 0;
-          message = `${playerPokemon.naam_goed} used ${attackInfo.naam}! ${computerPokemon.naam_goed} fainted! ${battleLog.trainer} will choose another Pokemon!`;
+          message = `${playerPokemon.naam_goed} used ${attackInfo.name}! ${computerPokemon.naam_goed} fainted! ${battleLog.trainer} will choose another Pokemon!`;
           attackStatus.lastAttack = "trainer_wissel";
         }
 
@@ -885,7 +885,7 @@ export const doTrainerAttack = async (req, res) => {
         messageAdd += `<br/>${playerPokemon.naam_goed} gained ${expGained} EXP!`;
       }
     } else {
-      message = `${attackerInfo.naam_goed} used ${attackInfo.naam}!${messageAdd}${messageBurn}`;
+      message = `${attackerInfo.naam_goed} used ${attackInfo.name}!${messageAdd}${messageBurn}`;
 
       if (wie === "computer") {
         message += " Your turn!";
@@ -907,8 +907,8 @@ export const doTrainerAttack = async (req, res) => {
       "UPDATE attack_log SET laatste_aanval = ?, beurten = beurten + 1, laatste_aanval_speler = ?, laatste_aanval_computer = ? WHERE id = ?",
       [
         attackStatus.lastAttack,
-        wie === "pokemon" ? attackInfo.naam : "",
-        wie === "computer" ? attackInfo.naam : "",
+        wie === "pokemon" ? attackInfo.name : "",
+        wie === "computer" ? attackInfo.name : "",
         battleLogId,
       ]
     );
@@ -932,7 +932,7 @@ export const doTrainerAttack = async (req, res) => {
       whoPlayer: attackStatus.you,
       steps,
       playerHp: attackerInfo.leven,
-      attackType: attackInfo.soort || "Normal",
+      attackType: attackInfo.type || "Normal",
       pokemonEffect: playerPokemon.effect || "",
       computerEffect: computerPokemon.effect || "",
       transform,
@@ -1418,7 +1418,7 @@ export const attackChangePokemon = async (req, res) => {
 
 export async function atk(atkName, poke = null) {
   // שליפת המתקפה
-  const [rows] = await query("SELECT * FROM aanval WHERE naam = ?", [atkName]);
+  const [rows] = await query("SELECT * FROM attack WHERE name = ?", [atkName]);
   let arr = rows;
 
   if (poke) {
@@ -1436,33 +1436,33 @@ export async function atk(atkName, poke = null) {
       const zinfo = await ZMoves.move(poke);
       if (Array.isArray(zinfo) && zinfo.length === 3) {
         arr.sterkte = zinfo[1];
-        arr.soort = zinfo[2];
+        arr.type = zinfo[2];
       }
     }
 
     // Normal → שינוי סוג לפי יכולת
-    if (arr.soort === "Normal") {
+    if (arr.type === "Normal") {
       switch (poke.ability) {
         case "Refrigerate":
-          arr.soort = "Ice";
+          arr.type = "Ice";
           break;
         case "Pixilate":
-          arr.soort = "Fairy";
+          arr.type = "Fairy";
           break;
         case "Aerilate":
-          arr.soort = "Flying";
+          arr.type = "Flying";
           break;
         case "Galvanize":
-          arr.soort = "Electric";
+          arr.type = "Electric";
           break;
       }
     }
 
     // עוד התאמות לפי יכולת
     if (poke.ability === "Normalize") {
-      arr.soort = "Normal";
+      arr.type = "Normal";
     } else if (poke.ability === "Liquid Voice" && based(atkName) === "sound") {
-      arr.soort = "Water";
+      arr.type = "Water";
     } else if (poke.ability === "Parental Bond") {
       arr.aantalkeer = "1-2";
     } else if (poke.ability === "Speed Boost") {
@@ -1477,7 +1477,7 @@ export async function atk(atkName, poke = null) {
 
     // Hidden Power & Special moves
     if (atkName === "Hidden Power") {
-      arr.soort = hiddenPower(
+      arr.type = hiddenPower(
         poke.hp_iv,
         poke.attack_iv,
         poke.defence_iv,
@@ -1488,12 +1488,12 @@ export async function atk(atkName, poke = null) {
     } else if (
       ["Judgment", "Multi-Attack", "Revelation Dance"].includes(atkName)
     ) {
-      arr.soort = poke.type1;
+      arr.type = poke.type1;
     } else if (atkName === "Techno Blast") {
       const a = ["Fire", "Ice", "Water", "Electric"];
       const b = ["Burn Drive", "Chill Drive", "Douse Drive", "Shock Drive"];
       if (b.includes(poke.item)) {
-        arr.soort = a[b.indexOf(poke.item)];
+        arr.type = a[b.indexOf(poke.item)];
       }
     }
 

@@ -51,7 +51,7 @@ const PokeNewAttackPage: React.FC = () => {
 
   const getTypeOfAttack = (attackName: string) => {
     return (
-      attacks.find((attack) => attack.naam === attackName)?.soort || "Normal"
+      attacks.find((attack) => attack.name === attackName)?.type || "Normal"
     );
   };
 

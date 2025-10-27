@@ -819,7 +819,7 @@ export async function onePokemonExp(
 }
 
 export const getAttackInfo = async (attackName) => {
-  const [attack] = await query("SELECT * FROM aanval WHERE naam = ?", [
+  const [attack] = await query("SELECT * FROM attack WHERE name = ?", [
     attackName,
   ]);
 
@@ -836,19 +836,19 @@ export const multipleHits = (attackInfo, damage) => {
         ? Math.floor(Math.random() * 2) + 2
         : Math.floor(Math.random() * 2) + 4;
     finalDamage = damage * times;
-    message = `<br/>${attackInfo.naam} hit ${times} times!`;
+    message = `<br/>${attackInfo.name} hit ${times} times!`;
   } else if (attackInfo.aantalkeer === "1-2") {
     const times = Math.random() < 0.75 ? 1 : 2;
     finalDamage = damage * times;
     if (times === 2)
-      message = `<br/>${attackInfo.naam} hit twice due to Parental Bond!`;
+      message = `<br/>${attackInfo.name} hit twice due to Parental Bond!`;
   } else if (
     attackInfo.aantalkeer !== "1" &&
     !isNaN(parseInt(attackInfo.aantalkeer))
   ) {
     const times = parseInt(attackInfo.aantalkeer);
     finalDamage = damage * times;
-    message = `<br/>${attackInfo.naam} hit ${times} times!`;
+    message = `<br/>${attackInfo.name} hit ${times} times!`;
   }
 
   return { damage: finalDamage, message };
@@ -928,7 +928,7 @@ export async function applyAttackEffect(
           [effectInfo.actie, turns, opponentInfo.id]
         );
 
-        let message = `${attackerInfo.naam_goed} השתמש ב${attackInfo.naam}, והיה לזה אפקט.`;
+        let message = `${attackerInfo.naam_goed} השתמש ב${attackInfo.name}, והיה לזה אפקט.`;
         message +=
           req.query.wie === "computer"
             ? "<br />It is your turn now."
@@ -961,7 +961,7 @@ export async function applyAttackEffect(
           whoPlayer: attackStatus.you,
           steps: stappen,
           playerHp: attackerInfo.leven,
-          attackType: attackInfo.soort || "",
+          attackType: attackInfo.type || "",
           pokemonEffect: playerPokemon.effect || "",
           computerEffect: computerPokemon.effect || "",
           transform: transform,
@@ -1587,7 +1587,7 @@ export const damageController = async (
     attackerInfo.item = "";
   }
 
-  const atkName = attackInfo.naam;
+  const atkName = attackInfo.name;
   const basedOn = getAttackCategory(atkName); // Get move category
 
   // Mold Breaker abilities
@@ -1704,7 +1704,7 @@ export const damageController = async (
   }
 
   // Move type
-  const golpeType = attackInfo.soort;
+  const golpeType = attackInfo.type;
 
   // Abilities affecting power (#1)
   const typeChangeAbilities = [

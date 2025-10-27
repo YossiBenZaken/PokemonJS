@@ -836,7 +836,7 @@ export const useAttack = (isTrainer: boolean = false) => {
           if (button) {
             if (move) {
               button.innerHTML = move;
-              button.style.backgroundImage = `url(${require(`../../assets/images/attack/moves/${moveType.soort}.png`)})`;
+              button.style.backgroundImage = `url(${require(`../../assets/images/attack/moves/${moveType.type}.png`)})`;
               button.style.display = "block";
             } else {
               button.style.display = "none";
@@ -1087,7 +1087,7 @@ export const useAttack = (isTrainer: boolean = false) => {
 
   const getTypeOfAttack = (attackName: string) => {
     return (
-      attacks.find((attack) => attack.naam === attackName)?.soort || "Normal"
+      attacks.find((attack) => attack.name === attackName)?.type || "Normal"
     );
   };
 
