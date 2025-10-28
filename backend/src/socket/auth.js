@@ -1,5 +1,5 @@
 import { query } from "../config/database.js";
-import {updatePokedex} from '../helpers/pokedex-helper.js';
+import { updatePokedex } from "../helpers/pokedex-helper.js";
 
 export const Auth = async (socket) => {
   socket.on("getUserInfo", async (userId, callback) => {
@@ -35,6 +35,14 @@ export const Auth = async (socket) => {
           [userId]
         )
       ).length;
+
+      if (user.acc_id) {
+        await query(
+          `UPDATE gebruikers SET online = UNIX_TIMESTAMP() WHERE acc_id = ?`,
+          [user.acc_id]
+        );
+      }
+
       callback({
         success: true,
         data: {
@@ -53,7 +61,7 @@ export const Auth = async (socket) => {
     }
   });
 
-  socket.on("getMyPokemons", async(userId,callback) => {
+  socket.on("getMyPokemons", async (userId, callback) => {
     try {
       const myPokemon = await query(
         "SELECT `pw`.`naam`,`pw`.`type1`,`pw`.`type2`,`pw`.`zeldzaamheid`,`pw`.`groei`,`pw`.`aanval_1`,`ps`.`humor_change`,`pw`.`aanval_2`,`pw`.`aanval_3`,`pw`.`aanval_4`,`ps`.* FROM `pokemon_wild` AS `pw` INNER JOIN `pokemon_speler` AS `ps` ON `ps`.`wild_id`=`pw`.`wild_id` WHERE `ps`.`user_id`=? AND `ps`.`opzak`='ja' ORDER BY `ps`.`opzak_nummer` ASC",
@@ -62,10 +70,15 @@ export const Auth = async (socket) => {
 
       for (const pokemon of myPokemon) {
         const date = new Date();
-        if(pokemon.ei === 1 && new Date(pokemon.ei_tijd) < date) {
-          updatePokedex(userId, pokemon.wild_id,null, 'ei');
-          await query("UPDATE `pokemon_speler` SET `ei`='0' WHERE `id`= ?",[pokemon.id]);
-          await query("INSERT INTO `gebeurtenis` (`datum`,`ontvanger_id`,`bericht`,`gelezen`) VALUES (NOW(), ?, ?, '0')",[userId, `ביצת הפוקימון שלך בקעה! זוהי ${pokemon.naam}`]);
+        if (pokemon.ei === 1 && new Date(pokemon.ei_tijd) < date) {
+          updatePokedex(userId, pokemon.wild_id, null, "ei");
+          await query("UPDATE `pokemon_speler` SET `ei`='0' WHERE `id`= ?", [
+            pokemon.id,
+          ]);
+          await query(
+            "INSERT INTO `gebeurtenis` (`datum`,`ontvanger_id`,`bericht`,`gelezen`) VALUES (NOW(), ?, ?, '0')",
+            [userId, `ביצת הפוקימון שלך בקעה! זוהי ${pokemon.naam}`]
+          );
         }
       }
 
@@ -81,8 +94,9 @@ export const Auth = async (socket) => {
       callback({
         success: false,
         message: "שגיאה פנימית בשרת",
-        error: process.env.NODE_ENV === "development" ? error.message : undefined,
+        error:
+          process.env.NODE_ENV === "development" ? error.message : undefined,
       });
     }
-  })
+  });
 };

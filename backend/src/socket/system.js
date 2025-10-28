@@ -3,7 +3,7 @@ import { query } from "../config/database.js";
 export const System = async (socket) => {
   socket.on("getOnline", async (callback) => {
     try {
-        const {acc_id} = socket.user;
+      const { acc_id } = socket.user;
       const result = await query(
         `SELECT user_id, username, premiumaccount, admin, rang, dv 
                  FROM gebruikers 

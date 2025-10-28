@@ -2,21 +2,18 @@ import {
   Activity,
   ArrowLeft,
   Calendar,
-  Coins,
   Globe,
   Heart,
   Medal,
   Shield,
   Star,
   Target,
-  Trophy,
   Zap,
 } from "lucide-react";
 import {
   Container,
   ErrorMessage,
   LoadingSpinner,
-  MoneyCard,
   ProfileAvatar,
   ProfileBadge,
   ProfileButton,
@@ -106,7 +103,7 @@ export const ProfilePage: React.FC = () => {
     <Container>
       <ProfileCard>
         <ProfileHeader>
-          <ProfileAvatar>
+          <ProfileAvatar status={profile.onlineStatus}>
             <img
               src={getCharacterImage(profile.profile.character)}
               alt={profile.profile.username}
@@ -134,22 +131,8 @@ export const ProfilePage: React.FC = () => {
                   פרימיום
                 </ProfileBadge>
               )}
-              <ProfileBadge
-                style={{
-                  backgroundColor:
-                    profile.onlineStatus === "online" ? "#27ae60" : "#95a5a6",
-                }}
-              >
-                <div
-                  style={{
-                    width: "8px",
-                    height: "8px",
-                    borderRadius: "50%",
-                    backgroundColor: "white",
-                    marginRight: "0.5rem",
-                  }}
-                />
-                {profile.onlineStatus === "online" ? "מחובר" : "מנותק"}
+              <ProfileBadge style={{ backgroundColor: "#854eca" }}>
+                {profile.profile.rank}
               </ProfileBadge>
             </div>
             <p>
@@ -162,21 +145,19 @@ export const ProfilePage: React.FC = () => {
         </ProfileHeader>
 
         <ProfileStats>
-          <div className="stat-item">
-            <Trophy size={20} />
-            <span>דירוג: {profile.rankMedal.text}</span>
-            {profile.rankMedal.medal && (
-              <img
-                src={profile.rankMedal.medal}
-                alt="medal"
-                style={{ width: "20px", height: "20px" }}
-              />
-            )}
-          </div>
-          <div className="stat-item">
-            <Heart size={20} />
-            <span>תגים: {profile.profile.badges}</span>
-          </div>
+          {profile.profile.see_badges && (
+            <div className="stat-item">
+              <Heart size={20} />
+              <span>
+                תגים:{" "}
+                {
+                  Object.values(profile.profile.badges).filter(
+                    (value) => value === 1
+                  ).length
+                }
+              </span>
+            </div>
+          )}
           <div className="stat-item">
             <Target size={20} />
             <span>פוקימונים: {profile.stats.inHouse}</span>
@@ -213,106 +194,110 @@ export const ProfilePage: React.FC = () => {
           </ProfileGrid>
         </ProfileSection>
 
-        <ProfileSection>
-          <h2>כלכלה</h2>
-          <div
-            style={{ display: "flex", gap: "2rem", justifyContent: "center" }}
-          >
-            <MoneyCard>
-              <Coins size={24} />
-              <h3>כסף</h3>
-              <span className="money-value">{profile.formatted.silver}</span>
-            </MoneyCard>
-            <MoneyCard>
-              <Star size={24} />
-              <h3>זהב</h3>
-              <span className="money-value">{profile.formatted.gold}</span>
-            </MoneyCard>
-          </div>
-        </ProfileSection>
+        {profile.profile.see_badges && (
+          <ProfileSection>
+            <h2>תגים</h2>
+            <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", marginTop: "1rem" }}>
+              {Object.entries(profile.profile.badges)
+                .filter(([_,value]) => value === 1)
+                .map(([key], index) => (
+                    <img
+                      src={require("../../assets/images/badges/" +
+                        key +
+                        ".png")}
+                      alt={key}
+                      key={index}
+                      width={50}
+                    />
+                ))}
+            </div>
+          </ProfileSection>
+        )}
 
-        <ProfileSection>
-          <h2>פוקימוני הקבוצה</h2>
-          <div
-            style={{
-              display: "flex",
-              gap: "1rem",
-              justifyContent: "center",
-              flexWrap: "wrap",
-              marginTop: "1rem",
-            }}
-          >
-            {profile.teamPokemon?.map((pokemon: any, index: number) => (
-              <div
-                key={index}
-                style={{
-                  width: "80px",
-                  height: "80px",
-                  border: "2px solid #ddd",
-                  borderRadius: "8px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  backgroundColor: "#f8f9fa",
-                  position: "relative",
-                }}
-              >
-                <img
-                  src={require("../../assets/images/" +
-                    (pokemon.shiny === 1 ? "shiny" : "pokemon") +
-                    "/" +
-                    pokemon.wild_id +
-                    ".gif")}
-                  alt={pokemon.naam || `Pokemon ${index + 1}`}
-                  style={{
-                    width: "60px",
-                    height: "60px",
-                    objectFit: "contain",
-                  }}
-                />
-
-                {pokemon.level && (
-                  <div
-                    style={{
-                      position: "absolute",
-                      bottom: "2px",
-                      right: "2px",
-                      backgroundColor: "#007bff",
-                      color: "white",
-                      fontSize: "10px",
-                      padding: "2px 4px",
-                      borderRadius: "3px",
-                    }}
-                  >
-                    {pokemon.level}
-                  </div>
-                )}
-              </div>
-            ))}
-            {[...Array(6 - (profile.teamPokemon?.length || 0))].map(
-              (_, index) => (
+        {profile.profile.see_team && (
+          <ProfileSection>
+            <h2>פוקימוני הקבוצה</h2>
+            <div
+              style={{
+                display: "flex",
+                gap: "1rem",
+                justifyContent: "center",
+                flexWrap: "wrap",
+                marginTop: "1rem",
+              }}
+            >
+              {profile.teamPokemon?.map((pokemon: any, index: number) => (
                 <div
-                  key={`empty-${index}`}
-                  className="icon"
+                  key={index}
                   style={{
                     width: "80px",
                     height: "80px",
-                    border: "2px dashed #ddd",
+                    border: "2px solid #ddd",
                     borderRadius: "8px",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     backgroundColor: "#f8f9fa",
-                    color: "#6c757d",
-                    fontSize: "12px",
+                    position: "relative",
                   }}
                 >
-                  ריק
+                  <img
+                    src={require("../../assets/images/" +
+                      (pokemon.shiny === 1 ? "shiny" : "pokemon") +
+                      "/" +
+                      pokemon.wild_id +
+                      ".gif")}
+                    alt={pokemon.naam || `Pokemon ${index + 1}`}
+                    style={{
+                      width: "60px",
+                      height: "60px",
+                      objectFit: "contain",
+                    }}
+                  />
+
+                  {pokemon.level && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        bottom: "2px",
+                        right: "2px",
+                        backgroundColor: "#007bff",
+                        color: "white",
+                        fontSize: "10px",
+                        padding: "2px 4px",
+                        borderRadius: "3px",
+                      }}
+                    >
+                      {pokemon.level}
+                    </div>
+                  )}
                 </div>
-              )
-            )}
-          </div>
-        </ProfileSection>
+              ))}
+              {[...Array(6 - (profile.teamPokemon?.length || 0))].map(
+                (_, index) => (
+                  <div
+                    key={`empty-${index}`}
+                    className="icon"
+                    style={{
+                      width: "80px",
+                      height: "80px",
+                      border: "2px dashed #ddd",
+                      borderRadius: "8px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      backgroundColor: "#f8f9fa",
+                      color: "#6c757d",
+                      fontSize: "12px",
+                    }}
+                  >
+                    ריק
+                  </div>
+                )
+              )}
+            </div>
+          </ProfileSection>
+        )}
 
         <ProfileButton onClick={() => navigate("/")}>
           <ArrowLeft size={20} />

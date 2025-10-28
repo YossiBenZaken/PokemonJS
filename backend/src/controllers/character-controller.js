@@ -331,9 +331,9 @@ export const loginWithCharacter = async (req, res) => {
     const token = jwt.sign(
       {
         ...req.user,
-        user_id
+        user_id,
       },
-      process.env.JWT_SECRET || "default_secret",
+      process.env.JWT_SECRET || "default_secret"
     );
 
     res.cookie("access_token", token, {
@@ -696,14 +696,12 @@ export const getUserProfile = async (req, res) => {
     const profileQuery = `
       SELECT 
         g.user_id, g.username, g.character, g.world, g.ultimo_login, 
-        g.antiguidade, g.clan, g.rang, g.rang_temp, g.silver, 
-        g.premiumaccount, g.admin, g.online, g.character_num, 
-        g.profile, g.see_team, g.see_badges, g.rank, g.number_of_pokemon, 
-        g.badges, g.won, g.lost, g.date,
-        r.karma, r.email, r.ip_registered, r.ip_loggedin, r.gold,
-        gi.\`badge case\`
+        g.antiguidade, g.clan, g.premiumaccount, g.admin, g.online, g.character_num, 
+        g.profile, g.see_team, g.see_badges, ra.naam AS 'rank', g.number_of_pokemon, 
+        g.badges, g.won, g.lost, g.date, r.karma, gi.\`badge case\`
       FROM gebruikers g
       INNER JOIN accounts r ON g.acc_id = r.acc_id
+      INNER JOIN rank ra ON ra.id = g.rank
       LEFT JOIN gebruikers_item gi ON g.user_id = gi.user_id
       WHERE g.username = ? AND g.banned != 'Y'
       GROUP BY g.user_id
@@ -804,7 +802,7 @@ export const getUserProfile = async (req, res) => {
 
     // קבלת תגים
     let badges = null;
-    if (profile.see_badges === 1 && profile.badge_case === 1) {
+    if (profile.see_badges === 1 && profile['badge case'] === 1) {
       const badgesQuery = "SELECT * FROM gebruikers_badges WHERE user_id = ?";
       const badgesResult = await query(badgesQuery, [profile.user_id]);
       if (badgesResult.length > 0) {
@@ -815,29 +813,6 @@ export const getUserProfile = async (req, res) => {
     // חישוב סטטוס אונליין
     const isOnline = profile.online + 900 > Math.floor(Date.now() / 1000);
     const onlineStatus = isOnline ? "online" : "offline";
-    const onlineIcon = isOnline
-      ? "/images/icons/status_online.png"
-      : "/images/icons/status_offline.png";
-
-    // חישוב מדליות דירוג
-    const getRankMedal = (rank) => {
-      if (rank === 1)
-        return { medal: "/images/icons/plaatsnummereen.png", text: "1º" };
-      if (rank === 2)
-        return { medal: "/images/icons/plaatsnummertwee.png", text: "2º" };
-      if (rank === 3)
-        return { medal: "/images/icons/plaatsnummerdrie.png", text: "3º" };
-      if (rank > 3 && rank <= 10)
-        return { medal: "/images/icons/gold_medaille.png", text: `${rank}º` };
-      if (rank > 10 && rank <= 30)
-        return { medal: "/images/icons/silver_medaille.png", text: `${rank}º` };
-      if (rank > 30 && rank <= 50)
-        return { medal: "/images/icons/bronze_medaille.png", text: `${rank}º` };
-      return { medal: null, text: `${rank}º` };
-    };
-
-    const rankMedal = getRankMedal(profile.rang);
-    const rankTempMedal = getRankMedal(profile.rang_temp);
 
     // פורמט תאריכים
     const formatDate = (dateString) => {
@@ -875,7 +850,7 @@ export const getUserProfile = async (req, res) => {
           see_badges: profile.see_badges,
           rank: profile.rank,
           number_of_pokemon: profile.number_of_pokemon,
-          badges: profile.badges,
+          badges: badges,
           won: profile.won,
           lost: profile.lost,
           date: profile.date,
@@ -895,11 +870,7 @@ export const getUserProfile = async (req, res) => {
         friends: friendsResult,
         honor: honorResult,
         teamPokemon,
-        badges,
         onlineStatus,
-        onlineIcon,
-        rankMedal,
-        rankTempMedal,
         formatted: {
           date: formatDate(profile.date),
           silver: formatMoney(profile.silver),
@@ -1183,13 +1154,11 @@ export const getFishingLeaders = async (req, res) => {
       data: { today, yesterday: winners },
     });
   } catch (err) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "שגיאה בשליפת טבלאות",
-        error: err.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "שגיאה בשליפת טבלאות",
+      error: err.message,
+    });
   }
 };
 
@@ -1213,8 +1182,10 @@ export const getUserSettings = async (req, res) => {
     );
 
     // Parse shared users
-    const sharedUsers = account.shared ? account.shared.split(',').filter(Boolean) : [];
-    
+    const sharedUsers = account.shared
+      ? account.shared.split(",").filter(Boolean)
+      : [];
+
     // Get shared usernames
     const sharedWithDetails = [];
     for (const sharedId of sharedUsers) {
@@ -1247,13 +1218,16 @@ export const getUserSettings = async (req, res) => {
 export const updatePersonalSettings = async (req, res) => {
   try {
     const userId = req.user.user_id;
-    const { see_team, see_badges, chat, duel_invitation, exibepokes } = req.body;
+    const { see_team, see_badges, chat, duel_invitation, exibepokes } =
+      req.body;
 
     // Validation
-    if (![0, 1].includes(Number(see_team)) || 
-        ![0, 1].includes(Number(see_badges)) || 
-        ![0, 1].includes(Number(duel_invitation)) ||
-        ![0, 1].includes(Number(chat))) {
+    if (
+      ![0, 1].includes(Number(see_team)) ||
+      ![0, 1].includes(Number(see_badges)) ||
+      ![0, 1].includes(Number(duel_invitation)) ||
+      ![0, 1].includes(Number(chat))
+    ) {
       return res.status(400).json({
         success: false,
         message: "ערכים לא תקינים",
@@ -1338,10 +1312,10 @@ export const changePassword = async (req, res) => {
     const oldPasswordHash = passwordHashed(currentPassword);
 
     // Update password
-    await query(
-      "UPDATE accounts SET password = ? WHERE acc_id = ?",
-      [newPasswordHash, accId]
-    );
+    await query("UPDATE accounts SET password = ? WHERE acc_id = ?", [
+      newPasswordHash,
+      accId,
+    ]);
 
     // Log password change
     await query(
@@ -1375,7 +1349,8 @@ export const changeEmail = async (req, res) => {
       });
     }
 
-    const emailRegex = /^[A-Z0-9._%-]+@[A-Z0-9][A-Z0-9.-]{0,61}[A-Z0-9]\.[A-Z]{2,6}$/i;
+    const emailRegex =
+      /^[A-Z0-9._%-]+@[A-Z0-9][A-Z0-9.-]{0,61}[A-Z0-9]\.[A-Z]{2,6}$/i;
     if (!emailRegex.test(newEmail)) {
       return res.status(400).json({
         success: false,
@@ -1410,10 +1385,10 @@ export const changeEmail = async (req, res) => {
     );
 
     // Update email
-    await query(
-      "UPDATE accounts SET email = ? WHERE acc_id = ?",
-      [newEmail, accId]
-    );
+    await query("UPDATE accounts SET email = ? WHERE acc_id = ?", [
+      newEmail,
+      accId,
+    ]);
 
     // Log email change
     await query(
@@ -1440,7 +1415,7 @@ export const updateLevelChoice = async (req, res) => {
     const userId = req.user.user_id;
     const { levelRange } = req.body;
 
-    const allowedRanges = ['5-20', '20-40', '40-60', '60-80'];
+    const allowedRanges = ["5-20", "20-40", "40-60", "60-80"];
     if (!allowedRanges.includes(levelRange)) {
       return res.status(400).json({
         success: false,
@@ -1461,10 +1436,10 @@ export const updateLevelChoice = async (req, res) => {
       });
     }
 
-    await query(
-      "UPDATE gebruikers SET lvl_choose = ? WHERE user_id = ?",
-      [levelRange, userId]
-    );
+    await query("UPDATE gebruikers SET lvl_choose = ? WHERE user_id = ?", [
+      levelRange,
+      userId,
+    ]);
 
     return res.json({
       success: true,

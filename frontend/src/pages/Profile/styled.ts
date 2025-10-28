@@ -65,12 +65,16 @@ export const ProfileHeader = styled.div`
   }
 `;
 
-export const ProfileAvatar = styled.div`
+interface ProfileAvatarProps {
+  status: 'online' | 'offline';
+}
+
+export const ProfileAvatar = styled.div<ProfileAvatarProps>`
   width: 200px;
   height: 200px;
   border-radius: 20px;
   overflow: hidden;
-  border: 4px solid #667eea;
+  border: 4px solid ${props => props.status === 'online' ? '#2ecc71' : '#95a5a6'};
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
   animation: ${scaleIn} 0.8s ease-out;
 
