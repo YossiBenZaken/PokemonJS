@@ -42,6 +42,8 @@ export interface UseItemRequest {
   name: string;
   soort: string;
   equip?: boolean;
+  pokemonId?: number;
+  evolveId?: number;
 }
 
 export interface ItemCategory {

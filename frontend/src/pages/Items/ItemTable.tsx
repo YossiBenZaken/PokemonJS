@@ -163,7 +163,7 @@ interface ItemTableProps {
   items: ItemWithQuantity[];
   category: string;
   onSellItem: (itemName: string, amount: number) => void;
-  onUseItem: (itemName: string, soort: string, equip?: boolean) => void;
+  onUseItem: (item: ItemWithQuantity) => void;
 }
 
 const ItemTable: React.FC<ItemTableProps> = ({ items, category, onSellItem, onUseItem }) => {
@@ -280,7 +280,7 @@ const ItemTable: React.FC<ItemTableProps> = ({ items, category, onSellItem, onUs
                 <TableCell>
                   {canUse(item) ? (
                     <UseButton
-                      onClick={() => onUseItem(item.naam, item.soort, item.equip)}
+                      onClick={() => onUseItem(item)}
                     >
                       שימוש
                     </UseButton>

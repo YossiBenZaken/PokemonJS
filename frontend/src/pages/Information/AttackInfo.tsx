@@ -7,7 +7,7 @@ import { useGame } from "../../contexts/GameContext";
 
 const columns: GridColDef[] = [
   {
-    field: "naam",
+    field: "name",
     headerName: "שם",
     width: 300,
     filterable: true,
@@ -26,7 +26,7 @@ const columns: GridColDef[] = [
     },
   },
   {
-    field: "soort",
+    field: "type",
     headerName: "סוג",
     align: "center",
     display: "flex",

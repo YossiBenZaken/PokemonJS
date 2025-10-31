@@ -7,6 +7,7 @@ import { itemsApi } from "../../api/items.api";
 import styled from "styled-components";
 import { useGame } from "../../contexts/GameContext";
 import { useSearchParams } from "react-router-dom";
+import PokemonsUseItems from "./PokemonsUseItems";
 
 const ItemsContainer = styled.div`
   max-width: 1200px;
@@ -96,6 +97,9 @@ const ItemsPage: React.FC = () => {
   const [success, setSuccess] = useState<string | null>(null);
   const [userItems, setUserItems] = useState<any>(null);
   const { selectedCharacter } = useGame();
+  const [selectedItem, setSelectedItem] = useState<ItemWithQuantity | null>(
+    null
+  );
 
   const currentCategory = searchParams.get("category") || "balls";
 
@@ -129,11 +133,16 @@ const ItemsPage: React.FC = () => {
 
   const handleCategoryChange = (category: string) => {
     setSearchParams({ category });
+    setSelectedItem(null);
   };
 
   const handleSellItem = async (itemName: string, amount: number) => {
     try {
-      const result = await itemsApi.sellItem({ name: itemName, amount, userId: selectedCharacter?.user_id! });
+      const result = await itemsApi.sellItem({
+        name: itemName,
+        amount,
+        userId: selectedCharacter?.user_id!,
+      });
       if (result.success) {
         setSuccess(result.message || "הפריט נמכר בהצלחה");
         loadItems(); // רענון הנתונים
@@ -148,25 +157,8 @@ const ItemsPage: React.FC = () => {
     }
   };
 
-  const handleUseItem = async (
-    itemName: string,
-    soort: string,
-    equip?: boolean
-  ) => {
-    try {
-      const result = await itemsApi.useItem({ name: itemName, soort, equip });
-      if (result.success) {
-        setSuccess(result.message || "הפריט שומש בהצלחה");
-        loadItems(); // רענון הנתונים
-        setTimeout(() => setSuccess(null), 3000);
-      } else {
-        setError(result.message || "שגיאה בשימוש בפריט");
-        setTimeout(() => setError(null), 3000);
-      }
-    } catch (err) {
-      setError("שגיאה בשימוש בפריט");
-      setTimeout(() => setError(null), 3000);
-    }
+  const handleUseItem = async (item: ItemWithQuantity) => {
+    setSelectedItem(item);
   };
 
   if (loading) {
@@ -174,16 +166,32 @@ const ItemsPage: React.FC = () => {
   }
 
   const freeQuantity = () => {
-    const myItems = Object.entries(userItems.gebruikers_item).reduce((a, b: Array<any>) => {
-      if (b[0] === "user_id" || b[0] === "itembox") return 0;
-      return a + b[1];
-    }, 0) || 0;
-    const myHouse: 'Bag' | "Yellow box" | "Blue box"| "Red box" | "Purple box" | "Black box" = userItems.gebruikers_item['itembox'];
+    const myItems =
+      Object.entries(userItems.gebruikers_item).reduce((a, b: Array<any>) => {
+        if (b[0] === "user_id" || b[0] === "itembox") return 0;
+        return a + b[1];
+      }, 0) || 0;
+    const myHouse:
+      | "Bag"
+      | "Yellow box"
+      | "Blue box"
+      | "Red box"
+      | "Purple box"
+      | "Black box" = userItems.gebruikers_item["itembox"];
     return ItemBox[myHouse] - myItems;
-  }
+  };
 
   return (
     <ItemsContainer>
+      {selectedItem && (
+        <PokemonsUseItems
+          item={selectedItem}
+          onClose={() => setSelectedItem(null)}
+          setError={setError}
+          setSuccess={setSuccess}
+          loadItems={loadItems}
+        />
+      )}
       <NPCBox>
         <h2>🎒 התיק שלך</h2>
         <p>
@@ -198,10 +206,7 @@ const ItemsPage: React.FC = () => {
         <BackpackInfo>
           <span>🎒</span>
           <span>
-            מקום פנוי:{" "}
-            <strong>
-              {freeQuantity()}
-            </strong>
+            מקום פנוי: <strong>{freeQuantity()}</strong>
           </span>
         </BackpackInfo>
       )}

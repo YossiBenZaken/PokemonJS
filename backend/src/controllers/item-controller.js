@@ -318,7 +318,7 @@ const useRareCandy = async (req, userItems) => {
 };
 
 const useStone = async (req, userItems) => {
-  const { pokemonId, name, evolveId } = req.body;
+  const { pokemonId, name } = req.body;
   const quantity = 1;
   const userId = req.user.user_id;
   const [user] = await query("SELECT * FROM `gebruikers` WHERE `user_id`=?", [
@@ -334,8 +334,9 @@ const useStone = async (req, userItems) => {
     "SELECT pokemon_wild.* ,pokemon_speler.*, karakters.* FROM pokemon_wild INNER JOIN pokemon_speler ON pokemon_speler.wild_id = pokemon_wild.wild_id INNER JOIN karakters ON pokemon_speler.karakter = karakters.karakter_naam WHERE pokemon_speler.id=?",
     [pokemonId]
   );
-  let [leven] = await query("SELECT nieuw_id FROM `levelen` WHERE `id`=?", [
-    evolveId,
+  let [leven] = await query("SELECT nieuw_id FROM `levelen` WHERE `wild_id`=? AND `stone`=?", [
+    pokemonInfo.wild_id,
+    name,
   ]);
   if (leven) {
     if (user.world === "Alola") {
@@ -436,6 +437,11 @@ const useStone = async (req, userItems) => {
       { ...pokemonInfo, wild_id: leven.nieuw_id },
       userId
     );
+
+    return {
+      success: true,
+      message: `${pokemonInfo.naam} התפתח ל ${newPokemon.naam}!`,
+    }
   }
 };
 
@@ -533,6 +539,11 @@ const useEquipItem = async (req, userItems) => {
     name,
     pokemonId,
   ]);
+
+  return {
+    success: true,
+    message: "הפריט הוצמד בהצלחה לפוקימון!",
+  };
 };
 
 async function canPokemonEquip(pokemonId, item) {
