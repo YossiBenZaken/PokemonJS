@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useGame } from "../../contexts/GameContext";
 import {
   Dialog,
@@ -20,7 +20,29 @@ const PokemonsUseItems: React.FC<{
   setSuccess: (success: string | null) => void;
   loadItems: () => Promise<void>;
 }> = ({ item, onClose, setError, setSuccess, loadItems }) => {
-  const { myPokemons } = useGame();
+  const { myPokemons, tmhmRelated, evolutionWithStone } = useGame();
+  const [relatedTmhmIds, setRelatedTmhmIds] = useState<number[]>([]);
+
+  const canUseItemOnPokemon = (pokemon: any): boolean => {
+    if (!item) return false;
+    if(item.soort === 'potions' || item.soort === 'special items') return true;
+    if(item.soort === 'stones') {
+      const evolution = evolutionWithStone.find(
+        (evo) => evo.stone === item.naam && evo.wild_id === pokemon.wild_id
+      );
+      if (evolution) return true;
+      return false;
+    }
+    if (item.soort !== "tm" && item.soort !== "hm") return false;
+    const relatedTmhm = tmhmRelated.find(
+      (tmhm) => tmhm.naam === item.naam
+    );
+    if (!relatedTmhm) return false;
+    const relatedIds = relatedTmhm.relacionados
+      .split(",")
+      .map((id) => parseInt(id.trim(), 10));
+    return relatedIds.includes(pokemon.wild_id);
+  }
 
   const handleUseItem = async (pokemon: any) => {
     if (!item) return;
@@ -61,6 +83,7 @@ const PokemonsUseItems: React.FC<{
                 variant="contained"
                 color="primary"
                 onClick={() => handleUseItem(pokemon)}
+                disabled={!canUseItemOnPokemon(pokemon)}
               >
                 השתמש
               </Button>

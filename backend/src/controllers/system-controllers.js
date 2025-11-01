@@ -18,9 +18,14 @@ export const getAssets = async (req, res) => {
       "SELECT * FROM `markt` WHERE `soort`!='pokemon' AND `soort`!='tm' AND `soort`!='hm' ORDER BY `soort` ASC"
     );
     const config = await query("SELECT `id`, `config`, `valor` FROM configs");
+
+    const tmhmRelacionados = await query("SELECT * FROM `tmhm_relacionados`");
+
+    const evolutionWithStone = await query("SELECT * FROM `levelen` WHERE `stone` != '' ORDER BY `wild_id` ASC");
+
     res.json({
       success: true,
-      data: { ranks, karakters, attacks, abilities, itemInfo, config },
+      data: { ranks, karakters, attacks, abilities, itemInfo, config, tmhmRelacionados, evolutionWithStone },
     });
   } catch (error) {
     res.status(500).json({

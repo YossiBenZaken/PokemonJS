@@ -1,7 +1,9 @@
 import { Ability } from "../models/ability.model";
 import { Attack } from "../models/attack.model";
+import { EvolutionWithStone } from "../models/evolutionWithStone.model";
 import { ItemInfo } from "../models/item.model";
 import { Karakter } from "../models/karakter.model";
+import { TmhmRelated } from "../models/tmhmRelated.model";
 import { axiosInstance } from "./axios";
 
 export interface OnlineUser {
@@ -28,6 +30,8 @@ export interface GetAssetsResponse {
     abilities: Ability[];
     itemInfo: ItemInfo[];
     config: Config[];
+    tmhmRelacionados: TmhmRelated[];
+    evolutionWithStone: EvolutionWithStone[];
   };
 }
 

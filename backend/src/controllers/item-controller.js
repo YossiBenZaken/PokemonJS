@@ -252,6 +252,9 @@ const useItem = async (req, res) => {
     } else if (soort === "potions") {
       const result = await usePotions(req, userItems);
       return res.json(result);
+    } else if (soort === "tm" || soort === "hm") {
+      const result = await useAttack(req, userItems);
+      return res.json(result);
     } else if (name === "Rare candy") {
       const result = await useRareCandy(req, userItems);
       return res.json(result);
@@ -543,6 +546,26 @@ const useEquipItem = async (req, userItems) => {
   return {
     success: true,
     message: "הפריט הוצמד בהצלחה לפוקימון!",
+  };
+};
+
+const useAttack = async (req, userItems) => {
+  const { pokemonId, name } = req.body;
+  if (userItems[name] < 1) {
+    return {
+      success: false,
+      message: "אין לך את הכמות הזו!",
+    };
+  }
+  // כאן תוכל להפעיל לוגיקה של שימוש בפריט על הפוקימון
+  console.log(`Using item ${name} on pokemon ${pokemonId}`);
+  await query(
+    `UPDATE \`gebruikers_item\` SET \`${name}\`=\`${name}\`-1 WHERE \`user_id\`=?`,
+    [req.user.user_id]
+  );
+  return {
+    success: true,
+    message: "הפריט שומש בהצלחה",
   };
 };
 

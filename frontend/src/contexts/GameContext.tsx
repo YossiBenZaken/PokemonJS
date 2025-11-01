@@ -15,6 +15,8 @@ import { ItemInfo } from "../models/item.model";
 import { Karakter } from "../models/karakter.model";
 import { Rank } from "../models/rank.model";
 import { useFlagsmith } from "./Flagsmith";
+import { TmhmRelated } from "../models/tmhmRelated.model";
+import { EvolutionWithStone } from "../models/evolutionWithStone.model";
 
 interface GameSession {
   user_id: number;
@@ -79,6 +81,12 @@ interface GameContextType {
   hasSelectedCharacter: () => boolean;
 
   setMyPokemons: (pokemons: any[]) => void;
+
+  setTmhmRelated: (data: TmhmRelated[]) => void;
+  tmhmRelated: TmhmRelated[];
+
+  evolutionWithStone: EvolutionWithStone[];
+  setEvolutionWithStone: (data: EvolutionWithStone[]) => void;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -107,6 +115,10 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
   const [abilities, setAbilities] = useState<Ability[]>([]);
 
   const [itemInfo, setItemInfo] = useState<ItemInfo[]>([]);
+
+  const [tmhmRelated, setTmhmRelated] = useState<TmhmRelated[]>([]);
+
+  const [evolutionWithStone, setEvolutionWithStone] = useState<EvolutionWithStone[]>([]);
 
   const { identifyUser } = useFlagsmith();
 
@@ -172,6 +184,10 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
     setAbilities,
     itemInfo,
     setItemInfo,
+    tmhmRelated,
+    setTmhmRelated,
+    evolutionWithStone,
+    setEvolutionWithStone,
   };
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;

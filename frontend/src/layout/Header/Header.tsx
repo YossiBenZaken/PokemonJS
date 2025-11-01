@@ -121,6 +121,8 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
     setAttacks,
     setAbilities,
     setItemInfo,
+    setTmhmRelated,
+    setEvolutionWithStone
   } = useGame();
   const { setPokemonEvolve } = useBattle();
   const {getValue} = useFlagsmith();
@@ -186,6 +188,8 @@ export const Header: React.FC<{ children?: React.ReactNode }> = ({
       setAttacks(res.data.attacks);
       setAbilities(res.data.abilities);
       setItemInfo(res.data.itemInfo);
+      setTmhmRelated(res.data.tmhmRelacionados);
+      setEvolutionWithStone(res.data.evolutionWithStone);
     });
   }, [setAbilities, setAttacks, setItemInfo, setKarakters, setRanks]);
 
