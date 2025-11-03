@@ -172,7 +172,7 @@ export const register = async (req, res) => {
     const token = jwt.sign(
       { userId: result.userId, username },
       process.env.JWT_SECRET || "default_secret",
-      { expiresIn: "24h" }
+      { expiresIn: "1y" }
     );
 
     // שליחת תשובה
@@ -410,7 +410,7 @@ export const login = async (req, res) => {
           share_acc: share ? 1 : 0,
         },
         process.env.JWT_SECRET || "default_secret",
-        { expiresIn: "24h" }
+        { expiresIn: "1y" }
       );
 
       // הגדרת cookie - בדיוק כמו ב-PHP

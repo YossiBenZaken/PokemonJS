@@ -333,7 +333,8 @@ export const loginWithCharacter = async (req, res) => {
         ...req.user,
         user_id,
       },
-      process.env.JWT_SECRET || "default_secret"
+      process.env.JWT_SECRET || "default_secret",
+      { expiresIn: "1y" }
     );
 
     res.cookie("access_token", token, {
@@ -802,7 +803,7 @@ export const getUserProfile = async (req, res) => {
 
     // קבלת תגים
     let badges = null;
-    if (profile.see_badges === 1 && profile['badge case'] === 1) {
+    if (profile.see_badges === 1 && profile["badge case"] === 1) {
       const badgesQuery = "SELECT * FROM gebruikers_badges WHERE user_id = ?";
       const badgesResult = await query(badgesQuery, [profile.user_id]);
       if (badgesResult.length > 0) {
